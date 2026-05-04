@@ -11,15 +11,15 @@ import {
   sidebarItemVariant,
 } from "@/app/lib/animations";
 import { TbLayoutSidebarLeftCollapseFilled } from "react-icons/tb";
+import { useAuthStore } from "@/store/auth";
 
-const currentUserRole = "patient";
 export default function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const allowedLinks = navigationConfig.filter((i) =>
-    i.roles.includes(currentUserRole),
-  );
+  const role = useAuthStore((s) => s.role) ?? "patient";
+
+  const allowedLinks = navigationConfig.filter((i) => i.roles.includes(role));
   return (
     <motion.aside
       variants={sidebarContainerVariant}
