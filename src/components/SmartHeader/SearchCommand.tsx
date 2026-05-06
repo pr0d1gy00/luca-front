@@ -73,14 +73,34 @@ const groupedResults = groupByCategory(MOCK_RESULTS);
 // Component
 // ---------------------------------------------------------------------------
 
-export function SearchCommand() {
-  const { open, setOpen } = useKeyboardShortcut();
+interface SearchCommandProps {
+  /** Controlled mode: external open state (for SmartHeader → MobileHeader wiring) */
+  open?: boolean;
+  /** Controlled mode: external open-change handler */
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function SearchCommand({
+  open: openProp,
+  onOpenChange: onOpenChangeProp,
+}: SearchCommandProps = {}) {
+  const { open: hookOpen, setOpen: hookSetOpen } = useKeyboardShortcut();
+  const isControlled = openProp !== undefined && onOpenChangeProp !== undefined;
+
+  const open = isControlled ? openProp : hookOpen;
+
+  const handleOpenChange = (next: boolean) => {
+    hookSetOpen(next);
+    if (isControlled) {
+      onOpenChangeProp(next);
+    }
+  };
 
   return (
     <>
       {/* Desktop trigger button */}
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => handleOpenChange(true)}
         aria-label="Buscar (⌘K)"
         className={cn(
           "hidden lg:flex items-center gap-2 px-4 py-2 rounded-xl",
@@ -103,7 +123,7 @@ export function SearchCommand() {
       </button>
 
       {/* Command dialog */}
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog open={open} onOpenChange={handleOpenChange}>
         <Command>
           <CommandInput placeholder="Buscar pacientes, citas, recetas..." />
           <CommandList>

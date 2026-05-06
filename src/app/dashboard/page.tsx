@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import HeaderDashboard from "@/components/HeaderDashboard";
 import { Container } from "@/components/ui/Container";
 import { useAuthStore } from "@/store/auth";
 import { DoctorDashboard } from "@/features/doctor-dashboard";
@@ -26,7 +25,6 @@ export default function DashboardPage() {
 
   return (
     <Container variant="fluid" className="flex flex-col gap-12">
-      <HeaderDashboard user="Carlos" />
       <div className="flex gap-4 items-center justify-evenly">
         <ActiveTreatment />
         <VitalSigns />

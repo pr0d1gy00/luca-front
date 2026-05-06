@@ -57,12 +57,29 @@ const ICON_COLOR: Record<Notification["type"], string> = {
 // Component
 // ---------------------------------------------------------------------------
 
-export function NotificationBell() {
-  const [open, setOpen] = useState(false);
+interface NotificationBellProps {
+  /** Controlled mode: external open state (for SmartHeader → MobileHeader wiring) */
+  open?: boolean;
+  /** Controlled mode: external open-change handler */
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function NotificationBell({
+  open: openProp,
+  onOpenChange: onOpenChangeProp,
+}: NotificationBellProps = {}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = openProp !== undefined;
+  const open = isControlled ? openProp : internalOpen;
+
+  const handleOpenChange = (next: boolean) => {
+    if (!isControlled) setInternalOpen(next);
+    onOpenChangeProp?.(next);
+  };
   const count = MOCK_NOTIFICATIONS.length;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <button
           aria-label={`Notificaciones (${count})`}

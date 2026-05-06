@@ -5,7 +5,6 @@ import { staggerChildrenVariant } from "@/app/lib/animations";
 import { useDoctorKPIs } from "../hooks/useDoctorKPIs";
 import { useDoctorAgenda } from "../hooks/useDoctorAgenda";
 import { useDoctorNotifications } from "../hooks/useDoctorNotifications";
-import { DoctorHeader } from "./DoctorHeader";
 import { KpiCards } from "./KpiCards";
 import { DailyAgenda } from "./DailyAgenda";
 import { QuickActions } from "./QuickActions";
@@ -23,8 +22,6 @@ export function DoctorDashboard() {
       animate="visible"
       className="flex flex-col gap-8"
     >
-      <DoctorHeader doctorName="Dra. Carmen" />
-
       <KpiCards kpis={kpis} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
