@@ -17,7 +17,7 @@ import { HeaderContext } from "./SmartHeader/HeaderContext";
 import { MobileHeader } from "./SmartHeader/MobileHeader";
 
 // ---------------------------------------------------------------------------
-// Role CTA configuration
+// Role configuration
 // ---------------------------------------------------------------------------
 
 type Role = ReturnType<typeof useAuthStore.getState>["role"];
@@ -35,6 +35,13 @@ const ROLE_CTA: Record<string, CTAConfig> = {
 };
 
 const FALLBACK_CTA: CTAConfig = { label: "Nueva Cita", Icon: Plus };
+
+const ROLE_LABELS: Record<string, string> = {
+  patient: "Paciente",
+  doctor: "Médico",
+  clinic: "Clínica",
+  pharmacy: "Farmacia",
+};
 
 // ---------------------------------------------------------------------------
 // Component
@@ -100,9 +107,14 @@ export function SmartHeader() {
                   exit="exit"
                   className="min-w-0"
                 >
-                  <h2 className="text-2xl font-bold tracking-tight text-slate-900 truncate">
-                    Hola, {displayName}
-                  </h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-2xl font-bold tracking-tight text-slate-900 truncate">
+                      Hola, {displayName}
+                    </h2>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-luca-primary/10 text-luca-primary whitespace-nowrap">
+                      {ROLE_LABELS[role] ?? "Médico"}
+                    </span>
+                  </div>
                   <HeaderContext isCompact={isCompact} />
                 </motion.div>
               )}
@@ -114,9 +126,9 @@ export function SmartHeader() {
             {/* Role CTA button */}
             <button
               className={cn(
-                "hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full",
+                "hidden sm:inline-flex items-center gap-2 px-5 py-3 rounded-full",
                 "bg-luca-primary hover:bg-luca-primary-hover text-white",
-                "text-sm font-semibold shadow-sm",
+                "text-sm font-semibold shadow-sm min-h-11",
                 "hover:scale-105 transition-all duration-300",
                 "focus-visible:ring-2 focus-visible:ring-luca-primary/30 focus-visible:outline-none",
               )}
@@ -142,14 +154,13 @@ export function SmartHeader() {
         />
       )}
 
-      {/* Render SearchCommand/NotificationBell outside the layout blocks so
-          mobile callbacks can open them even when desktop block is unmounted. */}
-      {isMobile && (
-        <>
-          <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
-          <NotificationBell open={bellOpen} onOpenChange={setBellOpen} />
-        </>
-      )}
+      {/* Invisible dialog hosts for mobile (< md).
+          These instances are visually hidden but keep the dialogs functional
+          when MobileHeader buttons trigger them via controlled state. */}
+      <div className="sr-only md:hidden">
+        <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
+        <NotificationBell open={bellOpen} onOpenChange={setBellOpen} />
+      </div>
     </motion.header>
   );
 }

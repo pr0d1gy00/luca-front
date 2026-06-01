@@ -9,6 +9,7 @@ import { KpiCards } from "./KpiCards";
 import { DailyAgenda } from "./DailyAgenda";
 import { QuickActions } from "./QuickActions";
 import { CriticalNotifications } from "./CriticalNotifications";
+import { Container } from "@/components/ui/Container";
 
 export function DoctorDashboard() {
   const kpis = useDoctorKPIs();
@@ -16,12 +17,7 @@ export function DoctorDashboard() {
   const notifications = useDoctorNotifications();
 
   return (
-    <motion.div
-      variants={staggerChildrenVariant}
-      initial="hidden"
-      animate="visible"
-      className="flex flex-col gap-8"
-    >
+    <Container variant="fluid" className="flex flex-col gap-12">
       <KpiCards kpis={kpis} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -33,6 +29,6 @@ export function DoctorDashboard() {
           <CriticalNotifications notifications={notifications} />
         </div>
       </div>
-    </motion.div>
+    </Container>
   );
 }

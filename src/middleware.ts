@@ -3,11 +3,29 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // 1. Definimos qué rutas son públicas (no requieren sesión)
-const publicRoutes = ["/login", "/register", "/dashboard", "/"];
+const publicRoutes = [
+  "/login",
+  "/register",
+  "/dashboard",
+  "/",
+  "/doctor/patients",
+  "/features/clinical-history",
+  "/features/clinical-history/builder",
+  "/features/clinical-history/preview/template-001",
+  "/doctor/appointments",
+  "/doctor/medications",
+  "/doctor/consultations",
+];
 
 export function middleware(request: NextRequest) {
   // 2. Extraemos la ruta que el usuario intenta visitar
   const path = request.nextUrl.pathname;
+
+  // Exclude clinical-history routes from auth check
+  if (path.startsWith("/features/clinical-history")) {
+    return NextResponse.next();
+  }
+
   const isPublicRoute = publicRoutes.includes(path);
 
   // 3. Buscamos el "Pase de Entrada" (El token de sesión en las cookies)

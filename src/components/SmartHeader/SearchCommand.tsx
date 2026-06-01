@@ -98,7 +98,7 @@ export function SearchCommand({
 
   return (
     <>
-      {/* Desktop trigger button */}
+      {/* Desktop trigger button (lg+) */}
       <button
         onClick={() => handleOpenChange(true)}
         aria-label="Buscar (⌘K)"
@@ -107,7 +107,7 @@ export function SearchCommand({
           "bg-white border border-slate-200 text-sm text-luca-muted",
           "hover:border-slate-300 hover:text-slate-700 transition-colors",
           "focus-visible:ring-2 focus-visible:ring-luca-primary/20 focus-visible:outline-none",
-          "min-w-[220px] h-10",
+          "min-w-[220px] min-h-11",
         )}
       >
         <SearchIcon className="size-4 shrink-0" />
@@ -120,6 +120,20 @@ export function SearchCommand({
         >
           ⌘K
         </kbd>
+      </button>
+
+      {/* Tablet trigger button (md to lg) — icon only */}
+      <button
+        onClick={() => handleOpenChange(true)}
+        aria-label="Buscar"
+        className={cn(
+          "hidden md:flex lg:hidden items-center justify-center size-11 rounded-full",
+          "bg-white border border-slate-200 text-luca-muted",
+          "hover:border-slate-300 hover:text-slate-700 transition-colors",
+          "focus-visible:ring-2 focus-visible:ring-luca-primary/20 focus-visible:outline-none",
+        )}
+      >
+        <SearchIcon className="size-5" />
       </button>
 
       {/* Command dialog */}

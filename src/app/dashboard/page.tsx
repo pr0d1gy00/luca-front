@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Container } from "@/components/ui/Container";
 import { useAuthStore } from "@/store/auth";
 import { DoctorDashboard } from "@/features/doctor-dashboard";
+import { PharmacyDashboard } from "@/features/pharmacy-dashboard";
 import ConsultationHistory from "./ConsultationHistory";
 import ActiveTreatment from "./ActiveTreatment";
 import VitalSigns from "./VitalSigns";
@@ -21,6 +22,9 @@ export default function DashboardPage() {
 
   if (role === "doctor") {
     return <DoctorDashboard />;
+  }
+  if (role === "pharmacy") {
+    return <PharmacyDashboard />;
   }
 
   return (

@@ -1,4 +1,4 @@
-import { BellIcon, CalendarIcon } from "lucide-react";
+import { BellIcon, CalendarIcon, FileText, LayoutList, Eye, Users, Stethoscope } from "lucide-react";
 import React from "react";
 import { IoNewspaperOutline } from "react-icons/io5";
 import { MdOutlineDashboard } from "react-icons/md";
@@ -64,6 +64,55 @@ export const navigationConfig: NavItem[] = [
     name: "recipes",
     href: "/recipes",
     icon: CalendarIcon,
+    roles: ["doctor"],
+  },
+  {
+    title: "Historia Clínica",
+    name: "clinical-history-list",
+    href: "/features/clinical-history",
+    icon: LayoutList,
+    roles: ["doctor", "clinic"],
+  },
+  {
+    title: "Constructor de HC",
+    name: "clinical-history-builder",
+    href: "/features/clinical-history/builder",
+    icon: FileText,
+    roles: ["doctor", "clinic"],
+  },
+  {
+    title: "Previsualizar HC",
+    name: "clinical-history-preview",
+    href: "/features/clinical-history/preview/template-001",
+    icon: Eye,
+    roles: ["doctor", "clinic"],
+  },
+  {
+    title: "Pacientes",
+    name: "patients",
+    href: "/doctor/patients",
+    icon: Users,
+    roles: ["doctor"],
+  },
+  {
+    title: "Consulta Activa",
+    name: "consultations",
+    href: "/doctor/consultations",
+    icon: Stethoscope,
+    roles: ["doctor"],
+  },
+  {
+    title: "Citas",
+    name: "appointments",
+    href: "/doctor/appointments",
+    icon: CalendarIcon,
+    roles: ["doctor", "patient", "clinic"],
+  },
+  {
+    title: "Medicamentos",
+    name: "medications",
+    href: "/doctor/medications",
+    icon: FileText,
     roles: ["doctor"],
   },
 ];

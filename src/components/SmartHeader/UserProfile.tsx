@@ -40,11 +40,12 @@ export function UserProfile() {
         <button
           aria-label="Perfil de usuario"
           className={cn(
-            "rounded-full focus-visible:ring-2 focus-visible:ring-luca-primary/20",
+            "hidden md:inline-flex size-11 items-center justify-center rounded-full",
+            "focus-visible:ring-2 focus-visible:ring-luca-primary/20",
             "focus-visible:outline-none transition-transform hover:scale-105",
           )}
         >
-          <Avatar size="default">
+          <Avatar className="size-8">
             {avatar ? (
               <AvatarImage src={avatar} alt={name || "Usuario"} />
             ) : null}

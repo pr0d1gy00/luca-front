@@ -84,7 +84,7 @@ export function NotificationBell({
         <button
           aria-label={`Notificaciones (${count})`}
           className={cn(
-            "relative inline-flex items-center justify-center size-10 rounded-full",
+            "relative hidden md:inline-flex items-center justify-center size-11 rounded-full",
             "hover:bg-slate-100 transition-colors",
             "focus-visible:ring-2 focus-visible:ring-luca-primary/20 focus-visible:outline-none",
           )}
