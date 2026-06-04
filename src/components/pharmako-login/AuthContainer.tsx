@@ -31,12 +31,12 @@ export function AuthContainer() {
   const [tab, setTab] = useState<"login" | "register">("login");
 
   return (
-    <div className="min-h-dvh lg:min-h-0 flex flex-col items-center justify-center px-8 lg:px-16 py-12 lg:py-8 bg-pharmako-surface">
+    <div className="h-screen flex items-center justify-center px-8 lg:px-16 bg-pharmako-surface">
       <motion.div
-        className="w-full max-w-[380px] space-y-6"
+        className="w-full max-w-lg space-y-6"
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+        transition={{ duration: 0.6 }}
       >
         <AuthTabs active={tab} onSelect={setTab} />
 

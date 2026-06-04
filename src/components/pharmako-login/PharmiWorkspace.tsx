@@ -51,7 +51,7 @@ export function PharmiWorkspace() {
 
       {/* Pharmi character - centered with breathing/floating */}
       <motion.div
-        className="flex flex-col justify-center h-full"
+        className="flex flex-col justify-center items-end h-full"
         animate={{
           y: [0, floatY, 0],
         }}
@@ -66,11 +66,10 @@ export function PharmiWorkspace() {
 
           <Image
             src={PharmakoPersonTwoPCAndComputerPNG}
-            alt="Pharmi - Tu asistente de farmacia"
-            width={500}
-            height={500}
-            className="w-full h-auto"
-            priority
+            alt="Pharmi"
+            width={900}
+            height={900}
+            className="max-w-[900px] w-[90%] h-auto object-contain"
           />
         </div>
       </motion.div>
