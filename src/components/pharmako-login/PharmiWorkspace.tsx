@@ -75,7 +75,7 @@ export function PharmiWorkspace() {
       </motion.div>
 
       {/* Bottom gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#F8FAFC] to-transparent" />
+      <div className="lg:hidden absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#F8FAFC] to-transparent" />
     </div>
   );
 }

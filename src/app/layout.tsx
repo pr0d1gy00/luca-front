@@ -23,8 +23,9 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "LucaMed",
-  description: "LucaMed",
+  title: "Pharmako",
+  description:
+    "Pharmako es una plataforma de gestión de farmacias que ofrece una solución integral para optimizar las operaciones diarias, mejorar la atención al cliente y aumentar la eficiencia en la administración de inventarios y ventas.",
 };
 
 export default function RootLayout({
@@ -44,7 +45,10 @@ export default function RootLayout({
         geist.variable,
       )}
     >
-      <body className="min-h-full flex flex-col"><Providers>{children}</Providers><Toaster position="bottom-right" richColors closeButton /></body>
+      <body className="min-h-full flex flex-col">
+        <Providers>{children}</Providers>
+        <Toaster position="bottom-right" richColors closeButton />
+      </body>
     </html>
   );
 }

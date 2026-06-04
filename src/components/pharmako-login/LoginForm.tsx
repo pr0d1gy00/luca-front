@@ -34,7 +34,7 @@ export function LoginForm() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <div className="space-y-1">
         <motion.div
@@ -42,7 +42,7 @@ export function LoginForm() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <h2 className="text-3xl font-semibold text-pharmako-text-primary">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-pharmako-text-primary">
             Bienvenido nuevamente
           </h2>
         </motion.div>
@@ -58,7 +58,7 @@ export function LoginForm() {
 
       {/* Form */}
       <motion.div
-        className="space-y-6"
+        className="space-y-4 sm:space-y-6"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
@@ -81,11 +81,11 @@ export function LoginForm() {
           error={errors.password}
         />
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
           <RememberSession />
           <motion.button
             whileHover={{ scale: 1.02 }}
-            className="text-sm font-medium text-pharmako-primary transition-colors duration-150"
+            className="text-xs sm:text-sm font-medium text-pharmako-primary transition-colors duration-150"
             whileTap={{ scale: 0.98 }}
           >
             ¿Olvidaste tu contraseña?

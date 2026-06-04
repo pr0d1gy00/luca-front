@@ -41,7 +41,7 @@ export function PharmakoInput({
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           placeholder={placeholder}
-          className={`w-full px-4 py-3.5 rounded-xl bg-white border text-base text-pharmako-text-primary placeholder:text-pharmako-text-muted transition-all duration-200 mt-2 ${borderClass}`}
+          className={`w-full px-4 py-3 sm:py-3.5 rounded-xl bg-white border text-base text-pharmako-text-primary placeholder:text-pharmako-text-muted transition-all duration-200 mt-2 ${borderClass}`}
         />
         {type === "password" && (
           <motion.button
