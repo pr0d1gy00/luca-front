@@ -76,29 +76,6 @@ export function PharmiWorkspace() {
 
       {/* Bottom gradient */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#F8FAFC] to-transparent" />
-
-      {/* Brand watermark */}
-      <motion.div
-        className="absolute bottom-8 left-8"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-      >
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center bg-pharmako-primary">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 4C7.58 4 4 7.58 4 12s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14.5c-3.59 0-6.5-2.91-6.5-6.5S8.41 5.5 12 5.5s6.5 2.91 6.5 6.5-2.91 6.5-6.5 6.5z"
-                fill="white"
-              />
-              <circle cx="12" cy="12" r="3" fill="white" />
-            </svg>
-          </div>
-          <span className="text-lg font-semibold text-pharmako-text-primary">
-            Pharmako
-          </span>
-        </div>
-      </motion.div>
     </div>
   );
 }
