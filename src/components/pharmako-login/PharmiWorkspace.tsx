@@ -4,21 +4,19 @@ import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import PharmakoPersonTwoPCAndComputerPNG from "../../../public/PharmakoPersonTwoPcAndPhone-PNG.png";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 export function PharmiWorkspace() {
-  const [floatPhase, setFloatPhase] = useState(0);
-
-  // Gentle floating animation
-  useEffect(() => {
-    const floatInterval = setInterval(() => {
-      setFloatPhase((prev) => (prev + 1) % 360);
-    }, 100);
-    return () => clearInterval(floatInterval);
-  }, []);
-
-  const floatY = Math.sin((floatPhase * Math.PI) / 180) * 6;
+  const router = useRouter();
 
   return (
     <div className="relative w-full h-full overflow-hidden">
+      <button
+        className="relative z-10 flex mt-4 ml-4 items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
+        onClick={() => router.back()}
+      >
+        <ArrowLeft className="w-6 h-6 mr-2" />
+      </button>
       {/* Subtle grid pattern */}
       <div className="absolute inset-0" />
 
@@ -52,9 +50,6 @@ export function PharmiWorkspace() {
       {/* Pharmi character - centered with breathing/floating */}
       <motion.div
         className="flex flex-col justify-center items-end h-full"
-        animate={{
-          y: [0, floatY, 0],
-        }}
         transition={{
           duration: 4,
           repeat: Infinity,
