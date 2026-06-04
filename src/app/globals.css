@@ -1,7 +1,10 @@
 @import "tailwindcss";
+@source "../components";
+@source "../features";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* ... resto de tu código ... */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
