@@ -39,26 +39,37 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  /* LUCA Brand Tokens — Earth/Green Fluid UI Palette */
-  --color-luca-primary: #163422;
-  --color-luca-primary-hover: #2D4B37;
-  --color-luca-accent: #D97B51;
-  --color-luca-surface: #f5f3ee;
-  --color-luca-surface-light: #F9F7F2;
-  --color-luca-surface-dark: #E8DED1;
-  --color-luca-fg-on-primary: #FAEFE2;
-  --color-luca-muted: #868686;
-  --color-luca-muted-dark: #414742;
-  --color-luca-gradient-start: #e1ecdd;
-  --color-luca-gradient-mid: #f5f3ee;
-  --color-luca-gradient-end: #d6c0b3;
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* PHARMAKO Brand Tokens — Deep Blue + Teal */
+  --color-pharmako-primary: #0057FF;
+  --color-pharmako-primary-hover: #0046D0;
+  --color-pharmako-primary-light: #EEF5FF;
+  --color-pharmako-primary-muted: #B8D4FC;
+  --color-pharmako-care: #23DCE1;
+  --color-pharmako-care-hover: #12C4C9;
+  --color-pharmako-care-light: #EBFAF3;
+  --color-pharmako-accent: #A78BFA;
+  --color-pharmako-accent-light: #F3EEFF;
+  --color-pharmako-success: #34D399;
+  --color-pharmako-success-light: #ECFDF5;
+  --color-pharmako-warning: #FBBF24;
+  --color-pharmako-warning-light: #FFFBEB;
+  --color-pharmako-danger: #F87171;
+  --color-pharmako-danger-light: #FEF2F2;
+  --color-pharmako-surface: #FFFFFF;
+  --color-pharmako-surface-warm: #FAF9F7;
+  --color-pharmako-background: #F8FAFC;
+  --color-pharmako-canvas: #F0F2F7;
+  --color-pharmako-text-primary: #0F172A;
+  --color-pharmako-text-secondary: #475569;
+  --color-pharmako-text-muted: #64748B;
+  --color-pharmako-border: #E2E8F0;
+  --color-pharmako-border-soft: #F0F1F3;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-2xl: 40px;
+  --radius-pill: 999px;
 }
 
 :root {
@@ -137,7 +148,17 @@
   body {
     @apply bg-background text-foreground;
   }
-  html {
+html {
     @apply font-sans;
   }
+}
+
+/* ── Float animation for images ── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }

@@ -35,7 +35,7 @@ export function middleware(request: NextRequest) {
   // 4. REGLA A: Si intenta ir a una ruta privada (ej. /dashboard) y NO tiene token
   if (!isPublicRoute && !token) {
     // Lo pateamos de vuelta al login
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   // 5. REGLA B: Si ya tiene token e intenta ir al /login o /register

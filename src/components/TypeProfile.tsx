@@ -12,16 +12,19 @@ export default function TypeProfile({
   isActive: boolean;
 }) {
   return (
-    <div
-      className={`rounded-full w-24 h-24 flex flex-col items-center justify-center  mt-4 hover:scale-105 transition-all duration-300 cursor-pointer  ${
-        isActive
-          ? "bg-[#ebbda8] text-black"
-          : "bg-luca-fg-on-primary text-black hover:bg-[#f1d8b9]"
-      }`}
+    <button
+      type="button"
       onClick={onClick}
+      className={`flex-1 flex flex-col items-center gap-2 px-4 py-4 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer ${
+        isActive
+          ? "bg-pharmako-primary-light text-pharmako-primary border-2 border-pharmako-primary"
+          : "bg-white text-pharmako-text-secondary border border-pharmako-border hover:border-pharmako-primary/30"
+      }`}
     >
-      <Icon className="w-10 h-10 mb-2 text-[#E07A5F]" />
-      <p className="font-semibold font-jakarta text-center text-sm">{title}</p>
-    </div>
+      <Icon
+        className={`w-6 h-6 ${isActive ? "text-pharmako-primary" : "text-pharmako-text-muted"}`}
+      />
+      <span className="font-semibold">{title}</span>
+    </button>
   );
 }

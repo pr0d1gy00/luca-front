@@ -1,97 +1,113 @@
-import { motion } from "motion/react";
-import { fadeUpVariant } from "@/app/lib/animations";
-import { z } from "zod";
 import { institutionRegisterSchema } from "@/app/lib/validations";
-import InputLogin from "./InputLogin";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useController } from "react-hook-form";
+import { z } from "zod";
+import { motion } from "motion/react";
+import { PharmakoInput, LoginButton } from "@/components/pharmako-login";
+import type { Control } from "react-hook-form";
 
 type IFormInput = z.infer<typeof institutionRegisterSchema>;
 
-const inputs = [
+const INPUTS = [
   {
-    name: "legalName",
+    name: "legalName" as const,
     placeholder: "Nombre Legal (Razón Social)",
     type: "text",
   },
   {
-    name: "commercialName",
+    name: "commercialName" as const,
     placeholder: "Nombre Comercial",
     type: "text",
   },
   {
-    name: "taxId",
+    name: "taxId" as const,
     placeholder: "Identificador Fiscal (RUC/NIT/CIF)",
     type: "text",
   },
   {
-    name: "phoneNumber",
+    name: "phoneNumber" as const,
     placeholder: "Número de Teléfono",
-    type: "text",
+    type: "tel",
   },
+  { name: "email" as const, placeholder: "Correo Electrónico", type: "email" },
+  { name: "password" as const, placeholder: "Contraseña", type: "password" },
   {
-    name: "email",
-    placeholder: "Correo Electronico",
-    type: "email",
-  },
-  {
-    name: "password",
-    placeholder: "Contraseña",
-    type: "password",
-  },
-  {
-    name: "confirmPassword",
+    name: "confirmPassword" as const,
     placeholder: "Repetir Contraseña",
     type: "password",
   },
 ];
+
+function ControlledInput({
+  control,
+  name,
+  placeholder,
+  type,
+}: {
+  control: Control<IFormInput>;
+  name: keyof IFormInput;
+  placeholder: string;
+  type: string;
+}) {
+  const { field, fieldState } = useController({ control, name });
+  return (
+    <PharmakoInput
+      label=""
+      placeholder={placeholder}
+      type={type}
+      value={typeof field.value === "string" ? field.value : ""}
+      onChange={(v) => field.onChange(v)}
+      error={fieldState.error?.message}
+    />
+  );
+}
+
 export default function FormRegisterInstitution({
   typeProfile,
 }: {
   typeProfile: string;
 }) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<IFormInput>({
+  const { control, handleSubmit } = useForm<IFormInput>({
     resolver: zodResolver(institutionRegisterSchema),
+    defaultValues: {
+      legalName: "",
+      commercialName: "",
+      taxId: "",
+      phoneNumber: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
+
   const onSubmit = (data: IFormInput) => {
     console.log(data);
   };
+
   return (
     <motion.form
-      variants={fadeUpVariant}
-      initial="hidden"
-      animate="visible"
-      className="flex flex-col items-center w-[70%] py-8 gap-4"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+      className="flex flex-col gap-3"
       onSubmit={handleSubmit(onSubmit)}
     >
-      {inputs.map((i) => {
-        return (
-          <div className="w-full" key={i.name}>
-            <InputLogin
-              placeholder={i.placeholder}
-              type={i.type}
-              {...register(i.name as keyof IFormInput)}
-            />
-            {errors[i.name as keyof IFormInput] && (
-              <p className="text-red-500">
-                {errors[i.name as keyof IFormInput]?.message}
-              </p>
-            )}
-          </div>
-        );
-      })}
-      <motion.button
-        variants={fadeUpVariant}
-        initial="hidden"
-        animate="visible"
-        className="w-full font-bold bg-luca-primary text-white rounded-[3rem] p-6 cursor-pointer hover:scale-105 transition-all duration-300 mt-12"
-      >
-        Crear cuenta de {typeProfile}
-      </motion.button>{" "}
+      {INPUTS.map(({ name, placeholder, type }) => (
+        <div key={name}>
+          <ControlledInput
+            control={control}
+            name={name}
+            placeholder={placeholder}
+            type={type}
+          />
+        </div>
+      ))}
+
+      <div className="pt-2">
+        <LoginButton onClick={() => handleSubmit(onSubmit)()} loading={false}>
+          Crear cuenta de {typeProfile}
+        </LoginButton>
+      </div>
     </motion.form>
   );
 }
