@@ -39,7 +39,7 @@
     "nodejs-best-practices": {
       "source": "sickn33/antigravity-awesome-skills",
       "sourceType": "autoskills-registry",
-      "computedHash": "9dbca8bf122ad4b6d8b6686e05e4e434e00ae1dfa5fa412566ae7ee88780a18f"
+      "computedHash": "7361ab02fb6b09913e3bdd9cf61c629ed6c17de9485e6a781054e5d437ccfc29"
     },
     "react-best-practices": {
       "source": "vercel-labs/agent-skills",
@@ -51,6 +51,12 @@
       "sourceType": "autoskills-registry",
       "computedHash": "5cac0a77035b36714c95df1f0ccc9955713fbfc87734f189a16f5aac903eccda"
     },
+    "responsive-design": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/ui-design/skills/responsive-design/SKILL.md",
+      "computedHash": "155eff4b1bc8d867ae6bea9900c485ab1081de0b4873c1900adb66bf62466aed"
+    },
     "seo": {
       "source": "addyosmani/web-quality-skills",
       "sourceType": "autoskills-registry",
@@ -59,7 +65,7 @@
     "shadcn": {
       "source": "shadcn/ui",
       "sourceType": "autoskills-registry",
-      "computedHash": "1b1287f853d10e344c8e7bf8f1715ec77554b083ad48fff6a4a1c844009626cd"
+      "computedHash": "3e8ca56eb3af0f18b9cca3ae002f2b52f5dd23bceb286dd7403e18ae2fb38d08"
     },
     "tailwind-css-patterns": {
       "source": "giuseppe-trisciuoglio/developer-kit",
@@ -69,7 +75,7 @@
     "tailwind-v4-shadcn": {
       "source": "secondsky/claude-skills",
       "sourceType": "autoskills-registry",
-      "computedHash": "ccb851c374e9d60af52bf37d80481dbeec54c3cebf6a9dc67492ea2f8514e283"
+      "computedHash": "551eb86a35cbf35747cc1a58059ed7e73aacdf03d2fd2e12f63208ea2c0a4ae9"
     },
     "typescript-advanced-types": {
       "source": "wshobson/agents",
