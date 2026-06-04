@@ -70,6 +70,7 @@ export function PharmiWorkspace() {
             width={900}
             height={900}
             className="max-w-[900px] w-[90%] h-auto object-contain"
+            loading="eager"
           />
         </div>
       </motion.div>
