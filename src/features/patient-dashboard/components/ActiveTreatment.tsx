@@ -22,13 +22,13 @@ export function ActiveTreatment({ treatments }: ActiveTreatmentProps) {
         <h2 className="text-lg font-semibold text-slate-900">
           Tratamientos Activos
         </h2>
-        <button className="text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors">
+        <button className="text-sm font-medium text-blue-700 hover:text-blue-800 transition-colors">
           Ver historial completo
         </button>
       </div>
 
       {treatments.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-100 p-8 flex flex-col items-center gap-3">
+        <div className="bg-white rounded-2xl border border-slate-200 p-8 flex flex-col items-center gap-3">
           <div className="bg-slate-50 rounded-xl p-3">
             <Pill className="w-6 h-6 text-slate-300" />
           </div>
@@ -52,10 +52,10 @@ function TreatmentCard({ treatment }: { treatment: Treatment }) {
     treatment;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-6 flex flex-col">
+    <div className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col">
       <div className="flex items-center justify-between mb-4">
-        <div className="bg-teal-50 rounded-xl p-3">
-          <Pill className="w-5 h-5 text-teal-600" />
+        <div className="bg-blue-50 rounded-xl p-3">
+          <Pill className="w-5 h-5 text-blue-400" />
         </div>
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600">
           Activo
@@ -78,7 +78,7 @@ function TreatmentCard({ treatment }: { treatment: Treatment }) {
               progress >= 75
                 ? "bg-emerald-500"
                 : progress >= 40
-                  ? "bg-teal-500"
+                  ? "bg-blue-500"
                   : "bg-amber-500",
             )}
             style={{ width: `${progress}%` }}
@@ -86,7 +86,7 @@ function TreatmentCard({ treatment }: { treatment: Treatment }) {
         </div>
       </div>
 
-      <div className="border-t border-slate-100 pt-4 mt-4">
+      <div className="border-t border-slate-200 pt-4 mt-4">
         <div className="flex items-center justify-between">
           <p className="text-xs text-slate-500">Próxima dosis</p>
           <p className="text-sm font-semibold text-slate-900">{nextDose}</p>

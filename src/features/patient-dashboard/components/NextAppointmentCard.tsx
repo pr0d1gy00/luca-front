@@ -16,7 +16,7 @@ export function NextAppointmentCard() {
         variants={fadeUpVariant}
         initial="hidden"
         animate="visible"
-        className="bg-white rounded-2xl border border-slate-100 p-6"
+        className="bg-white rounded-2xl border border-slate-200 p-6"
       >
         <div className="flex flex-col items-center gap-3 py-4">
           <div className="bg-slate-50 rounded-xl p-3">
@@ -39,11 +39,11 @@ export function NextAppointmentCard() {
       variants={fadeUpVariant}
       initial="hidden"
       animate="visible"
-      className="bg-white rounded-2xl border border-slate-100 p-6"
+      className="bg-white rounded-2xl border border-slate-200 p-6"
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="bg-teal-50 rounded-lg p-2">
-          <Calendar className="w-4 h-4 text-teal-600" />
+        <div className="bg-blue-50 rounded-lg p-2">
+          <Calendar className="w-4 h-4 text-blue-400" />
         </div>
         <h3 className="text-sm font-semibold text-slate-900">Próxima cita</h3>
       </div>
@@ -68,7 +68,7 @@ export function NextAppointmentCard() {
             className={cn(
               "inline-flex items-center gap-1 text-xs font-medium rounded-full px-2 py-0.5",
               next.location === "presencial"
-                ? "bg-teal-50 text-teal-600"
+                ? "bg-blue-50 text-blue-400"
                 : "bg-slate-50 text-slate-500",
             )}
           >
@@ -84,7 +84,7 @@ export function NextAppointmentCard() {
           </span>
         </div>
 
-        <button className="inline-flex items-center gap-1.5 text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors mt-3">
+        <button className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:text-blue-800 transition-colors mt-3">
           Ver todas las citas
           <ArrowRight className="w-3.5 h-3.5" />
         </button>

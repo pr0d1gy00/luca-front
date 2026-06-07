@@ -32,7 +32,7 @@ function VitalSignCard({ vital }: { vital: VitalSign }) {
   const { name, value, unit, time, status, icon: Icon } = vital;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-5">
+    <div className="bg-white rounded-2xl border border-slate-200 p-5">
       <div className="flex items-center gap-3">
         <div
           className={cn(

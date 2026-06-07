@@ -18,7 +18,7 @@ export function PatientGreeting() {
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">
           Hola, {name}
         </h1>
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-50 text-teal-600">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-400">
           Paciente
         </span>
       </div>

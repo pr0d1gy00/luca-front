@@ -13,13 +13,13 @@ export function PatientKpiCard({ kpi }: PatientKpiCardProps) {
   return (
     <div
       className={cn(
-        "bg-white rounded-2xl border border-slate-100 p-5",
+        "bg-white rounded-2xl border border-slate-200 p-5",
         "hover:bg-slate-50 transition-colors",
       )}
     >
       <div className="flex items-start justify-between">
-        <div className="bg-teal-50 rounded-xl p-3">
-          <Icon className="w-5 h-5 text-teal-600" />
+        <div className="bg-blue-50 rounded-xl p-3">
+          <Icon className="w-5 h-5 text-blue-400" />
         </div>
         {trend && trendLabel && (
           <span

@@ -25,7 +25,7 @@ export function ConsultationHistory({
       </h2>
 
       {consultations.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-100 p-8 flex flex-col items-center gap-3">
+        <div className="bg-white rounded-2xl border border-slate-200 p-8 flex flex-col items-center gap-3">
           <div className="bg-slate-50 rounded-xl p-3">
             <BriefcaseMedical className="w-6 h-6 text-slate-300" />
           </div>
@@ -82,7 +82,7 @@ function ConsultationRow({
 
         {/* Center node */}
         <div className="w-10 shrink-0 flex items-center justify-center">
-          <div className="w-10 h-10 bg-teal-600 rounded-full z-10 flex items-center justify-center">
+          <div className="w-10 h-10 bg-blue-700 rounded-full z-10 flex items-center justify-center">
             <div className="w-4 h-4 bg-white rounded-full" />
           </div>
         </div>
@@ -97,13 +97,13 @@ function ConsultationRow({
         >
           <div
             className={cn(
-              "bg-white rounded-2xl border border-slate-100 p-5",
+              "bg-white rounded-2xl border border-slate-200 p-5",
               isEven ? "text-left" : "text-left",
             )}
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="bg-teal-50 rounded-xl p-2.5">
-                <BriefcaseMedical className="w-5 h-5 text-teal-600" />
+              <div className="bg-blue-50 rounded-xl p-2.5">
+                <BriefcaseMedical className="w-5 h-5 text-blue-400" />
               </div>
               <h3 className="text-base font-bold text-slate-900">{type}</h3>
             </div>
@@ -129,12 +129,12 @@ function ConsultationRow({
       {/* Mobile: linear list */}
       <div className="lg:hidden flex items-start gap-4">
         <div className="flex flex-col items-center shrink-0">
-          <div className="w-8 h-8 bg-teal-600 rounded-full flex items-center justify-center">
+          <div className="w-8 h-8 bg-blue-700 rounded-full flex items-center justify-center">
             <div className="w-3 h-3 bg-white rounded-full" />
           </div>
         </div>
         <div className="flex-1 min-w-0">
-          <div className="bg-white rounded-xl border border-slate-100 p-4">
+          <div className="bg-white rounded-xl border border-slate-200 p-4">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="text-sm font-bold text-slate-900">{type}</h3>
               <span className="text-xs text-slate-400">·</span>

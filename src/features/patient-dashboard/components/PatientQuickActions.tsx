@@ -32,7 +32,7 @@ function QuickActionButton({ action }: { action: QuickAction }) {
       variants={staggerChildrenVariant}
       className={cn(
         "flex items-center gap-3 px-5 py-4 rounded-xl font-semibold text-sm transition-colors",
-        variant === "primary" && "bg-teal-600 text-white hover:bg-teal-700",
+        variant === "primary" && "bg-blue-700 text-white hover:bg-blue-800",
         variant === "secondary" &&
           "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50",
         variant === "outline" &&
