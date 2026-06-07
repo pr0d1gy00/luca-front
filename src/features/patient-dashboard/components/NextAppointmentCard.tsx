@@ -42,8 +42,8 @@ export function NextAppointmentCard() {
       className="bg-white rounded-2xl border border-slate-200 p-6"
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="bg-blue-50 rounded-lg p-2">
-          <Calendar className="w-4 h-4 text-blue-400" />
+        <div className="bg-pharmako-care-light rounded-lg p-2">
+          <Calendar className="w-4 h-4 text-pharmako-care" />
         </div>
         <h3 className="text-sm font-semibold text-slate-900">Próxima cita</h3>
       </div>
@@ -68,7 +68,7 @@ export function NextAppointmentCard() {
             className={cn(
               "inline-flex items-center gap-1 text-xs font-medium rounded-full px-2 py-0.5",
               next.location === "presencial"
-                ? "bg-blue-50 text-blue-400"
+                ? "bg-pharmako-care-light text-pharmako-care"
                 : "bg-slate-50 text-slate-500",
             )}
           >

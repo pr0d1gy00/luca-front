@@ -54,8 +54,8 @@ function TreatmentCard({ treatment }: { treatment: Treatment }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col">
       <div className="flex items-center justify-between mb-4">
-        <div className="bg-blue-50 rounded-xl p-3">
-          <Pill className="w-5 h-5 text-blue-400" />
+        <div className="bg-pharmako-care-light rounded-xl p-3">
+          <Pill className="w-5 h-5 text-pharmako-care" />
         </div>
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600">
           Activo
@@ -78,7 +78,7 @@ function TreatmentCard({ treatment }: { treatment: Treatment }) {
               progress >= 75
                 ? "bg-emerald-500"
                 : progress >= 40
-                  ? "bg-blue-500"
+                  ? "bg-pharmako-care-light0"
                   : "bg-amber-500",
             )}
             style={{ width: `${progress}%` }}

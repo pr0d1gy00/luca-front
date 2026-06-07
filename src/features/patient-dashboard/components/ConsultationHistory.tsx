@@ -102,8 +102,8 @@ function ConsultationRow({
             )}
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="bg-blue-50 rounded-xl p-2.5">
-                <BriefcaseMedical className="w-5 h-5 text-blue-400" />
+              <div className="bg-pharmako-care-light rounded-xl p-2.5">
+                <BriefcaseMedical className="w-5 h-5 text-pharmako-care" />
               </div>
               <h3 className="text-base font-bold text-slate-900">{type}</h3>
             </div>
