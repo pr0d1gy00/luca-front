@@ -1,13 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { Container } from "@/components/ui/Container";
 import { useAuthStore } from "@/store/auth";
 import { DoctorDashboard } from "@/features/doctor-dashboard";
 import { PharmacyDashboard } from "@/features/pharmacy-dashboard";
-import ConsultationHistory from "./ConsultationHistory";
-import ActiveTreatment from "./ActiveTreatment";
-import VitalSigns from "./VitalSigns";
+import { PatientDashboard } from "@/features/patient-dashboard";
 
 export default function DashboardPage() {
   const role = useAuthStore((s) => s.role);
@@ -26,17 +23,16 @@ export default function DashboardPage() {
   if (role === "pharmacy") {
     return <PharmacyDashboard />;
   }
+  if (role === "patient") {
+    return <PatientDashboard />;
+  }
 
+  // Fallback for clinic and unknown roles
   return (
-    <Container variant="fluid" className="flex flex-col gap-12">
-      <div className="flex gap-4 items-center justify-evenly">
-        <ActiveTreatment />
-        <VitalSigns />
+    <div className="flex items-center justify-center h-full px-4">
+      <div className="bg-white rounded-2xl border border-slate-100 p-8 text-center">
+        <p className="text-slate-500">Dashboard no disponible para este rol</p>
       </div>
-      <div className="flex gap-4 items-center justify-evenly">
-        <ConsultationHistory />
-        <div className="w-[45%] h-40 bg-white rounded-2xl"></div>
-      </div>
-    </Container>
+    </div>
   );
 }
