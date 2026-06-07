@@ -9,14 +9,14 @@ import type { QuickAction } from "../types";
 const QUICK_ACTIONS: QuickAction[] = [
   {
     id: "qa-1",
-    label: "Iniciar Nueva Consulta",
+    label: "Nueva Consulta",
     icon: Stethoscope,
     href: "#",
     variant: "primary",
   },
   {
     id: "qa-2",
-    label: "Laboratorios Pendientes",
+    label: "Laboratorios",
     icon: FlaskConical,
     href: "#",
     count: 3,
@@ -24,7 +24,7 @@ const QUICK_ACTIONS: QuickAction[] = [
   },
   {
     id: "qa-3",
-    label: "Mensajes de Staff",
+    label: "Mensajes",
     icon: MessageSquare,
     href: "#",
     count: 5,
@@ -38,7 +38,7 @@ export function QuickActions() {
       variants={staggerChildrenVariant}
       initial="hidden"
       animate="visible"
-      className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+      className="grid grid-cols-3 gap-3"
     >
       {QUICK_ACTIONS.map((action) => (
         <QuickActionButton key={action.id} action={action} />

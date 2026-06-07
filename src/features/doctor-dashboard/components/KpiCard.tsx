@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { fadeUpVariant } from "@/app/lib/animations";
+import { scaleInVariant } from "@/app/lib/animations";
 import { cn } from "@/lib/utils";
 import type { ComponentType } from "react";
 
@@ -23,29 +23,41 @@ export function KpiCard({
   const isPositive = trend > 0;
   const isNegative = trend < 0;
   const trendSign = isPositive ? "+" : "";
-  const trendColor = isPositive
-    ? "text-emerald-600"
-    : isNegative
-      ? "text-red-500"
-      : "text-slate-400";
 
   return (
     <motion.div
-      variants={fadeUpVariant}
-      className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col gap-3 hover:shadow-md transition-shadow"
+      variants={scaleInVariant}
+      className={cn(
+        "bg-white/70 backdrop-blur-sm",
+        "border border-slate-100/80",
+        "shadow-sm hover:shadow-md",
+        "rounded-xl p-5",
+        "transition-all duration-200 hover:-translate-y-0.5",
+      )}
     >
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-luca-muted">{label}</span>
-        <Icon className="w-5 h-5 text-luca-primary/60" />
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-medium text-slate-500 tracking-wide uppercase">
+          {label}
+        </span>
+        <Icon className="w-4 h-4 text-pharmako-care" />
       </div>
-      <div className="flex items-baseline gap-2">
-        <span className="text-3xl font-bold text-luca-primary">{value}</span>
-        <span className={cn("text-sm font-semibold", trendColor)}>
+      <div className="flex items-baseline gap-2.5 mb-1">
+        <span className="text-3xl font-bold text-slate-900 tracking-tight">
+          {value.toLocaleString()}
+        </span>
+        <span
+          className={cn(
+            "text-xs font-medium",
+            isPositive && "text-emerald-600",
+            isNegative && "text-red-500",
+            !isPositive && !isNegative && "text-slate-400",
+          )}
+        >
           {trendSign}
-          {trend}
+          {trend}%
         </span>
       </div>
-      <span className="text-xs text-luca-muted">{subtitle}</span>
+      <span className="text-xs text-slate-400">{subtitle}</span>
     </motion.div>
   );
 }

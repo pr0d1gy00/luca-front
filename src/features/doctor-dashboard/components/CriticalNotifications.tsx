@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import { fadeUpVariant, staggerChildrenVariant } from "@/app/lib/animations";
+import { Bell } from "lucide-react";
 import { NotificationAlert } from "./NotificationAlert";
 import type { Notification } from "../types";
 
@@ -17,22 +18,37 @@ export function CriticalNotifications({
       variants={fadeUpVariant}
       initial="hidden"
       animate="visible"
-      className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4"
+      className="bg-white/70 backdrop-blur-sm border border-slate-100/80 shadow-sm rounded-xl overflow-hidden"
     >
-      <h3 className="text-lg font-semibold text-slate-900">
-        Notificaciones Críticas
-      </h3>
+      <div className="p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Bell className="w-4 h-4 text-pharmako-care" />
+          <h3 className="text-sm font-semibold text-slate-800">Alertas</h3>
+          {notifications.length > 0 && (
+            <span className="ml-auto text-[11px] text-slate-400 font-medium">
+              {notifications.length} activa
+              {notifications.length !== 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
 
-      <motion.div
-        variants={staggerChildrenVariant}
-        initial="hidden"
-        animate="visible"
-        className="flex flex-col gap-3"
-      >
-        {notifications.map((not) => (
-          <NotificationAlert key={not.id} notification={not} />
-        ))}
-      </motion.div>
+        <motion.div
+          variants={staggerChildrenVariant}
+          initial="hidden"
+          animate="visible"
+          className="flex flex-col gap-1.5"
+        >
+          {notifications.length === 0 ? (
+            <p className="text-xs text-slate-400 text-center py-4">
+              No hay alertas activas
+            </p>
+          ) : (
+            notifications.map((not) => (
+              <NotificationAlert key={not.id} notification={not} />
+            ))
+          )}
+        </motion.div>
+      </div>
     </motion.div>
   );
 }

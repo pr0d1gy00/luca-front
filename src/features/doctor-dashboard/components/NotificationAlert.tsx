@@ -13,15 +13,15 @@ interface NotificationAlertProps {
 
 const typeConfig: Record<
   NotificationType,
-  { icon: typeof AlertTriangle; borderColor: string }
+  { icon: typeof AlertTriangle; color: string }
 > = {
   "critical-lab": {
     icon: AlertTriangle,
-    borderColor: "border-luca-accent",
+    color: "text-rose-500",
   },
   "missed-appointment": {
     icon: Phone,
-    borderColor: "border-amber-500",
+    color: "text-amber-500",
   },
 };
 
@@ -34,20 +34,22 @@ export function NotificationAlert({ notification }: NotificationAlertProps) {
     <motion.div
       variants={fadeUpVariant}
       className={cn(
-        "flex items-start gap-3 p-4 rounded-xl border-l-4 bg-red-50/50",
-        config.borderColor,
+        "flex items-start gap-3 p-3 rounded-lg",
+        "hover:bg-slate-50 transition-colors",
       )}
     >
-      <div className="flex-shrink-0 mt-0.5">
-        <Icon className="w-5 h-5 text-luca-accent" />
+      <div className={cn("flex-shrink-0 mt-0.5", config.color)}>
+        <Icon className="w-3.5 h-3.5" />
       </div>
 
-      <div className="flex-1 min-w-0 space-y-1">
-        <p className="text-sm font-semibold text-slate-900">{patientName}</p>
-        <p className="text-xs text-slate-600 leading-relaxed">{message}</p>
+      <div className="flex-1 min-w-0 space-y-0.5">
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium text-slate-800">{patientName}</p>
+        </div>
+        <p className="text-xs text-slate-400 leading-relaxed">{message}</p>
         <Link
           href={actionHref}
-          className="inline-block text-xs font-semibold text-luca-primary hover:underline mt-0.5"
+          className="inline-block text-xs font-medium text-slate-500 hover:text-slate-700 transition-colors mt-0.5"
         >
           {actionText} →
         </Link>

@@ -2,7 +2,6 @@
 
 import { motion } from "motion/react";
 import { scaleInVariant } from "@/app/lib/animations";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { QuickAction } from "../types";
 import Link from "next/link";
@@ -11,41 +10,36 @@ interface QuickActionButtonProps {
   action: QuickAction;
 }
 
-const variantStyles: Record<string, string> = {
-  primary:
-    "bg-luca-primary text-luca-fg-on-primary hover:bg-luca-primary-hover",
-  secondary:
-    "bg-luca-surface-light text-luca-primary hover:bg-luca-surface-dark",
-  outline:
-    "bg-white text-luca-primary border border-slate-200 hover:bg-slate-50",
-};
-
 export function QuickActionButton({ action }: QuickActionButtonProps) {
-  const { label, icon: Icon, href, count, variant = "primary" } = action;
+  const { label, icon: Icon, href, count } = action;
 
   return (
     <motion.div
       variants={scaleInVariant}
-      whileHover={{ scale: 1.03 }}
       whileTap={{ scale: 0.97 }}
+      className="relative"
     >
       <Link
         href={href}
         className={cn(
-          "relative flex flex-col items-center justify-center gap-2 p-6 rounded-2xl shadow-sm transition-all font-semibold",
-          variantStyles[variant] ?? variantStyles.primary,
+          "flex flex-col items-center gap-2 p-4 rounded-xl",
+          "bg-white/70 backdrop-blur-sm border border-slate-100/80",
+          "shadow-sm hover:shadow-md",
+          "transition-all duration-200 hover:-translate-y-0.5",
+          "text-slate-600 hover:text-pharmako-care",
         )}
       >
-        <Icon className="w-6 h-6" />
-        <span className="text-sm text-center">{label}</span>
+        <div className="flex items-center justify-center size-9 rounded-lg bg-pharmako-care-light">
+          <Icon className="w-4 h-4 text-pharmako-care" />
+        </div>
+        <span className="text-[11px] font-medium text-center leading-tight text-slate-500">
+          {label}
+        </span>
 
         {count !== undefined && count > 0 && (
-          <Badge
-            variant="outline"
-            className="absolute -top-2 -right-2 bg-luca-accent text-white border-transparent text-xs font-bold min-w-5 h-5 flex items-center justify-center rounded-full px-1.5"
-          >
+          <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-pharmako-care-light0 text-white text-[9px] font-bold leading-none shadow-sm">
             {count}
-          </Badge>
+          </span>
         )}
       </Link>
     </motion.div>
