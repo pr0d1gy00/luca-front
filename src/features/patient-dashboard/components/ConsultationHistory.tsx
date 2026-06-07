@@ -65,16 +65,20 @@ function ConsultationRow({
   return (
     <>
       {/* Desktop: alternating timeline */}
-      <div className="hidden lg:flex items-stretch w-full">
+      <div
+        className={cn(
+          "hidden lg:flex items-stretch w-full",
+          !isEven && "flex-row-reverse",
+        )}
+      >
         {/* Date side */}
         <div
           className={cn(
             "flex-1 flex flex-col justify-center",
             isEven ? "items-end pr-10" : "items-start pl-10",
-            !isEven && "flex-row-reverse",
           )}
         >
-          <div className={cn(!isEven && "text-right")}>
+          <div>
             <h3 className="text-lg font-bold text-slate-900">{date}</h3>
             <p className="text-sm text-slate-500">{time}</p>
           </div>
@@ -88,19 +92,8 @@ function ConsultationRow({
         </div>
 
         {/* Card side */}
-        <div
-          className={cn(
-            "flex-1",
-            isEven ? "pl-10" : "pr-10",
-            !isEven && "flex-row-reverse",
-          )}
-        >
-          <div
-            className={cn(
-              "bg-white rounded-2xl border border-slate-200 p-5",
-              isEven ? "text-left" : "text-left",
-            )}
-          >
+        <div className={cn("flex-1", isEven ? "pl-10" : "pr-10")}>
+          <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center gap-3 mb-4">
               <div className="bg-pharmako-care-light rounded-xl p-2.5">
                 <BriefcaseMedical className="w-5 h-5 text-pharmako-care" />
