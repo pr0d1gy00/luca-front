@@ -2,13 +2,19 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { BellIcon, AlertTriangleIcon, CheckCircleIcon } from "lucide-react";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { scaleInVariant } from "@/app/lib/animations";
+  BellIcon,
+  AlertTriangleIcon,
+  CheckCircleIcon,
+  ChevronDown,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -39,6 +45,24 @@ const MOCK_NOTIFICATIONS = [
   },
 ];
 
+const NOTIF_DETAILS: Record<string, { detail: string; action: string }> = {
+  "1": {
+    detail:
+      "Paciente: Roberto Suárez. Hemoglobina: 6.2 g/dL. El valor crítico requiere evaluación inmediata. Se recomienda repetir la muestra y contactar al paciente.",
+    action: "Revisar ficha del paciente",
+  },
+  "2": {
+    detail:
+      "Paciente: Carmen Vega. Cita programada para el 02/05/2026 a las 10:00. No se presentó ni notificó. Intentar contacto telefónico.",
+    action: "Llamar al paciente",
+  },
+  "3": {
+    detail:
+      "Receta electrónica #4532 del paciente Pedro Rodríguez lista para firma digital. Vence en 48 horas.",
+    action: "Firmar receta",
+  },
+};
+
 type Notification = (typeof MOCK_NOTIFICATIONS)[number];
 
 const ICON_MAP = {
@@ -49,7 +73,7 @@ const ICON_MAP = {
 
 const ICON_COLOR: Record<Notification["type"], string> = {
   alert: "text-amber-500",
-  info: "text-blue-500",
+  info: "text-pharmako-care",
   success: "text-emerald-500",
 };
 
@@ -69,18 +93,25 @@ export function NotificationBell({
   onOpenChange: onOpenChangeProp,
 }: NotificationBellProps = {}) {
   const [internalOpen, setInternalOpen] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const isControlled = openProp !== undefined;
   const open = isControlled ? openProp : internalOpen;
 
   const handleOpenChange = (next: boolean) => {
     if (!isControlled) setInternalOpen(next);
+    if (!next) setExpandedId(null); // reset accordion on close
     onOpenChangeProp?.(next);
   };
+
+  const toggleExpand = (id: string) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  };
+
   const count = MOCK_NOTIFICATIONS.length;
 
   return (
-    <Popover open={open} onOpenChange={handleOpenChange}>
-      <PopoverTrigger asChild>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
         <button
           aria-label={`Notificaciones (${count})`}
           className={cn(
@@ -103,64 +134,77 @@ export function NotificationBell({
             </span>
           )}
         </button>
-      </PopoverTrigger>
+      </DialogTrigger>
 
-      <PopoverContent
-        align="end"
-        sideOffset={8}
-        className="w-80 p-0 overflow-hidden"
-      >
-        {/* Header */}
-        <div className="px-4 py-3 border-b border-slate-100">
-          <h3 className="text-sm font-semibold text-slate-900">
-            Notificaciones
-          </h3>
-        </div>
+      <DialogContent className="sm:max-w-[480px]">
+        <DialogHeader>
+          <DialogTitle>Notificaciones</DialogTitle>
+        </DialogHeader>
 
-        {/* List */}
-        <div className="max-h-72 overflow-y-auto">
-          <AnimatePresence>
-            {open &&
-              MOCK_NOTIFICATIONS.map((notification, index) => {
-                const Icon = ICON_MAP[notification.icon];
-                return (
-                  <motion.div
-                    key={notification.id}
-                    variants={scaleInVariant}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    transition={{ delay: index * 0.05 }}
+        <div className="divide-y divide-slate-100 -mx-6 -mb-6">
+          {MOCK_NOTIFICATIONS.map((notification) => {
+            const NotifIcon = ICON_MAP[notification.icon];
+            const details = NOTIF_DETAILS[notification.id];
+            const isExpanded = expandedId === notification.id;
+
+            return (
+              <div key={notification.id} className="px-6">
+                <button
+                  onClick={() => toggleExpand(notification.id)}
+                  className="flex items-start gap-3 w-full py-4 text-left transition-colors hover:opacity-80"
+                >
+                  <div
                     className={cn(
-                      "flex items-start gap-3 px-4 py-3",
-                      "hover:bg-slate-50 transition-colors cursor-pointer",
-                      index < MOCK_NOTIFICATIONS.length - 1 &&
-                        "border-b border-slate-50",
+                      "mt-0.5 shrink-0",
+                      ICON_COLOR[notification.type],
                     )}
-                    role="listitem"
                   >
-                    <div
-                      className={cn(
-                        "mt-0.5 shrink-0",
-                        ICON_COLOR[notification.type],
-                      )}
-                    >
-                      <Icon className="size-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-slate-700 leading-snug">
+                    <NotifIcon className="size-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium text-slate-800">
                         {notification.title}
                       </p>
-                      <p className="text-xs text-luca-muted mt-0.5">
-                        {notification.timestamp}
-                      </p>
+                      <ChevronDown
+                        className={cn(
+                          "w-4 h-4 text-slate-300 shrink-0 transition-transform duration-200",
+                          isExpanded && "rotate-180",
+                        )}
+                      />
                     </div>
-                  </motion.div>
-                );
-              })}
-          </AnimatePresence>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {notification.timestamp}
+                    </p>
+                  </div>
+                </button>
+
+                <AnimatePresence initial={false}>
+                  {isExpanded && details && (
+                    <motion.div
+                      key="detail"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pb-4 pl-7">
+                        <p className="text-sm text-slate-600 leading-relaxed mb-3">
+                          {details.detail}
+                        </p>
+                        <button className="text-xs font-semibold text-pharmako-care hover:text-pharmako-care-hover transition-colors">
+                          {details.action} →
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
         </div>
-      </PopoverContent>
-    </Popover>
+      </DialogContent>
+    </Dialog>
   );
 }
