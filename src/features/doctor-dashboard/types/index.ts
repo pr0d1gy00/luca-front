@@ -44,3 +44,30 @@ export interface QuickAction {
   count?: number;
   variant?: QuickActionVariant;
 }
+
+export type AlertType = "allergy" | "chronic" | "critical-lab" | "last-visit";
+
+export interface PatientAlert {
+  type: AlertType;
+  label: string;
+}
+
+export interface NextPatient {
+  name: string;
+  time: string;
+  type: string;
+  reason: string;
+  alerts: PatientAlert[];
+}
+
+export type ActionType = "lab" | "call" | "prescription" | "follow-up";
+
+export interface ActionItem {
+  id: string;
+  label: string;
+  type: ActionType;
+  patientName: string;
+  completed: boolean;
+}
+
+export type DashboardView = "resumen" | "flujo" | "seguimiento";
