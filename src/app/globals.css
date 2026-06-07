@@ -76,6 +76,8 @@
 }
 
 :root {
+  --scrollbar-thumb: oklch(0.82 0 0 / 0.6);
+  --scrollbar-thumb-hover: oklch(0.75 0 0 / 0.7);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -111,6 +113,8 @@
 }
 
 .dark {
+  --scrollbar-thumb: oklch(0.4 0 0 / 0.5);
+  --scrollbar-thumb-hover: oklch(0.5 0 0 / 0.6);
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -156,6 +160,39 @@ html {
   }
 }
 
+:root {
+  --scrollbar-thumb: #23DCE1;
+  --scrollbar-thumb-hover: #12C4C9;
+  --scrollbar-track: transparent;
+}
+
+/* Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+
+
 /* ── Float animation for images ── */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
@@ -165,3 +202,32 @@ html {
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
+
+/* ── Scrollbar minimalista (Notion-style) ── */
+
+/* ── Scrollbar minimalista (theme-aware) ── */
+
+/* Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+
+
+/* Thin variant para usarlo en contenedores específicos */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .thin-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+}
+

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, type Variants, AnimatePresence } from "framer-motion";
-import { MenuIcon, X, LogIn, Users, Mail } from "lucide-react";
+import { MenuIcon, X, LogIn, Users, Mail, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
 import Welcome from "./(main)/Welcome";
 import AboutUs from "./(main)/AboutUs";
@@ -42,6 +42,7 @@ const LINK_ITEM_VARIANTS: Variants = {
 // ─────────────────────────────────────────────────────────────
 const HEADER_LINKS = [
   { label: "Nosotros", href: "#nosotros", icon: Users },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Login", href: "/login", icon: LogIn },
   { label: "Contacto", href: "#contacto", icon: Mail },
 ] as const;

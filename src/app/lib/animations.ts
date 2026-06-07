@@ -130,3 +130,48 @@ export const sidebarItemVariant: Variants = {
     transition: lucaFastTransition,
   },
 };
+
+// ─────────────────────────────────────────────────────────────
+// 3. macOS-Style Floating Sidebar Variants
+// ─────────────────────────────────────────────────────────────
+
+// Contenedor flotante — entrada desde la izquierda con fade
+// Sin staggerChildren porque controlamos expansión manualmente
+
+export const sidebarFloatContainer: Variants = {
+  hidden: { opacity: 0, x: -30 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.5,
+      ease: [0.25, 0.1, 0.25, 1],
+    },
+  },
+};
+
+// Ítems con stagger sutil para la entrada inicial
+export const sidebarFloatItem: Variants = {
+  hidden: { opacity: 0, x: -15 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+};
+
+// Para el logo/brand text que aparece/desaparece al expandir/colapsar
+export const sidebarLabelReveal: Variants = {
+  hidden: { opacity: 0, width: 0, overflow: "hidden" },
+  visible: {
+    opacity: 1,
+    width: "auto",
+    transition: { duration: 0.2, ease: "easeOut" },
+  },
+  exit: {
+    opacity: 0,
+    width: 0,
+    overflow: "hidden",
+    transition: { duration: 0.15, ease: "easeOut" },
+  },
+};
