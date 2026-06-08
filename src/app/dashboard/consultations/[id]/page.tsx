@@ -34,12 +34,7 @@ export default function ConsultationDetailPage({
     );
   }
 
-  const {
-    consultation: _consultation,
-    patient,
-    doctor: _doctor,
-    history,
-  } = detail;
+  const { consultation: _consultation, patient, doctor, history } = detail;
 
   const formattedDate = new Intl.DateTimeFormat("es-ES", {
     day: "numeric",
@@ -90,6 +85,8 @@ export default function ConsultationDetailPage({
         <div className="lg:col-span-2">
           <ConsultationTabs
             historyEntries={history}
+            patient={patient}
+            doctor={doctor}
             onSubmit={(data) => {
               console.log("[Consultation] Submitted:", data);
             }}

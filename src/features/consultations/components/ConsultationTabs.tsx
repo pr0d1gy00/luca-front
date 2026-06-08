@@ -3,18 +3,22 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClinicalHistoryTimeline } from "./ClinicalHistoryTimeline";
 import { ClinicalNotesForm } from "./ClinicalNotesForm";
-import type { HistoryEntry, Consultation } from "../schemas";
+import type { HistoryEntry, Consultation, Patient, Doctor } from "../schemas";
 
 interface ConsultationTabsProps {
   historyEntries: HistoryEntry[];
   onSubmit: (data: Consultation) => void;
   onGeneratePrescription: (data: Consultation) => void;
+  patient?: Patient;
+  doctor?: Doctor;
 }
 
 export function ConsultationTabs({
   historyEntries,
   onSubmit,
   onGeneratePrescription,
+  patient,
+  doctor,
 }: ConsultationTabsProps) {
   return (
     <Tabs defaultValue="consultation" className="w-full">
@@ -41,6 +45,8 @@ export function ConsultationTabs({
         <ClinicalNotesForm
           onSubmit={onSubmit}
           onGeneratePrescription={onGeneratePrescription}
+          patient={patient}
+          doctor={doctor}
         />
       </TabsContent>
     </Tabs>
