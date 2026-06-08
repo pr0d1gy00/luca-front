@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, LayoutList } from 'lucide-react';
-import { ClinicalHistoryBuilder } from '@/features/clinical-history-builder';
+import { useEffect } from "react";
+import Link from "next/link";
+import { ArrowLeft, LayoutList } from "lucide-react";
+import { ClinicalHistoryBuilder } from "@/features/clinical-history-builder";
 
 export default function BuilderPage() {
   // Prevent body scroll while builder is open
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     };
   }, []);
 
@@ -19,7 +19,7 @@ export default function BuilderPage() {
       {/* Top bar */}
       <header className="h-14 flex items-center gap-3 px-4 bg-white border-b border-slate-100 flex-shrink-0">
         <Link
-          href="/features/clinical-history"
+          href="/clinical-history"
           className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-slate-600
                      hover:text-slate-900 hover:bg-slate-100 transition-colors"
         >
@@ -41,7 +41,7 @@ export default function BuilderPage() {
         <div className="flex-1" />
 
         <Link
-          href="/features/clinical-history"
+          href="/clinical-history"
           className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-slate-600
                      hover:text-slate-900 hover:bg-slate-100 transition-colors"
         >

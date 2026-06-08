@@ -8,9 +8,9 @@ const publicRoutes = [
   "/register",
   "/dashboard",
   "/",
-  "/features/clinical-history",
-  "/features/clinical-history/builder",
-  "/features/clinical-history/preview/template-001",
+  "/clinical-history",
+  "/clinical-history/builder",
+  "/clinical-history/preview/template-001",
 ];
 
 export function proxy(request: NextRequest) {
@@ -18,7 +18,7 @@ export function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   // Exclude clinical-history routes from auth check
-  if (path.startsWith("/features/clinical-history")) {
+  if (path.startsWith("/clinical-history")) {
     return NextResponse.next();
   }
 

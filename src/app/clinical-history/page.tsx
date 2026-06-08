@@ -61,7 +61,7 @@ export default function TemplatesListPage() {
               </p>
             </div>
             <Link
-              href="/features/clinical-history/builder"
+              href="/clinical-history/builder"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-600 text-white text-sm font-medium
                          hover:bg-teal-700 transition-colors"
             >
@@ -181,7 +181,7 @@ function TemplateCard({
                 />
                 <div className="absolute right-0 top-8 z-20 w-44 bg-white rounded-xl border border-slate-100 shadow-lg py-1">
                   <Link
-                    href={`/features/clinical-history/preview/${schema.id}`}
+                    href={`/clinical-history/preview/${schema.id}`}
                     className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                     onClick={() => setMenuOpen(false)}
                   >
@@ -189,7 +189,7 @@ function TemplateCard({
                     Vista previa
                   </Link>
                   <Link
-                    href={`/features/clinical-history/builder?id=${schema.id}`}
+                    href={`/clinical-history/builder?id=${schema.id}`}
                     className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                     onClick={() => setMenuOpen(false)}
                   >
@@ -238,7 +238,7 @@ function TemplateCard({
       {/* Card footer */}
       <div className="px-5 py-3 border-t border-slate-50 flex items-center gap-2">
         <Link
-          href={`/features/clinical-history/builder?id=${schema.id}`}
+          href={`/clinical-history/builder?id=${schema.id}`}
           className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium
                      text-slate-600 hover:bg-slate-50 transition-colors"
         >
@@ -246,7 +246,7 @@ function TemplateCard({
           Editar
         </Link>
         <Link
-          href={`/features/clinical-history/preview/${schema.id}`}
+          href={`/clinical-history/preview/${schema.id}`}
           className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium
                      text-teal-600 hover:bg-teal-50 transition-colors"
         >
