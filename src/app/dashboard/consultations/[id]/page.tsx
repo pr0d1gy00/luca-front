@@ -34,7 +34,12 @@ export default function ConsultationDetailPage({
     );
   }
 
-  const { consultation, patient, doctor, history } = detail;
+  const {
+    consultation: _consultation,
+    patient,
+    doctor: _doctor,
+    history,
+  } = detail;
 
   const formattedDate = new Intl.DateTimeFormat("es-ES", {
     day: "numeric",
@@ -72,11 +77,11 @@ export default function ConsultationDetailPage({
           <PatientContextCard
             patient={patient}
             vitals={{
-              systolicBP: 120,
-              diastolicBP: 80,
-              heartRate: 72,
-              temperature: 38.2,
-              oxygenSat: 98,
+              weight: "65 kg",
+              height: "1.65 m",
+              bloodPressure: "120/80",
+              heartRate: "72 bpm",
+              temperature: "38.2°C",
             }}
           />
         </div>
