@@ -10,7 +10,7 @@ export function DoctorDashboard() {
   const [activeView, setActiveView] = useDashboardView();
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       {/* Greeting */}
       <DoctorGreeting />
 
