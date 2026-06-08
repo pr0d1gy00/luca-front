@@ -11,19 +11,23 @@ interface ConsultationTabsProps {
   onGeneratePrescription: (data: Consultation) => void;
 }
 
-export function ConsultationTabs({ historyEntries, onSubmit, onGeneratePrescription }: ConsultationTabsProps) {
+export function ConsultationTabs({
+  historyEntries,
+  onSubmit,
+  onGeneratePrescription,
+}: ConsultationTabsProps) {
   return (
     <Tabs defaultValue="consultation" className="w-full">
       <TabsList className="w-full justify-start rounded-2xl bg-slate-100 p-1 gap-1">
         <TabsTrigger
           value="history"
-          className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-luca-muted-dark"
+          className="rounded-xl data-[state=active]:bg-white data-[state=active]: data-[state=active]:text-slate-700"
         >
           Historial Clínico
         </TabsTrigger>
         <TabsTrigger
           value="consultation"
-          className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-luca-muted-dark"
+          className="rounded-xl data-[state=active]:bg-white data-[state=active]: data-[state=active]:text-slate-700"
         >
           Consulta Actual
         </TabsTrigger>
@@ -34,7 +38,10 @@ export function ConsultationTabs({ historyEntries, onSubmit, onGeneratePrescript
       </TabsContent>
 
       <TabsContent value="consultation" className="mt-6">
-        <ClinicalNotesForm onSubmit={onSubmit} onGeneratePrescription={onGeneratePrescription} />
+        <ClinicalNotesForm
+          onSubmit={onSubmit}
+          onGeneratePrescription={onGeneratePrescription}
+        />
       </TabsContent>
     </Tabs>
   );
