@@ -174,7 +174,7 @@ export function ClinicalNotesForm({
       examenFisico: "",
       diagnostico: "",
       prescriptions: [
-        { medicationId: "", dose: "", frequency: "", duration: "" },
+        { medicationId: "", dose: "", frequency: "", duration: "", notes: "" },
       ],
     },
     mode: "onChange",
@@ -248,7 +248,13 @@ export function ClinicalNotesForm({
   };
 
   const handleAddMed = () => {
-    append({ medicationId: "", dose: "", frequency: "", duration: "" });
+    append({
+      medicationId: "",
+      dose: "",
+      frequency: "",
+      duration: "",
+      notes: "",
+    });
     setMedForms([
       ...medForms,
       {
@@ -409,39 +415,51 @@ export function ClinicalNotesForm({
                   )}
                 </div>
 
-                {/* Row 1: Medication selector */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-slate-500">
-                    Medicamento
-                  </label>
-                  <select
-                    className={selectClassName}
-                    value={selectedMedId || ""}
-                    onChange={(e) => handleMedSelect(index, e.target.value)}
-                  >
-                    <option value="">Seleccionar medicamento...</option>
-                    {meds.map((med) => (
-                      <option key={med.id} value={med.id}>
-                        {med.activePrinciple} {med.concentration} —{" "}
-                        {presentationLabels[med.presentation]}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.prescriptions?.[index]?.medicationId && (
-                    <p className="text-xs text-blue-700 mt-0.5">
-                      {errors.prescriptions[index]?.medicationId?.message}
-                    </p>
-                  )}
+                {/* Row 1: Medicamento + Tipo */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-slate-500">
+                      Medicamento
+                    </label>
+                    <select
+                      className={selectClassName}
+                      value={selectedMedId || ""}
+                      onChange={(e) => handleMedSelect(index, e.target.value)}
+                    >
+                      <option value="">Seleccionar...</option>
+                      {meds.map((med) => (
+                        <option key={med.id} value={med.id}>
+                          {med.activePrinciple} {med.concentration}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.prescriptions?.[index]?.medicationId && (
+                      <p className="text-xs text-blue-700 mt-0.5">
+                        {errors.prescriptions[index]?.medicationId?.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-slate-500">
+                      Tipo
+                    </label>
+                    <div
+                      className={`${inputClassName} bg-slate-100 text-slate-600 cursor-default`}
+                    >
+                      {selectedMed
+                        ? `${presentationLabels[selectedMed.presentation]} · ${selectedMed.concentration}`
+                        : "—"}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Row 2: Quantity + Frequency + Duration */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                  {/* Quantity */}
+                {/* Row 2: Cantidad + Frecuencia */}
+                <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-medium text-slate-500">
                       Cantidad
                     </label>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                       <input
                         type="number"
                         min="1"
@@ -454,9 +472,9 @@ export function ClinicalNotesForm({
                             e.target.value,
                           )
                         }
-                        className={`${inputClassName} w-16 text-center`}
+                        className={`${inputClassName} w-20 text-center`}
                       />
-                      <span className="text-xs text-slate-500 whitespace-nowrap">
+                      <span className="text-sm text-slate-500">
                         {selectedMed
                           ? presentationLabels[
                               selectedMed.presentation
@@ -465,9 +483,7 @@ export function ClinicalNotesForm({
                       </span>
                     </div>
                   </div>
-
-                  {/* Frequency */}
-                  <div className="flex flex-col gap-1.5 col-span-2">
+                  <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-medium text-slate-500">
                       Frecuencia
                     </label>
@@ -489,46 +505,50 @@ export function ClinicalNotesForm({
                       ))}
                     </select>
                   </div>
+                </div>
 
-                  {/* Duration */}
-                  <div className="flex flex-col gap-1.5 col-span-2">
-                    <label className="text-xs font-medium text-slate-500">
-                      Duración
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        min="1"
-                        max="90"
-                        value={medForms[index]?.durValue || "7"}
-                        onChange={(e) =>
-                          handleFormFieldChange(
-                            index,
-                            "durValue",
-                            e.target.value,
-                          )
-                        }
-                        className={`${inputClassName} w-20 text-center`}
-                      />
-                      <select
-                        className={`${selectClassName} flex-1`}
-                        value={medForms[index]?.durUnit || "días"}
-                        onChange={(e) =>
-                          handleFormFieldChange(
-                            index,
-                            "durUnit",
-                            e.target.value,
-                          )
-                        }
-                      >
-                        {DURATION_UNITS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                {/* Row 3: Duración */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-slate-500">
+                    Duración
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="1"
+                      max="90"
+                      value={medForms[index]?.durValue || "7"}
+                      onChange={(e) =>
+                        handleFormFieldChange(index, "durValue", e.target.value)
+                      }
+                      className={`${inputClassName} w-20 text-center`}
+                    />
+                    <select
+                      className={`${selectClassName} w-36`}
+                      value={medForms[index]?.durUnit || "días"}
+                      onChange={(e) =>
+                        handleFormFieldChange(index, "durUnit", e.target.value)
+                      }
+                    >
+                      {DURATION_UNITS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+                </div>
+
+                {/* Row 4: Observación */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-slate-500">
+                    Observación
+                  </label>
+                  <textarea
+                    placeholder="Ej: Tomar con alimentos, evitar alcohol..."
+                    className={`${textAreaClassName} min-h-[60px]`}
+                    {...register(`prescriptions.${index}.notes`)}
+                  />
                 </div>
 
                 {/* Hidden fields for schema compatibility */}

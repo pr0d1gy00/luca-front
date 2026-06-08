@@ -4,10 +4,23 @@ import { z } from "zod";
 export const biologicalSexEnum = z.enum(["MALE", "FEMALE"]);
 export type BiologicalSex = z.infer<typeof biologicalSexEnum>;
 
-export const presentationEnum = z.enum(["CAPSULA", "TABLETA", "JARABE", "GOTAS", "AMPOLLA", "CREMA"]);
+export const presentationEnum = z.enum([
+  "CAPSULA",
+  "TABLETA",
+  "JARABE",
+  "GOTAS",
+  "AMPOLLA",
+  "CREMA",
+]);
 export type Presentation = z.infer<typeof presentationEnum>;
 
-export const administrationRouteEnum = z.enum(["ORAL", "INTRAVENOSA", "INTRAMUSCULAR", "TOPICA", "OFTALMICA"]);
+export const administrationRouteEnum = z.enum([
+  "ORAL",
+  "INTRAVENOSA",
+  "INTRAMUSCULAR",
+  "TOPICA",
+  "OFTALMICA",
+]);
 export type AdministrationRoute = z.infer<typeof administrationRouteEnum>;
 
 // ── Medication (from medications feature) ─────────────────
@@ -26,6 +39,7 @@ export const prescriptionItemSchema = z.object({
   dose: z.string().min(1, "La dosis es requerida"),
   frequency: z.string().min(1, "La frecuencia es requerida"),
   duration: z.string().min(1, "La duración es requerida"),
+  notes: z.string().optional(),
 });
 
 export type PrescriptionItem = z.infer<typeof prescriptionItemSchema>;
@@ -35,7 +49,9 @@ export const consultationSchema = z.object({
   motivoConsulta: z.string().min(1, "El motivo de consulta es requerido"),
   examenFisico: z.string().optional(),
   diagnostico: z.string().min(1, "El diagnóstico es requerido"),
-  prescriptions: z.array(prescriptionItemSchema).min(1, "Al menos un medicamento es requerido"),
+  prescriptions: z
+    .array(prescriptionItemSchema)
+    .min(1, "Al menos un medicamento es requerido"),
 });
 
 export type Consultation = z.infer<typeof consultationSchema>;
