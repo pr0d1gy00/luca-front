@@ -13,6 +13,7 @@ import {
   FlaskConical,
   FileText,
   Calendar as CalendarIcon,
+  CheckCircle2,
 } from "lucide-react";
 import { AgendaItem } from "./AgendaItem";
 import { ActionChecklist } from "./ActionChecklist";
@@ -23,61 +24,39 @@ export function PatientFlowView() {
 
   const waitingPatients = appointments.filter((a) => a.status === "en-espera");
   const currentPatient = appointments.find((a) => a.status === "en-curso");
-  const completedToday = appointments.filter(
-    (a) => a.status === "finalizada",
-  ).length;
+  const completedToday = appointments.filter((a) => a.status === "finalizada");
+  const pendingActions = actions.filter((a) => !a.completed);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-      {/* Waiting */}
-      <motion.div
-        variants={fadeUpVariant}
-        initial="hidden"
-        animate="visible"
-        className="bg-white border border-slate-200 rounded-xl overflow-hidden"
+      {/* Column 1: En Espera */}
+      <Column
+        title="En Espera"
+        icon={Clock}
+        iconColor="text-amber-500"
+        count={waitingPatients.length}
       >
-        <div className="p-4 border-b border-slate-50">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-slate-400" />
-            <h3 className="text-sm font-semibold text-slate-800">En Espera</h3>
-            <span className="ml-auto text-xs font-medium text-amber-500">
-              {waitingPatients.length}
-            </span>
-          </div>
-        </div>
-        <div className="p-3 space-y-1">
-          {waitingPatients.length === 0 ? (
-            <p className="text-xs text-slate-400 text-center py-6">
-              No hay pacientes esperando
-            </p>
-          ) : (
-            waitingPatients.map((apt) => (
+        {waitingPatients.length === 0 ? (
+          <EmptyState icon={Clock} message="No hay pacientes esperando" />
+        ) : (
+          <div className="space-y-1">
+            {waitingPatients.map((apt) => (
               <AgendaItem key={apt.id} appointment={apt} />
-            ))
-          )}
-        </div>
-      </motion.div>
-
-      {/* Current consultation */}
-      <motion.div
-        variants={fadeUpVariant}
-        initial="hidden"
-        animate="visible"
-        className="bg-white border border-slate-200 rounded-xl overflow-hidden"
-      >
-        <div className="p-4 border-b border-slate-50">
-          <div className="flex items-center gap-2">
-            <Stethoscope className="w-4 h-4 text-emerald-500" />
-            <h3 className="text-sm font-semibold text-slate-800">
-              Consulta Activa
-            </h3>
+            ))}
           </div>
-        </div>
+        )}
+      </Column>
 
+      {/* Column 2: Consulta Activa */}
+      <Column
+        title="Consulta Activa"
+        icon={Stethoscope}
+        iconColor="text-emerald-500"
+      >
         {currentPatient ? (
-          <div className="p-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="size-10 rounded-full bg-emerald-50 flex items-center justify-center">
+          <div className="p-4 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
                 <UserCheck className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
@@ -88,7 +67,7 @@ export function PatientFlowView() {
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {[
                 {
                   icon: FileText,
@@ -115,7 +94,9 @@ export function PatientFlowView() {
                   key={action.label}
                   className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-slate-50 transition-colors text-left"
                 >
-                  <action.icon className={cn("w-4 h-4", action.color)} />
+                  <action.icon
+                    className={cn("w-4 h-4 shrink-0", action.color)}
+                  />
                   <span className="text-sm text-slate-600">{action.label}</span>
                   <ArrowRight className="w-3.5 h-3.5 text-slate-300 ml-auto" />
                 </button>
@@ -123,42 +104,106 @@ export function PatientFlowView() {
             </div>
           </div>
         ) : (
-          <div className="p-4">
-            <p className="text-xs text-slate-400 text-center py-6">
-              No hay consulta activa
-            </p>
-          </div>
+          <EmptyState icon={Stethoscope} message="No hay consulta activa" />
         )}
-      </motion.div>
+      </Column>
 
-      {/* Post-consultation */}
-      <motion.div
-        variants={fadeUpVariant}
-        initial="hidden"
-        animate="visible"
-        className="bg-white border border-slate-200 rounded-xl overflow-hidden"
+      {/* Column 3: Post-Consulta */}
+      <Column
+        title="Post-Consulta"
+        icon={CheckCircle2}
+        iconColor="text-pharmako-care"
+        count={completedToday.length}
+        countLabel="completadas"
       >
-        <div className="p-4 border-b border-slate-50">
-          <div className="flex items-center gap-2">
-            <ArrowRight className="w-4 h-4 text-slate-400" />
-            <h3 className="text-sm font-semibold text-slate-800">
-              Post-Consulta
-            </h3>
-            <span className="ml-auto text-xs font-medium text-pharmako-care">
-              {completedToday} completadas
-            </span>
-          </div>
+        <div className="p-4 space-y-4">
+          {/* Completed today summary */}
+          {completedToday.length > 0 && (
+            <div className="bg-emerald-50 rounded-xl p-3">
+              <p className="text-xs font-medium text-emerald-700">
+                {completedToday.length} paciente
+                {completedToday.length !== 1 ? "s" : ""} atendido
+                {completedToday.length !== 1 ? "s" : ""} hoy
+              </p>
+            </div>
+          )}
+
+          {/* Checklist */}
+          {pendingActions.length > 0 ? (
+            <div>
+              <p className="text-xs font-medium text-slate-500 mb-2">
+                Pendientes
+              </p>
+              <ActionChecklist
+                actions={pendingActions}
+                onToggle={toggleAction}
+              />
+            </div>
+          ) : (
+            <EmptyState icon={CheckCircle2} message="Todo al día" />
+          )}
         </div>
-        <div className="p-3">
-          <p className="text-xs text-slate-400 font-medium mb-2 px-1">
-            Pendientes
-          </p>
-          <ActionChecklist
-            actions={actions.filter((a) => !a.completed)}
-            onToggle={toggleAction}
-          />
-        </div>
-      </motion.div>
+      </Column>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Shared sub-components
+// ---------------------------------------------------------------------------
+
+function Column({
+  title,
+  icon: Icon,
+  iconColor,
+  count,
+  countLabel,
+  children,
+}: {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  iconColor: string;
+  count?: number;
+  countLabel?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      variants={fadeUpVariant}
+      initial="hidden"
+      animate="visible"
+      className="bg-white border border-slate-200 rounded-xl overflow-hidden"
+    >
+      <div className="flex items-center gap-2 p-4 border-b border-slate-100">
+        <Icon className={cn("w-4 h-4", iconColor)} />
+        <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
+        {count !== undefined && (
+          <span className="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+            {count}
+            {countLabel && (
+              <span className="ml-1 text-slate-400">{countLabel}</span>
+            )}
+          </span>
+        )}
+      </div>
+      {children}
+    </motion.div>
+  );
+}
+
+function EmptyState({
+  icon: Icon,
+  message,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  message: string;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-2 py-10 px-4">
+      <div className="bg-slate-50 rounded-xl p-3">
+        <Icon className="w-5 h-5 text-slate-300" />
+      </div>
+      <p className="text-xs text-slate-400">{message}</p>
     </div>
   );
 }
