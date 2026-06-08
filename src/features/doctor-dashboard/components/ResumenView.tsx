@@ -6,63 +6,49 @@ import { useDoctorKPIs } from "../hooks/useDoctorKPIs";
 import { useDoctorAgenda } from "../hooks/useDoctorAgenda";
 import { useDoctorNextPatient } from "../hooks/useDoctorNextPatient";
 import { useDoctorActions } from "../hooks/useDoctorActions";
+import { KpiCards } from "./KpiCards";
 import { NextPatientCard } from "./NextPatientCard";
 import { ActionChecklist } from "./ActionChecklist";
 import { DailyAgenda } from "./DailyAgenda";
 import { QuickActions } from "./QuickActions";
-import { Users, Calendar } from "lucide-react";
 
 export function ResumenView() {
   const kpis = useDoctorKPIs();
   const appointments = useDoctorAgenda();
   const nextPatient = useDoctorNextPatient();
-  const { actions, toggleAction, pendingCount } = useDoctorActions();
-
-  const totalPatients = kpis.reduce((sum, k) => sum + k.value, 0);
+  const { actions, toggleAction } = useDoctorActions();
 
   return (
-    <div className="space-y-5">
-      {/* Briefing Row */}
+    <div className="space-y-6">
+      {/* KPIs */}
+      <motion.div variants={fadeUpVariant} initial="hidden" animate="visible">
+        <KpiCards kpis={kpis} />
+      </motion.div>
+
+      {/* Next Patient + Checklist */}
       <motion.div
         variants={fadeUpVariant}
         initial="hidden"
         animate="visible"
-        className="grid grid-cols-1 md:grid-cols-2 gap-5"
+        className="grid grid-cols-1 md:grid-cols-2 gap-6"
       >
-        {/* Total patients today */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center gap-4">
-          <div className="flex items-center justify-center size-12 rounded-xl bg-pharmako-care-light shrink-0">
-            <Users className="w-6 h-6 text-pharmako-care" />
-          </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
-              Pacientes Hoy
-            </p>
-            <p className="text-2xl font-bold text-slate-900">{totalPatients}</p>
-            <p className="text-xs text-slate-400">
-              {kpis[0]?.value} en consulta · {kpis[2]?.value} pendientes
-            </p>
-          </div>
-        </div>
-
-        {/* Next Patient */}
         <NextPatientCard patient={nextPatient} />
+        <ActionChecklist actions={actions} onToggle={toggleAction} />
       </motion.div>
 
-      {/* Quick Actions — debajo del briefing */}
-      <QuickActions />
-
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {/* Checklist — 1 col */}
-        <div>
-          <ActionChecklist actions={actions} onToggle={toggleAction} />
-        </div>
-
-        {/* Agenda — 2 col */}
-        <div className="md:col-span-2">
+      {/* Agenda + Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <motion.div
+          variants={fadeUpVariant}
+          initial="hidden"
+          animate="visible"
+          className="md:col-span-2"
+        >
           <DailyAgenda appointments={appointments} />
-        </div>
+        </motion.div>
+        <motion.div variants={fadeUpVariant} initial="hidden" animate="visible">
+          <QuickActions />
+        </motion.div>
       </div>
     </div>
   );

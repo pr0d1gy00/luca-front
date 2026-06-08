@@ -28,10 +28,7 @@ export function KpiCard({
     <motion.div
       variants={scaleInVariant}
       className={cn(
-        "bg-white ",
-        "border border-slate-200",
-        " ",
-        "rounded-xl p-5",
+        "bg-white border border-slate-200 rounded-xl p-5",
         "transition-all duration-200 hover:-translate-y-0.5",
       )}
     >
