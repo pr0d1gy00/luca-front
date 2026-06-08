@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import {
   consultationSchema,
   type Consultation,
+  type Patient,
+  type Doctor,
+  type Medication,
   presentationLabels,
 } from "../schemas";
 import { Separator } from "@/components/ui/separator";
@@ -50,48 +53,56 @@ const DEFAULT_MEDICATIONS = [
     activePrinciple: "Amoxicilina",
     concentration: "500mg",
     presentation: "CAPSULA" as const,
+    administrationRoute: "ORAL" as const,
   },
   {
     id: "2",
     activePrinciple: "Ibuprofeno",
     concentration: "400mg",
     presentation: "TABLETA" as const,
+    administrationRoute: "ORAL" as const,
   },
   {
     id: "3",
     activePrinciple: "Paracetamol",
     concentration: "500mg/ml",
     presentation: "JARABE" as const,
+    administrationRoute: "ORAL" as const,
   },
   {
     id: "4",
     activePrinciple: "Cloranfenicol",
     concentration: "0.5%",
     presentation: "GOTAS" as const,
+    administrationRoute: "OFTALMICA" as const,
   },
   {
     id: "5",
     activePrinciple: "Betametasona",
     concentration: "0.05%",
     presentation: "CREMA" as const,
+    administrationRoute: "TOPICA" as const,
   },
   {
     id: "6",
     activePrinciple: "Omeprazol",
     concentration: "20mg",
     presentation: "CAPSULA" as const,
+    administrationRoute: "ORAL" as const,
   },
   {
     id: "7",
     activePrinciple: "Metformina",
     concentration: "850mg",
     presentation: "TABLETA" as const,
+    administrationRoute: "ORAL" as const,
   },
   {
     id: "8",
     activePrinciple: "Losartán",
     concentration: "50mg",
     presentation: "TABLETA" as const,
+    administrationRoute: "ORAL" as const,
   },
 ];
 
@@ -270,10 +281,10 @@ export function ClinicalNotesForm({
     return (
       <div className="flex flex-col gap-6">
         <DigitalPrescriptionCard
-          doctor={doctor}
-          patient={patient}
+          doctor={doctor as Doctor}
+          patient={patient as Patient}
           prescriptions={prescriptionItems}
-          medications={meds}
+          medications={meds as unknown as Medication[]}
           issuanceDate={new Date()}
         />
         <div className="flex justify-center gap-3">
