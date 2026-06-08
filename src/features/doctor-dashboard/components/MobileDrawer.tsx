@@ -25,16 +25,16 @@ export function MobileDrawer({
         side="left"
         showCloseButton={false}
         /* w-64 = 256px, exactamente igual que el sidebar expandido */
-        className="w-64 p-0 border-r-0 bg-luca-surface shadow-xl"
+        className="w-64 p-0 border-r-0 bg-white shadow-xl"
       >
         <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
 
         <SheetClose asChild>
           <button
-            className="absolute top-5 right-4 z-50 size-9 rounded-full flex items-center justify-center hover:bg-luca-surface-dark/50 transition-colors duration-200"
+            className="absolute top-5 right-4 z-50 size-9 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors duration-200"
             aria-label="Cerrar menú"
           >
-            <X className="size-5 text-luca-muted-dark" />
+            <X className="size-5 text-slate-500-dark" />
           </button>
         </SheetClose>
 

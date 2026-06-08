@@ -23,8 +23,8 @@ export function QuickActionButton({ action }: QuickActionButtonProps) {
         href={href}
         className={cn(
           "flex flex-col items-center gap-2 p-4 rounded-xl",
-          "bg-white/70 backdrop-blur-sm border border-slate-100/80",
-          "shadow-sm hover:shadow-md",
+          "bg-white border border-slate-200",
+          " ",
           "transition-all duration-200 hover:-translate-y-0.5",
           "text-slate-600 hover:text-pharmako-care",
         )}
@@ -37,7 +37,7 @@ export function QuickActionButton({ action }: QuickActionButtonProps) {
         </span>
 
         {count !== undefined && count > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-pharmako-care-light0 text-white text-[9px] font-bold leading-none shadow-sm">
+          <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-pharmako-care-light0 text-white text-[9px] font-bold leading-none ">
             {count}
           </span>
         )}

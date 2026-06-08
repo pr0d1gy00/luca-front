@@ -27,7 +27,7 @@ export function AgendaItem({ appointment }: AgendaItemProps) {
       className="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-slate-50 transition-colors"
     >
       <Avatar size="sm">
-        <AvatarFallback className="bg-luca-primary/10 text-luca-primary text-xs font-semibold">
+        <AvatarFallback className="bg-pharmako-care-light text-pharmako-care text-xs font-semibold">
           {getInitials(patientName)}
         </AvatarFallback>
       </Avatar>
@@ -36,7 +36,7 @@ export function AgendaItem({ appointment }: AgendaItemProps) {
         <p className="text-sm font-semibold text-slate-900 truncate">
           {patientName}
         </p>
-        <p className="text-xs text-luca-muted">{type}</p>
+        <p className="text-xs text-slate-500">{type}</p>
       </div>
 
       <span className="text-sm font-medium text-slate-500 tabular-nums">

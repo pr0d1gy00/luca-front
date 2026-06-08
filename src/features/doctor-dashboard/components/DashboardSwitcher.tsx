@@ -22,7 +22,7 @@ export function DashboardSwitcher({
   onChange,
 }: DashboardSwitcherProps) {
   return (
-    <div className="flex items-center gap-1 p-1 bg-white/70 border border-slate-200 rounded-xl w-fit">
+    <div className="flex items-center gap-1 p-1 bg-white border border-slate-200 rounded-xl w-fit">
       {VIEWS.map((view) => (
         <button
           key={view.id}

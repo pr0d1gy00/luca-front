@@ -18,7 +18,7 @@ export function CriticalNotifications({
       variants={fadeUpVariant}
       initial="hidden"
       animate="visible"
-      className="bg-white/70 backdrop-blur-sm border border-slate-100/80 shadow-sm rounded-xl overflow-hidden"
+      className="bg-white border border-slate-200 rounded-xl overflow-hidden"
     >
       <div className="p-5">
         <div className="flex items-center gap-2 mb-4">

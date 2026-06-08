@@ -19,10 +19,10 @@ interface BottomNavTab {
 }
 
 const TABS: BottomNavTab[] = [
-  { label: "Inicio", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Citas", href: "/dashboard", icon: Calendar },
-  { label: "Historial", href: "/dashboard", icon: ClipboardList },
-  { label: "Recetas", href: "/dashboard", icon: Pill },
+  { label: "Inicio", href: "/", icon: LayoutDashboard },
+  { label: "Citas", href: "/cites", icon: Calendar },
+  { label: "Historial", href: "/history", icon: ClipboardList },
+  { label: "Recetas", href: "/prescriptions", icon: Pill },
 ];
 
 export function BottomNav() {
@@ -48,13 +48,13 @@ export function BottomNav() {
               aria-current={isActive ? "page" : undefined}
               className={`relative flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] min-w-[44px] transition-colors duration-200 ${
                 isActive
-                  ? "text-luca-primary"
+                  ? "text-blue-700"
                   : "text-slate-400 hover:text-slate-600"
               }`}
             >
               <Icon
                 className={`size-5 transition-colors ${
-                  isActive ? "text-luca-primary" : ""
+                  isActive ? "text-blue-700" : ""
                 }`}
                 aria-hidden="true"
               />
@@ -62,7 +62,7 @@ export function BottomNav() {
                 {tab.label}
               </span>
               {isActive && (
-                <span className="absolute bottom-0 w-8 h-0.5 bg-luca-primary rounded-full" />
+                <span className="absolute bottom-0 w-8 h-0.5 bg-blue-700 rounded-full" />
               )}
             </Link>
           );

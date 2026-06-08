@@ -30,7 +30,7 @@ export function ResumenView() {
         className="grid grid-cols-1 md:grid-cols-2 gap-5"
       >
         {/* Total patients today */}
-        <div className="bg-white/70 backdrop-blur-sm border border-slate-100/80 shadow-sm rounded-xl p-5 flex items-center gap-4">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center gap-4">
           <div className="flex items-center justify-center size-12 rounded-xl bg-pharmako-care-light shrink-0">
             <Users className="w-6 h-6 text-pharmako-care" />
           </div>

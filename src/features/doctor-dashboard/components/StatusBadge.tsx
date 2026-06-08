@@ -14,15 +14,15 @@ const statusConfig: Record<
 > = {
   finalizada: {
     label: "Finalizada",
-    className: "bg-luca-accent/10 text-luca-accent",
+    className: "bg-emerald-50 text-emerald-600",
   },
   "en-curso": {
     label: "En curso",
-    className: "bg-luca-primary/10 text-luca-primary",
+    className: "bg-pharmako-care-light text-pharmako-care",
   },
   "en-espera": {
     label: "En espera",
-    className: "bg-slate-100 text-luca-muted",
+    className: "bg-slate-100 text-slate-500",
   },
 };
 

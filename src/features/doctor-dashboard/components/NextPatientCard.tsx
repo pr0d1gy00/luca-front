@@ -36,7 +36,7 @@ export function NextPatientCard({ patient }: NextPatientCardProps) {
   return (
     <motion.div
       variants={scaleInVariant}
-      className="bg-white/70 backdrop-blur-sm border border-slate-100/80 shadow-sm rounded-xl overflow-hidden"
+      className="bg-white border border-slate-200 rounded-xl overflow-hidden"
     >
       <Link
         href="#"

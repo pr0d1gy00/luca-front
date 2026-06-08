@@ -19,7 +19,7 @@ export function DailyAgenda({ appointments }: DailyAgendaProps) {
       variants={fadeUpVariant}
       initial="hidden"
       animate="visible"
-      className="h-full bg-white/70 backdrop-blur-sm border border-slate-100/80 shadow-sm rounded-xl overflow-hidden flex flex-col"
+      className="h-full bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-slate-50">

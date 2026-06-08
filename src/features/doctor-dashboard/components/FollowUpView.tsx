@@ -26,7 +26,7 @@ export function FollowUpView() {
           variants={fadeUpVariant}
           initial="hidden"
           animate="visible"
-          className="bg-white/70 backdrop-blur-sm border border-slate-100/80 shadow-sm rounded-xl p-6"
+          className="bg-white border border-slate-200 rounded-xl p-6"
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="flex items-center justify-center size-10 rounded-xl bg-amber-50">

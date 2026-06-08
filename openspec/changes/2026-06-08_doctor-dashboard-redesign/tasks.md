@@ -1,0 +1,21 @@
+# Tasks: Doctor Dashboard Redesign
+
+- [ ] **1. Create DoctorGreeting** — "Hola, Dr. [name]" + "Médico" badge + date
+- [ ] **2. Redesign KpiCard** — zero shadows, pharmako-care icons, slate borders
+- [ ] **3. Redesign AgendaItem** — pharmako-care avatar, slate text
+- [ ] **4. Redesign StatusBadge** — pharmako-care/emerald/amber
+- [ ] **5. Redesign ActionChecklist** — zero shadows, solid bg-white, slate borders
+- [ ] **6. Redesign CriticalNotifications** — zero shadows, solid bg-white
+- [ ] **7. Redesign DailyAgenda** — zero shadows, solid bg-white
+- [ ] **8. Redesign NextPatientCard** — zero shadows, solid bg-white
+- [ ] **9. Redesign QuickActionButton** — zero shadows, blue-700 primary
+- [ ] **10. Redesign ResumenView** — zero shadows, solid bg-white cards
+- [ ] **11. Redesign PatientFlowView** — zero shadows across 3 columns
+- [ ] **12. Redesign FollowUpView** — zero shadows
+- [ ] **13. Redesign DashboardSwitcher** — restyle tabs
+- [ ] **14. Redesign BottomNav** — blue-700 active (keep bottom shadow for UX)
+- [ ] **15. Redesign MobileDrawer** — bg-white (keep shadow-xl for drawer UX)
+- [ ] **16. Update DoctorDashboard** — add greeting before switcher
+- [ ] **17. Verify zero shadows** — `grep -r "shadow-" src/features/doctor-dashboard/` (except BottomNav/MobileDrawer shadows)
+- [ ] **18. Verify zero luca-*** — `grep -r "luca-" src/features/doctor-dashboard/`
+- [ ] **19. Verify build + lint** — zero errors

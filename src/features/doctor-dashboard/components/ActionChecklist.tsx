@@ -38,7 +38,7 @@ export function ActionChecklist({ actions, onToggle }: ActionChecklistProps) {
 
   if (actions.length === 0) {
     return (
-      <div className="bg-white/70 backdrop-blur-sm border border-slate-100/80 shadow-sm rounded-xl p-5">
+      <div className="bg-white border border-slate-200 rounded-xl p-5">
         <p className="text-xs text-slate-400 text-center py-4">
           No hay acciones pendientes
         </p>
@@ -47,7 +47,7 @@ export function ActionChecklist({ actions, onToggle }: ActionChecklistProps) {
   }
 
   return (
-    <div className="bg-white/70 backdrop-blur-sm border border-slate-100/80 shadow-sm rounded-xl overflow-hidden">
+    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-slate-800">
