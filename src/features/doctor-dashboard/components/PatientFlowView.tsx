@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useRouter } from "next/navigation";
 import { fadeUpVariant } from "@/app/lib/animations";
 import { useDoctorAgenda } from "../hooks/useDoctorAgenda";
 import { useDoctorActions } from "../hooks/useDoctorActions";
@@ -21,6 +22,7 @@ import { ActionChecklist } from "./ActionChecklist";
 export function PatientFlowView() {
   const appointments = useDoctorAgenda();
   const { actions, toggleAction } = useDoctorActions();
+  const router = useRouter();
 
   const waitingPatients = appointments.filter((a) => a.status === "en-espera");
   const currentPatient = appointments.find((a) => a.status === "en-curso");
@@ -41,7 +43,11 @@ export function PatientFlowView() {
         ) : (
           <div className="space-y-1">
             {waitingPatients.map((apt) => (
-              <AgendaItem key={apt.id} appointment={apt} />
+              <AgendaItem
+                key={apt.id}
+                appointment={apt}
+                onClick={() => router.push(`/dashboard/consultations/con-001`)}
+              />
             ))}
           </div>
         )}

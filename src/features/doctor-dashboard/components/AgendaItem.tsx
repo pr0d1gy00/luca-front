@@ -8,6 +8,7 @@ import type { Appointment } from "../types";
 
 interface AgendaItemProps {
   appointment: Appointment;
+  onClick?: () => void;
 }
 
 function getInitials(name: string): string {
@@ -18,13 +19,14 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-export function AgendaItem({ appointment }: AgendaItemProps) {
+export function AgendaItem({ appointment, onClick }: AgendaItemProps) {
   const { patientName, type, time, status } = appointment;
 
   return (
     <motion.div
       variants={fadeUpVariant}
-      className="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-slate-50 transition-colors"
+      onClick={onClick}
+      className="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer"
     >
       <Avatar size="sm">
         <AvatarFallback className="bg-pharmako-care-light text-pharmako-care text-xs font-semibold">

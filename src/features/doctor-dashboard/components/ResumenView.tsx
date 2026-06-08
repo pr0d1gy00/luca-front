@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useRouter } from "next/navigation";
 import { fadeUpVariant } from "@/app/lib/animations";
 import { useDoctorKPIs } from "../hooks/useDoctorKPIs";
 import { useDoctorAgenda } from "../hooks/useDoctorAgenda";
@@ -17,6 +18,7 @@ export function ResumenView() {
   const appointments = useDoctorAgenda();
   const nextPatient = useDoctorNextPatient();
   const { actions, toggleAction } = useDoctorActions();
+  const router = useRouter();
 
   return (
     <div className="space-y-6">
@@ -44,7 +46,12 @@ export function ResumenView() {
           animate="visible"
           className="md:col-span-2"
         >
-          <DailyAgenda appointments={appointments} />
+          <DailyAgenda
+            appointments={appointments}
+            onAppointmentClick={(_id) =>
+              router.push(`/dashboard/consultations/con-001`)
+            }
+          />
         </motion.div>
         <motion.div variants={fadeUpVariant} initial="hidden" animate="visible">
           <QuickActions />

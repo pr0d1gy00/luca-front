@@ -9,9 +9,13 @@ import Link from "next/link";
 
 interface DailyAgendaProps {
   appointments: Appointment[];
+  onAppointmentClick?: (id: string) => void;
 }
 
-export function DailyAgenda({ appointments }: DailyAgendaProps) {
+export function DailyAgenda({
+  appointments,
+  onAppointmentClick,
+}: DailyAgendaProps) {
   const isEmpty = appointments.length === 0;
 
   return (
@@ -54,7 +58,11 @@ export function DailyAgenda({ appointments }: DailyAgendaProps) {
             className="flex flex-col"
           >
             {appointments.map((apt) => (
-              <AgendaItem key={apt.id} appointment={apt} />
+              <AgendaItem
+                key={apt.id}
+                appointment={apt}
+                onClick={() => onAppointmentClick?.(apt.id)}
+              />
             ))}
           </motion.div>
         )}
