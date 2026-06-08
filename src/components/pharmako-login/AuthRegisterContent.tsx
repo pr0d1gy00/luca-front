@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { User, Stethoscope, Hospital } from "lucide-react";
-import TypeProfile from "@/components/TypeProfile";
-import FormRegisterPatient from "@/components/FormRegisterPatient";
-import FormRegisterMedical from "@/components/FormRegisterMedical";
-import FormRegisterInstitution from "@/components/FormRegisterInstitution";
+import TypeProfile from "@/features/auth/components/TypeProfile";
+import FormRegisterPatient from "@/features/auth/components/FormRegisterPatient";
+import FormRegisterMedical from "@/features/auth/components/FormRegisterMedical";
+import FormRegisterInstitution from "@/features/auth/components/FormRegisterInstitution";
 
 type ProfileType = "Paciente" | "Medico" | "Institución";
 
