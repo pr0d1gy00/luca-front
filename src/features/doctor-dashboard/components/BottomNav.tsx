@@ -19,10 +19,10 @@ interface BottomNavTab {
 }
 
 const TABS: BottomNavTab[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Mi Cita", href: "/appointment", icon: Calendar },
-  { label: "Historial", href: "/history", icon: ClipboardList },
-  { label: "Recetas", href: "/recipes", icon: Pill },
+  { label: "Inicio", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Citas", href: "/dashboard", icon: Calendar },
+  { label: "Historial", href: "/dashboard", icon: ClipboardList },
+  { label: "Recetas", href: "/dashboard", icon: Pill },
 ];
 
 export function BottomNav() {

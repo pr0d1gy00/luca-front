@@ -8,13 +8,9 @@ const publicRoutes = [
   "/register",
   "/dashboard",
   "/",
-  "/doctor/patients",
   "/features/clinical-history",
   "/features/clinical-history/builder",
   "/features/clinical-history/preview/template-001",
-  "/doctor/appointments",
-  "/doctor/medications",
-  "/doctor/consultations",
 ];
 
 export function proxy(request: NextRequest) {
