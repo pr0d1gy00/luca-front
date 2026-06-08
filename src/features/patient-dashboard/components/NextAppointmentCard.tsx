@@ -79,7 +79,7 @@ export function NextAppointmentCard() {
             )}
             {next.location === "presencial" ? "Presencial" : "Virtual"}
           </span>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600">
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-pharmako-care-light text-pharmako-care">
             Confirmada
           </span>
         </div>

@@ -12,7 +12,7 @@ export interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  role: "doctor",
+  role: "patient",
   name: "",
   email: "",
   setRole: (role) => set({ role }),

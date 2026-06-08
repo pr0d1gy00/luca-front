@@ -38,7 +38,7 @@ function VitalSignCard({ vital }: { vital: VitalSign }) {
           className={cn(
             "w-10 h-10 rounded-full flex items-center justify-center",
             status === "stable"
-              ? "bg-emerald-50 text-emerald-600"
+              ? "bg-pharmako-care-light text-pharmako-care"
               : "bg-amber-50 text-amber-600",
           )}
         >
@@ -54,7 +54,7 @@ function VitalSignCard({ vital }: { vital: VitalSign }) {
           className={cn(
             "text-xs font-semibold rounded-full px-2 py-0.5",
             status === "stable"
-              ? "bg-emerald-50 text-emerald-600"
+              ? "bg-pharmako-care-light text-pharmako-care"
               : "bg-amber-50 text-amber-600",
           )}
         >
