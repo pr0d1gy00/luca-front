@@ -22,6 +22,11 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Exclude all dashboard sub-routes during development (no backend auth yet)
+  if (path.startsWith("/dashboard")) {
+    return NextResponse.next();
+  }
+
   const isPublicRoute = publicRoutes.includes(path);
 
   // 3. Buscamos el "Pase de Entrada" (El token de sesión en las cookies)
