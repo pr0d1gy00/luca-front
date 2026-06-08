@@ -8,6 +8,7 @@ import type { PharmacyOrder } from "../types";
 
 interface OrderItemProps {
   order: PharmacyOrder;
+  onClick?: () => void;
 }
 
 const fulfillmentIcon = {
@@ -15,14 +16,15 @@ const fulfillmentIcon = {
   presencial: Store,
 };
 
-export function OrderItem({ order }: OrderItemProps) {
+export function OrderItem({ order, onClick }: OrderItemProps) {
   const { patientName, prescription, time, status, fulfillmentType } = order;
   const Icon = fulfillmentIcon[fulfillmentType];
 
   return (
     <motion.div
       variants={fadeUpVariant}
-      className="rounded-xl p-4 bg-white border border-slate-200 hover:bg-slate-50 transition-colors"
+      onClick={onClick}
+      className="rounded-xl p-4 bg-white border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0 space-y-1">

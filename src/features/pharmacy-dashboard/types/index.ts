@@ -41,3 +41,23 @@ export interface PharmacyQuickAction {
   count?: number;
   variant?: QuickActionVariant;
 }
+
+export interface PrescriptionDetail {
+  id: string;
+  patientName: string;
+  patientDocument: string;
+  patientAge: number;
+  doctorName: string;
+  doctorSpecialty: string;
+  date: Date;
+  medications: PrescriptionMedication[];
+  publicToken: string;
+}
+
+export interface PrescriptionMedication {
+  name: string;
+  dosage: string;
+  frequency: string;
+  duration: string;
+  quantity: number;
+}
