@@ -12,6 +12,7 @@ import {
   type Doctor,
   type Medication,
   presentationLabels,
+  administrationRouteLabels,
 } from "../schemas";
 import { Separator } from "@/components/ui/separator";
 import { DigitalPrescriptionCard } from "./DigitalPrescriptionCard";
@@ -103,6 +104,34 @@ const DEFAULT_MEDICATIONS = [
     concentration: "50mg",
     presentation: "TABLETA" as const,
     administrationRoute: "ORAL" as const,
+  },
+  {
+    id: "9",
+    activePrinciple: "Dexametasona",
+    concentration: "4mg/ml",
+    presentation: "AMPOLLA" as const,
+    administrationRoute: "INTRAVENOSA" as const,
+  },
+  {
+    id: "10",
+    activePrinciple: "Ceftriaxona",
+    concentration: "1g",
+    presentation: "AMPOLLA" as const,
+    administrationRoute: "INTRAMUSCULAR" as const,
+  },
+  {
+    id: "11",
+    activePrinciple: "Ranitidina",
+    concentration: "50mg/2ml",
+    presentation: "AMPOLLA" as const,
+    administrationRoute: "INTRAVENOSA" as const,
+  },
+  {
+    id: "12",
+    activePrinciple: "Ketorolaco",
+    concentration: "30mg/ml",
+    presentation: "AMPOLLA" as const,
+    administrationRoute: "INTRAMUSCULAR" as const,
   },
 ];
 
@@ -447,7 +476,7 @@ export function ClinicalNotesForm({
                       className={`${inputClassName} bg-slate-100 text-slate-600 cursor-default`}
                     >
                       {selectedMed
-                        ? `${presentationLabels[selectedMed.presentation]} · ${selectedMed.concentration}`
+                        ? `${presentationLabels[selectedMed.presentation]} · ${selectedMed.concentration} · ${administrationRouteLabels[(selectedMed as unknown as Medication).administrationRoute]}`
                         : "—"}
                     </div>
                   </div>
