@@ -5,6 +5,7 @@ import { useAuthStore } from "@/store/auth";
 import { DoctorDashboard } from "@/features/doctor-dashboard";
 import { PharmacyDashboard } from "@/features/pharmacy-dashboard";
 import { PatientDashboard } from "@/features/patient-dashboard";
+import { ClinicDashboard } from "@/features/clinic-dashboard";
 
 export default function DashboardPage() {
   const role = useAuthStore((s) => s.role);
@@ -25,6 +26,9 @@ export default function DashboardPage() {
   }
   if (role === "patient") {
     return <PatientDashboard />;
+  }
+  if (role === "clinic") {
+    return <ClinicDashboard />;
   }
 
   // Fallback for clinic and unknown roles
