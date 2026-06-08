@@ -22,15 +22,15 @@ const typeConfig: Record<
 > = {
   "stock-alert": {
     icon: AlertTriangle,
-    borderColor: "border-luca-accent",
-    bgColor: "bg-red-50",
-    iconColor: "text-luca-accent",
+    borderColor: "border-amber-500",
+    bgColor: "bg-amber-50",
+    iconColor: "text-amber-500",
   },
   "prescription-error": {
     icon: XCircle,
-    borderColor: "border-luca-primary",
-    bgColor: "bg-amber-50",
-    iconColor: "text-luca-primary",
+    borderColor: "border-blue-700",
+    bgColor: "bg-blue-50",
+    iconColor: "text-blue-700",
   },
 };
 
@@ -57,7 +57,7 @@ export function NotificationAlert({ notification }: NotificationAlertProps) {
         <p className="text-xs text-slate-500 leading-relaxed">{message}</p>
         <Link
           href={actionHref}
-          className="inline-block text-xs font-medium text-luca-primary hover:underline mt-0.5"
+          className="inline-block text-xs font-medium text-blue-700 hover:text-blue-800 transition-colors mt-0.5"
         >
           {actionText} →
         </Link>

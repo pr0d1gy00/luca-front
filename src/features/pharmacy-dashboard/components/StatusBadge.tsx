@@ -15,8 +15,9 @@ export function StatusBadge({ status }: StatusBadgeProps) {
       className={cn(
         "border-transparent rounded-full text-xs font-semibold px-2 py-0.5",
         status === "pendiente" && "bg-amber-50 text-amber-700",
-        status === "en-preparacion" && "bg-luca-primary/10 text-luca-primary",
-        status === "listo" && "bg-luca-accent/10 text-luca-accent",
+        status === "en-preparacion" &&
+          "bg-pharmako-care-light text-pharmako-care",
+        status === "listo" && "bg-emerald-50 text-emerald-600",
       )}
     >
       {status === "en-preparacion"

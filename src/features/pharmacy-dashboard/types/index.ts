@@ -4,7 +4,7 @@ export type OrderStatus = "pendiente" | "en-preparacion" | "listo";
 export type FulfillmentType = "presencial" | "delivery";
 export type NotificationType = "stock-alert" | "prescription-error";
 export type QuickActionVariant = "primary" | "secondary" | "outline";
-export type TrendDirection = "lower-is-better" | "higher-is-better";
+export type TrendDirection = "up" | "down" | "stable";
 
 export interface PharmacyKPI {
   label: string;

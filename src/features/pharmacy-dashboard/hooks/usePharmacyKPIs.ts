@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Package,
-  CheckCircle,
-  Clock,
-  AlertTriangle,
-} from "lucide-react";
+import { Package, CheckCircle, Clock, AlertTriangle } from "lucide-react";
 import type { PharmacyKPI } from "../types";
 
 const MOCK_KPIS: PharmacyKPI[] = [
@@ -13,7 +8,7 @@ const MOCK_KPIS: PharmacyKPI[] = [
     label: "Órdenes pendientes",
     value: 8,
     trend: -4,
-    trendDirection: "lower-is-better",
+    trendDirection: "down",
     subtitle: "hoy",
     icon: Package,
   },
@@ -21,7 +16,7 @@ const MOCK_KPIS: PharmacyKPI[] = [
     label: "Órdenes completadas hoy",
     value: 23,
     trend: 5,
-    trendDirection: "higher-is-better",
+    trendDirection: "up",
     subtitle: "hoy",
     icon: CheckCircle,
   },
@@ -29,7 +24,7 @@ const MOCK_KPIS: PharmacyKPI[] = [
     label: "Tiempo promedio de espera",
     value: "12 min",
     trend: -2,
-    trendDirection: "lower-is-better",
+    trendDirection: "down",
     subtitle: "por orden",
     icon: Clock,
   },
@@ -37,7 +32,7 @@ const MOCK_KPIS: PharmacyKPI[] = [
     label: "Alertas de stock activas",
     value: 3,
     trend: 1,
-    trendDirection: "higher-is-better",
+    trendDirection: "up",
     subtitle: "requieren atención",
     icon: AlertTriangle,
   },

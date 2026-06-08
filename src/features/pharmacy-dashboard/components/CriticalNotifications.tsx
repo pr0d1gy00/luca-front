@@ -17,13 +17,13 @@ export function CriticalNotifications({
       variants={fadeUpVariant}
       initial="hidden"
       animate="visible"
-      className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4"
+      className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col gap-4"
     >
       <div className="flex items-center gap-2">
         <h3 className="text-lg font-semibold text-slate-900">
           Notificaciones Críticas
         </h3>
-        <span className="bg-luca-accent text-white text-xs font-bold rounded-full px-2 py-0.5 min-w-5 h-5 flex items-center justify-center">
+        <span className="bg-blue-700 text-white text-xs font-bold rounded-full px-2 py-0.5 min-w-5 h-5 flex items-center justify-center">
           {notifications.length}
         </span>
       </div>
