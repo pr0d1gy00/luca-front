@@ -239,7 +239,7 @@ function ToolboxSidebar({
             onClick={() => onTabChange(cat.id)}
             className={`flex-1 px-2 py-2.5 text-xs font-medium transition-colors ${
               activeTab === cat.id
-                ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
+                ? "text-pharmako-care border-b-2 border-pharmako-care bg-pharmako-care-light"
                 : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
             }`}
           >
