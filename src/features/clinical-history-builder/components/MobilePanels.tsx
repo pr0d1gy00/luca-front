@@ -325,7 +325,7 @@ export function MobilePropertiesPanel({
 
             <button
               onClick={() => onDelete(selectedElement.id)}
-              className="w-full mt-2 px-3 py-2 rounded-xl text-sm font-medium bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
+              className="w-full mt-2 px-3 py-2 rounded-xl text-sm font-medium bg-pharmako-danger-light text-pharmako-danger hover:bg-pharmako-danger-light/80 transition-colors"
             >
               Eliminar bloque
             </button>

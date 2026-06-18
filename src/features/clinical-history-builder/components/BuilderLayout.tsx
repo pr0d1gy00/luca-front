@@ -723,7 +723,9 @@ function PropertiesPanel({
                 <button
                   onClick={() => onUpdate({ locked: !selectedElement.locked })}
                   className={`relative w-10 h-6 rounded-full transition-colors ${
-                    selectedElement.locked ? "bg-amber-500" : "bg-slate-200"
+                    selectedElement.locked
+                      ? "bg-pharmako-warning"
+                      : "bg-slate-200"
                   }`}
                 >
                   <div
@@ -772,7 +774,8 @@ function PropertiesPanel({
                           columns: parseInt(e.target.value) as 2 | 3 | 4,
                         } as Partial<CanvasElement>)
                       }
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white
+                                 focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
                     >
                       <option value={2}>2 columnas</option>
                       <option value={3}>3 columnas</option>
@@ -790,7 +793,8 @@ function PropertiesPanel({
                           gap: e.target.value as "none" | "sm" | "md" | "lg",
                         } as Partial<CanvasElement>)
                       }
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white
+                                 focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
                     >
                       <option value="none">Sin espacio</option>
                       <option value="sm">Pequeño</option>
@@ -814,8 +818,8 @@ function PropertiesPanel({
                     className={cn(
                       "flex-1 py-2 px-3 rounded-xl text-xs font-medium border transition-colors",
                       schema.status === "published"
-                        ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                        : "bg-slate-50 border-slate-100 text-slate-500 hover:border-emerald-200 hover:text-emerald-600",
+                        ? "bg-pharmako-success-light border-pharmako-success/20 text-pharmako-success"
+                        : "bg-slate-50 border-slate-100 text-slate-500 hover:border-pharmako-success/20 hover:text-pharmako-success",
                       statusMutation.isPending &&
                         "opacity-50 cursor-not-allowed",
                     )}
@@ -829,8 +833,8 @@ function PropertiesPanel({
                     className={cn(
                       "flex-1 py-2 px-3 rounded-xl text-xs font-medium border transition-colors",
                       schema.status === "draft"
-                        ? "bg-amber-50 border-amber-200 text-amber-700"
-                        : "bg-slate-50 border-slate-100 text-slate-500 hover:border-amber-200 hover:text-amber-600",
+                        ? "bg-pharmako-warning-light border-pharmako-warning/20 text-pharmako-warning"
+                        : "bg-slate-50 border-slate-100 text-slate-500 hover:border-pharmako-warning/20 hover:text-pharmako-warning",
                       statusMutation.isPending &&
                         "opacity-50 cursor-not-allowed",
                     )}
@@ -843,15 +847,15 @@ function PropertiesPanel({
               <button
                 onClick={() => onDelete(selectedElement.id)}
                 className="w-full mt-2 px-3 py-2 rounded-xl text-sm font-medium
-                           bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
+                           bg-pharmako-danger-light text-pharmako-danger hover:bg-pharmako-danger-light/80 transition-colors"
               >
                 Eliminar bloque
               </button>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-40 text-center">
-              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center mb-3">
-                <Settings className="w-4 h-4 text-slate-400" />
+              <div className="w-10 h-10 rounded-full bg-pharmako-care-light flex items-center justify-center mb-3">
+                <Settings className="w-4 h-4 text-pharmako-care" />
               </div>
               <p className="text-sm text-slate-500">Sin bloque seleccionado</p>
               <p className="text-xs text-slate-400 mt-0.5">
