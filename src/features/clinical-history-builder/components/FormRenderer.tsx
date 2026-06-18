@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -569,11 +569,13 @@ function SectionFieldWrapper({
   control,
   watch,
   setValue,
+  mode,
 }: {
   element: SectionBlock;
   control: ReturnType<typeof useForm>["control"];
   watch: ReturnType<typeof useForm>["watch"];
   setValue: ReturnType<typeof useForm>["setValue"];
+  mode?: "doctor" | "patient" | "pdf";
 }) {
   const [open, setOpen] = useState(element.defaultOpen ?? true);
   return (
@@ -602,6 +604,7 @@ function SectionFieldWrapper({
               control={control}
               watch={watch}
               setValue={setValue}
+              mode={mode}
             />
           ))}
         </div>
@@ -616,11 +619,13 @@ function CanvasElementRenderer({
   control,
   watch,
   setValue,
+  mode = "doctor",
 }: {
   element: CanvasElement;
   control: ReturnType<typeof useForm>["control"];
   watch: ReturnType<typeof useForm>["watch"];
   setValue: ReturnType<typeof useForm>["setValue"];
+  mode?: "doctor" | "patient" | "pdf";
 }) {
   if (element.hidden) return null;
 
@@ -629,6 +634,15 @@ function CanvasElementRenderer({
   if (!isVisible) return null;
 
   const value = watch(element.id);
+  const isReadOnly = mode !== "doctor";
+
+  if (isReadOnly && element.type !== "header") {
+    return (
+      <FieldWrapper element={element}>
+        <ReadOnlyField element={element} value={value} mode={mode} />
+      </FieldWrapper>
+    );
+  }
 
   switch (element.type) {
     case "text-short":
@@ -933,6 +947,7 @@ function CanvasElementRenderer({
               control={control}
               watch={watch}
               setValue={setValue}
+              mode={mode}
             />
           ))}
         </div>
@@ -946,6 +961,7 @@ function CanvasElementRenderer({
           control={control}
           watch={watch}
           setValue={setValue}
+          mode={mode}
         />
       );
 
@@ -984,18 +1000,31 @@ interface FormRendererProps {
   elements: CanvasElement[];
   onSubmit?: (values: Record<string, unknown>) => void;
   isLoading?: boolean;
+  mode?: "doctor" | "patient" | "pdf";
+  defaultValues?: Record<string, unknown>;
+  onValuesChange?: (values: Record<string, unknown>) => void;
 }
 
 export function FormRenderer({
   elements,
   onSubmit,
   isLoading,
+  mode = "doctor",
+  defaultValues = {},
 }: FormRendererProps) {
   const schema = buildFormSchema(elements);
   const { control, handleSubmit, watch, setValue } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: {},
+    defaultValues,
   });
+
+  const values = watch();
+  const onValuesChangeRef = useRef(onValuesChange);
+  onValuesChangeRef.current = onValuesChange;
+
+  useEffect(() => {
+    onValuesChangeRef.current?.(values);
+  }, [values]);
 
   return (
     <form
@@ -1010,6 +1039,7 @@ export function FormRenderer({
             control={control}
             watch={watch}
             setValue={setValue}
+            mode={mode}
           />
         ))}
       </div>
@@ -1029,4 +1059,254 @@ export function FormRenderer({
       )}
     </form>
   );
+}
+
+// ─── READ ONLY FIELD RENDERER ───────────────────────────────
+function ReadOnlyField({
+  element,
+  value,
+  mode,
+}: {
+  element: CanvasElement;
+  value: unknown;
+  mode: "patient" | "pdf";
+}) {
+  const isPatient = mode === "patient";
+
+  switch (element.type) {
+    case "text-short":
+    case "text-paragraph":
+    case "datetime": {
+      const strVal = value as string | undefined;
+      return (
+        <p
+          className={cn(
+            "text-sm text-slate-800 pb-1 leading-relaxed min-h-[24px]",
+            isPatient
+              ? "bg-slate-50/50 px-3 py-2 rounded-xl border border-slate-100"
+              : "border-b border-slate-100",
+          )}
+        >
+          {strVal || (
+            <span className="text-slate-400 font-light italic">
+              Sin registrar
+            </span>
+          )}
+        </p>
+      );
+    }
+
+    case "number": {
+      const numEl = element as NumberBlock;
+      return (
+        <p
+          className={cn(
+            "text-sm text-slate-800 pb-1 leading-relaxed min-h-[24px]",
+            isPatient
+              ? "bg-slate-50/50 px-3 py-2 rounded-xl border border-slate-100"
+              : "border-b border-slate-100",
+          )}
+        >
+          {value !== undefined && value !== "" ? (
+            `${value} ${numEl.unit ?? ""}`
+          ) : (
+            <span className="text-slate-400 font-light italic">
+              Sin registrar
+            </span>
+          )}
+        </p>
+      );
+    }
+
+    case "dropdown": {
+      const dropEl = element as DropdownBlock;
+      const selectedLabel = dropEl.options.find(
+        (o) => o.value === value,
+      )?.label;
+      return (
+        <p
+          className={cn(
+            "text-sm text-slate-800 pb-1 leading-relaxed min-h-[24px]",
+            isPatient
+              ? "bg-slate-50/50 px-3 py-2 rounded-xl border border-slate-100"
+              : "border-b border-slate-100",
+          )}
+        >
+          {selectedLabel || (
+            <span className="text-slate-400 font-light italic">
+              Sin seleccionar
+            </span>
+          )}
+        </p>
+      );
+    }
+
+    case "checkbox-multiple": {
+      const checkEl = element as CheckboxMultipleBlock;
+      const selectedVals = (value as string[]) ?? [];
+      const selectedLabels = checkEl.options
+        .filter((o) => selectedVals.includes(o.value))
+        .map((o) => o.label);
+
+      if (selectedLabels.length === 0) {
+        return (
+          <p className="text-sm text-slate-400 font-light italic">
+            Ninguno seleccionado
+          </p>
+        );
+      }
+
+      return (
+        <div className="flex flex-wrap gap-1.5 pt-1">
+          {selectedLabels.map((lbl, idx) => (
+            <span
+              key={idx}
+              className={cn(
+                "px-2.5 py-1 rounded-lg text-xs font-medium border",
+                isPatient
+                  ? "bg-emerald-50 border-emerald-100 text-emerald-700"
+                  : "bg-slate-50 border-slate-200 text-slate-700",
+              )}
+            >
+              ✓ {lbl}
+            </span>
+          ))}
+        </div>
+      );
+    }
+
+    case "radio-group": {
+      const radioEl = element as RadioGroupBlock;
+      const selectedLabel = radioEl.options.find(
+        (o) => o.value === value,
+      )?.label;
+      return (
+        <p
+          className={cn(
+            "text-sm text-slate-800 pb-1 leading-relaxed min-h-[24px]",
+            isPatient
+              ? "bg-slate-50/50 px-3 py-2 rounded-xl border border-slate-100"
+              : "border-b border-slate-100",
+          )}
+        >
+          {selectedLabel || (
+            <span className="text-slate-400 font-light italic">
+              Sin seleccionar
+            </span>
+          )}
+        </p>
+      );
+    }
+
+    case "toggle": {
+      const toggleEl = element as ToggleBlock;
+      const displayVal = value
+        ? (toggleEl.labelOn ?? "Sí")
+        : (toggleEl.labelOff ?? "No");
+      return (
+        <span
+          className={cn(
+            "inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border",
+            value
+              ? "bg-pharmako-care-light border-pharmako-care/20 text-pharmako-care"
+              : "bg-slate-100 border-slate-200 text-slate-500",
+          )}
+        >
+          {displayVal}
+        </span>
+      );
+    }
+
+    case "vital-signs": {
+      const vitalEl = element as VitalSignsBlock;
+      const vals = (value as Record<string, number>) ?? {};
+      const presentFields = vitalEl.fields.filter(
+        (f) => vals[f.key] !== undefined,
+      );
+
+      if (presentFields.length === 0) {
+        return (
+          <p className="text-sm text-slate-400 font-light italic">
+            Sin signos vitales registrados
+          </p>
+        );
+      }
+
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+          {vitalEl.fields.map((field) => {
+            const val = vals[field.key];
+            if (val === undefined) return null;
+            return (
+              <div
+                key={field.key}
+                className={cn(
+                  "p-3 rounded-xl border shadow-sm",
+                  isPatient
+                    ? "bg-emerald-50/30 border-emerald-100"
+                    : "bg-slate-50 border-slate-100",
+                )}
+              >
+                <span className="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                  {field.label}
+                </span>
+                <span className="text-sm font-bold text-slate-800">
+                  {val}{" "}
+                  <span className="text-xs font-normal text-slate-500">
+                    {field.unit}
+                  </span>
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    case "cie10-selector": {
+      return (
+        <div className="pt-1">
+          {value ? (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-pharmako-care-light border border-pharmako-care/20 text-xs font-semibold text-pharmako-care">
+              🩺 {value}
+            </span>
+          ) : (
+            <p className="text-sm text-slate-400 font-light italic">
+              Sin diagnóstico registrado
+            </p>
+          )}
+        </div>
+      );
+    }
+
+    case "file-upload": {
+      const filesList = (value as File[]) ?? [];
+      if (filesList.length === 0) {
+        return (
+          <p className="text-sm text-slate-400 font-light italic">
+            Sin archivos adjuntos
+          </p>
+        );
+      }
+      return (
+        <div className="space-y-1.5 pt-1">
+          {filesList.map((f, i) => (
+            <div
+              key={i}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-150 text-xs text-slate-600"
+            >
+              <span>📎</span>
+              <span className="font-medium truncate max-w-xs">{f.name}</span>
+              <span className="text-slate-400">
+                ({(f.size / 1024 / 1024).toFixed(1)} MB)
+              </span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    default:
+      return null;
+  }
 }
