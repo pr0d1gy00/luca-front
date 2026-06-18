@@ -42,9 +42,9 @@ export function CanvasBlock({
   };
 
   const borderClass = isSelected
-    ? "border-blue-700 ring-2 ring-blue-100"
+    ? "border-pharmako-primary ring-2 ring-pharmako-primary-light"
     : isDragging
-      ? "border-blue-300 border-dashed opacity-60"
+      ? "border-pharmako-primary-muted border-dashed opacity-60"
       : "border-slate-100 hover:border-slate-200";
 
   const shadowClass = isDragging ? "shadow-lg" : "hover:shadow-sm";
@@ -205,7 +205,7 @@ export function CanvasBlock({
               {element.title || "Sin título"}
             </p>
             {element.required && (
-              <Asterisk className="w-3 h-3 text-blue-700 flex-shrink-0" />
+              <Asterisk className="w-3 h-3 text-pharmako-primary flex-shrink-0" />
             )}
           </div>
           {element.description && (

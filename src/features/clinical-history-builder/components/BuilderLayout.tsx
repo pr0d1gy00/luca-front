@@ -239,7 +239,7 @@ function ToolboxSidebar({
             onClick={() => onTabChange(cat.id)}
             className={`flex-1 px-2 py-2.5 text-xs font-medium transition-colors ${
               activeTab === cat.id
-                ? "text-blue-700 border-b-2 border-blue-700 bg-blue-50"
+                ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
                 : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
             }`}
           >
@@ -355,7 +355,7 @@ function CanvasArea({
         <div
           className={`min-h-[500px] bg-white rounded-2xl border-2 border-dashed transition-colors ${
             isDragOver
-              ? "border-blue-700 bg-blue-50/30"
+              ? "border-pharmako-primary bg-pharmako-primary-light/30"
               : elements.length === 0
                 ? "border-slate-200"
                 : "border-transparent"
@@ -549,8 +549,8 @@ function PropertiesPanel({
         <button
           onClick={onSave}
           disabled={isSaving}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-700 text-white text-xs font-medium
-                     hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pharmako-primary text-white text-xs font-medium
+                     hover:bg-pharmako-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <Save className="w-3.5 h-3.5" />
           {isSaving ? "Guardando..." : "Guardar"}
@@ -563,7 +563,7 @@ function PropertiesPanel({
           onClick={() => onTabChange("properties")}
           className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors ${
             activeTab === "properties"
-              ? "text-blue-700 border-b-2 border-blue-700 bg-blue-50"
+              ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
@@ -574,7 +574,7 @@ function PropertiesPanel({
           onClick={() => onTabChange("layers")}
           className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors ${
             activeTab === "layers"
-              ? "text-blue-700 border-b-2 border-blue-700 bg-blue-50"
+              ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
@@ -598,7 +598,7 @@ function PropertiesPanel({
                   onChange={(e) => onSchemaNameChange(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
                              text-slate-900 placeholder-slate-400
-                             focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+                             focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
                   placeholder="Nombre de la plantilla"
                 />
               </div>
@@ -612,7 +612,7 @@ function PropertiesPanel({
                   rows={2}
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
                              text-slate-900 placeholder-slate-400 resize-none
-                             focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+                             focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
                   placeholder="Descripción (opcional)"
                 />
               </div>
@@ -631,7 +631,7 @@ function PropertiesPanel({
                   onChange={(e) => onUpdate({ title: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
                              text-slate-900 placeholder-slate-400
-                             focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+                             focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
                 />
               </div>
 
@@ -645,7 +645,7 @@ function PropertiesPanel({
                   rows={2}
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
                              text-slate-900 placeholder-slate-400 resize-none
-                             focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+                             focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
                 />
               </div>
 
@@ -658,7 +658,9 @@ function PropertiesPanel({
                     onUpdate({ required: !selectedElement.required })
                   }
                   className={`relative w-10 h-6 rounded-full transition-colors ${
-                    selectedElement.required ? "bg-blue-700" : "bg-slate-200"
+                    selectedElement.required
+                      ? "bg-pharmako-primary"
+                      : "bg-slate-200"
                   }`}
                 >
                   <div
@@ -684,7 +686,7 @@ function PropertiesPanel({
                   }
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
                              text-slate-900 bg-white
-                             focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+                             focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
                 >
                   <option value="full">Ancho Completo</option>
                   <option value="2/3">2/3</option>
@@ -701,7 +703,9 @@ function PropertiesPanel({
                 <button
                   onClick={() => onUpdate({ hidden: !selectedElement.hidden })}
                   className={`relative w-10 h-6 rounded-full transition-colors ${
-                    selectedElement.hidden ? "bg-blue-700" : "bg-slate-200"
+                    selectedElement.hidden
+                      ? "bg-pharmako-primary"
+                      : "bg-slate-200"
                   }`}
                 >
                   <div
@@ -875,11 +879,11 @@ function PropertiesPanel({
 // ─── DRAG OVERLAY ────────────────────────────────────────────
 function DragOverlayContent({ elementType }: { elementType: string }) {
   return (
-    <div className="w-72 bg-white rounded-xl border-2 border-blue-700 shadow-xl p-4 opacity-95">
+    <div className="w-72 bg-white rounded-xl border-2 border-pharmako-primary shadow-xl p-4 opacity-95">
       <p className="text-sm font-medium text-slate-700 capitalize">
         {elementType.replace(/-/g, " ")}
       </p>
-      <p className="text-xs text-blue-700 mt-0.5">Soltar para añadir</p>
+      <p className="text-xs text-pharmako-primary mt-0.5">Soltar para añadir</p>
     </div>
   );
 }
@@ -1311,8 +1315,8 @@ export function ClinicalHistoryBuilder() {
               <button
                 onClick={handleSave}
                 disabled={saveMutation.isPending}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-700 text-white text-xs font-medium
-                           hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pharmako-primary text-white text-xs font-medium
+                           hover:bg-pharmako-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Save className="w-3.5 h-3.5" />
                 {saveMutation.isPending ? "..." : "Guardar"}

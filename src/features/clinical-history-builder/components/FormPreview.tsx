@@ -43,7 +43,7 @@ export function FormPreview({ schema, isLoading, onSave }: FormPreviewProps) {
             v{schema.version}
           </span>
           {schema.specialty && (
-            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-xs text-blue-700">
+            <span className="px-2 py-0.5 rounded-full bg-pharmako-primary-light text-xs text-pharmako-primary">
               {schema.specialty}
             </span>
           )}

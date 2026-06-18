@@ -46,11 +46,11 @@ export function ToolboxItem({
         bg-white hover:bg-slate-50 border border-slate-100/60 hover:border-slate-200
         transition-all cursor-grab active:cursor-grabbing
         group select-none
-        ${isDragging ? "opacity-50 ring-2 ring-blue-100 shadow-sm" : ""}
+        ${isDragging ? "opacity-50 ring-2 ring-pharmako-primary-light shadow-sm" : ""}
       `}
     >
       {/* Icon */}
-      <div className="p-2 bg-slate-50 border border-slate-100 rounded-lg text-slate-500 group-hover:text-blue-700 group-hover:bg-blue-50 group-hover:border-blue-100 transition-colors shrink-0">
+      <div className="p-2 bg-slate-50 border border-slate-100 rounded-lg text-slate-500 group-hover:text-pharmako-primary group-hover:bg-pharmako-primary-light group-hover:border-pharmako-primary-muted transition-colors shrink-0">
         <Icon className="w-4 h-full max-h-4" />
       </div>
 

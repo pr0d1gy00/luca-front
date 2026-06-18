@@ -148,7 +148,7 @@ function TextShortField({
         maxLength={element.maxLength}
         className={cn(
           "w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900",
-          "placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700",
+          "placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary",
         )}
       />
       {element.suffix && (
@@ -176,7 +176,7 @@ function TextParagraphField({
       maxLength={element.maxLength}
       className={cn(
         "w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 resize-none",
-        "placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700",
+        "placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary",
       )}
     />
   );
@@ -203,7 +203,7 @@ function NumberField({
         placeholder={element.placeholder}
         className={cn(
           "w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900",
-          "focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700",
+          "focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary",
         )}
       />
       {element.unit && (
@@ -234,7 +234,7 @@ function DateTimeField({
       max={element.maxDate}
       className={cn(
         "w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900",
-        "focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700",
+        "focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary",
       )}
     />
   );
@@ -255,7 +255,7 @@ function DropdownField({
       onChange={(e) => onChange(e.target.value)}
       className={cn(
         "w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white",
-        "focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700",
+        "focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary",
       )}
     >
       <option value="">{element.placeholder ?? "Seleccionar..."}</option>
@@ -296,7 +296,7 @@ function CheckboxMultipleField({
             className={cn(
               "w-4 h-4 rounded border transition-colors flex items-center justify-center flex-shrink-0",
               value.includes(opt.value)
-                ? "bg-blue-700 border-blue-700"
+                ? "bg-pharmako-primary border-pharmako-primary"
                 : "border-slate-300 hover:border-slate-400",
             )}
             onClick={() => toggle(opt.value)}
@@ -340,7 +340,7 @@ function ToggleField({
         onClick={() => onChange(!value)}
         className={cn(
           "relative w-11 h-6 rounded-full transition-colors",
-          value ? "bg-blue-700" : "bg-slate-200",
+          value ? "bg-pharmako-primary" : "bg-slate-200",
         )}
       >
         <div
@@ -377,7 +377,7 @@ function RadioGroupField({
             className={cn(
               "w-4 h-4 rounded-full border-2 transition-colors flex items-center justify-center flex-shrink-0",
               value === opt.value
-                ? "border-blue-700 bg-blue-700"
+                ? "border-pharmako-primary bg-pharmako-primary"
                 : "border-slate-300 hover:border-slate-400",
             )}
             onClick={() => onChange(opt.value)}
@@ -423,7 +423,7 @@ function VitalSignsField({
             min={field.min}
             max={field.max}
             className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900
-                       focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
+                       focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
           />
           {(field.min !== undefined || field.max !== undefined) && (
             <p className="text-[10px] text-slate-400">
@@ -466,7 +466,7 @@ function FileUploadField({
 
   return (
     <div className="space-y-2">
-      <label className="flex flex-col items-center justify-center h-24 rounded-xl border-2 border-dashed border-slate-200 cursor-pointer hover:border-blue-700 transition-colors">
+      <label className="flex flex-col items-center justify-center h-24 rounded-xl border-2 border-dashed border-slate-200 cursor-pointer hover:border-pharmako-primary transition-colors">
         <span className="text-sm text-slate-400">📎</span>
         <span className="text-xs text-slate-400 mt-1">
           Arrastra archivos o haz clic para seleccionar
@@ -524,7 +524,7 @@ function FieldWrapper({
           {element.title}
         </span>
         {element.required && (
-          <span className="text-xs text-blue-700 font-medium">*</span>
+          <span className="text-xs text-pharmako-primary font-medium">*</span>
         )}
       </label>
       {element.description && (
@@ -590,7 +590,9 @@ function SectionFieldWrapper({
           <span className="text-sm font-semibold text-slate-800">
             {element.title}
           </span>
-          {element.required && <span className="text-xs text-blue-700">*</span>}
+          {element.required && (
+            <span className="text-xs text-pharmako-primary">*</span>
+          )}
         </div>
         <span className="text-slate-400 text-sm">{open ? "▲" : "▼"}</span>
       </button>
@@ -937,8 +939,8 @@ export function FormRenderer({
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 rounded-xl bg-blue-700 text-white text-sm font-medium
-                       hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed
+            className="w-full py-3 rounded-xl bg-pharmako-primary text-white text-sm font-medium
+                       hover:bg-pharmako-primary-hover disabled:opacity-50 disabled:cursor-not-allowed
                        transition-colors"
           >
             {isLoading ? "Guardando..." : "Guardar Historia Clínica"}

@@ -53,7 +53,7 @@ function TreeItem({
         onClick={onSelect}
         className={`
           group flex items-center gap-1.5 px-2 py-1.5 rounded-lg cursor-pointer transition-colors
-          ${isSelected ? "bg-blue-50 border border-blue-100" : "hover:bg-slate-50 border border-transparent"}
+          ${isSelected ? "bg-pharmako-primary-light border border-pharmako-primary-muted" : "hover:bg-slate-50 border border-transparent"}
         `}
         style={{ paddingLeft: `${depth * 16 + 8}px` }}
       >
@@ -86,7 +86,7 @@ function TreeItem({
 
         {/* Title */}
         <span
-          className={`flex-1 text-xs truncate ${isSelected ? "text-blue-700 font-medium" : "text-slate-600"}`}
+          className={`flex-1 text-xs truncate ${isSelected ? "text-pharmako-primary font-medium" : "text-slate-600"}`}
         >
           {element.title || "Sin título"}
         </span>
