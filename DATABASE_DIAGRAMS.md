@@ -20,6 +20,8 @@ erDiagram
     User ||--o{ PrescriptionTemplate : "userId"
     User ||--o{ VerificationDocument : "userId"
     User ||--o{ ClinicMember : "userId"
+    User ||--o{ DoctorSpecialty : "userId"
+    Specialty ||--o{ DoctorSpecialty : "specialtyId"
 
     Clinic ||--o{ ClinicMember : "clinicId"
     Clinic ||--o{ Consultation : "clinicId (opcional)"
@@ -55,9 +57,11 @@ erDiagram
         varchar id PK
         varchar phone UK "WhatsApp global"
         varchar email UK
-        varchar passwordHash
+        varchar passwordHash "Optional"
         varchar fullName
         varchar avatarUrl
+        varchar nationalId UK "Optional"
+        varchar username UK "Optional"
         timestamp createdAt
     }
 
@@ -70,11 +74,22 @@ erDiagram
         UserRole role "DOCTOR | PROVIDER | ADMIN"
         boolean isActive
         PlanType planType "FREE | PRO | ENTERPRISE"
-        varchar specialty
         varchar logoUrl
         varchar signatureUrl
         timestamp createdAt
         timestamp updatedAt
+    }
+
+    Specialty {
+        varchar id PK
+        varchar name UK
+        text description
+    }
+
+    DoctorSpecialty {
+        varchar id PK
+        varchar userId FK
+        varchar specialtyId FK
     }
 
     Patient {
@@ -165,6 +180,8 @@ erDiagram
         varchar phone UK "WhatsApp"
         varchar email UK
         varchar fullName
+        varchar nationalId UK "Optional"
+        varchar username UK "Optional"
     }
 
     User {
@@ -172,8 +189,18 @@ erDiagram
         varchar email UK
         UserRole role "DOCTOR|PROVIDER|ADMIN"
         PlanType planType "FREE|PRO|ENTERPRISE"
-        varchar specialty
         boolean isActive
+    }
+
+    Specialty {
+        varchar id PK
+        varchar name UK
+    }
+
+    DoctorSpecialty {
+        varchar id PK
+        varchar userId FK
+        varchar specialtyId FK
     }
 
     Clinic {
@@ -203,6 +230,8 @@ erDiagram
     User ||--o{ ClinicMember : ""
     Clinic ||--o{ ClinicMember : ""
     User ||--o{ VerificationDocument : "KYC"
+    User ||--o{ DoctorSpecialty : ""
+    Specialty ||--o{ DoctorSpecialty : ""
 ```
 
 ---

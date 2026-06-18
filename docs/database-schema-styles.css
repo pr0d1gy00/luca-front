@@ -1,0 +1,223 @@
+/* LUCA Health OS — Database Schema PDF Stylesheet v3 */
+/* Clean, high-contrast, all plain-text (no Unicode glyphs needed) */
+
+@page {
+	size: A4;
+	margin: 20mm 18mm 22mm 18mm;
+
+	@top-center {
+		content: "LUCA Health OS — Database Schema v3";
+		font-family: Arial, Helvetica, sans-serif;
+		font-size: 8pt;
+		color: #777;
+	}
+	@bottom-center {
+		content: "Page " counter(page) " of " counter(pages);
+		font-family: Arial, Helvetica, sans-serif;
+		font-size: 8pt;
+		color: #777;
+	}
+}
+@page :first {
+	@top-center {
+		content: none;
+	}
+}
+
+html {
+	-webkit-print-color-adjust: exact;
+	print-color-adjust: exact;
+}
+
+body {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+	line-height: 1.45;
+	color: #1a1a1a;
+	background: white;
+}
+
+h1 {
+	font-size: 22pt;
+	color: #0d6b63;
+	margin: 0 0 6pt 0;
+}
+
+h1 + blockquote {
+	margin: 0 0 18pt 0;
+	font-size: 9pt;
+	color: #555;
+	border-left: 3px solid #0d6b63;
+	padding: 6pt 10pt;
+	background: #f0faf8;
+}
+
+h2 {
+	font-size: 14pt;
+	color: #111;
+	margin-top: 22pt;
+	margin-bottom: 8pt;
+	padding-bottom: 3pt;
+	border-bottom: 2px solid #ccc;
+	page-break-before: always;
+}
+h2:first-of-type {
+	page-break-before: avoid;
+}
+
+h3 {
+	font-size: 12pt;
+	color: #0d6b63;
+	margin-top: 14pt;
+	margin-bottom: 6pt;
+}
+
+h4 {
+	font-size: 10.5pt;
+	color: #333;
+	margin-top: 12pt;
+	margin-bottom: 4pt;
+}
+
+blockquote {
+	margin: 0 0 10pt;
+	padding: 6pt 10pt;
+	background: #f0faf8;
+	border-left: 3px solid #0d6b63;
+	font-size: 9pt;
+	color: #444;
+}
+
+p {
+	margin: 0 0 5pt 0;
+}
+strong {
+	color: #111;
+	font-weight: bold;
+}
+
+/* ===== TABLES ===== */
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 8pt 0 14pt 0;
+	font-size: 9pt;
+	table-layout: auto;
+	word-break: break-word;
+}
+
+thead {
+	background: #0d6b63;
+	color: white;
+}
+
+thead th {
+	padding: 6pt 7pt;
+	text-align: left;
+	font-size: 8pt;
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+tbody td {
+	padding: 5pt 7pt;
+	border-bottom: 1px solid #ddd;
+	vertical-align: top;
+	font-size: 9pt;
+}
+
+tbody tr:nth-child(even) {
+	background: #f8fafa;
+}
+
+/* # column */
+td:first-child,
+th:first-child {
+	width: 24pt;
+	text-align: center;
+	color: #777;
+	font-size: 8.5pt;
+}
+
+/* Field name column */
+td:nth-child(2) {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 9pt;
+	font-weight: bold;
+	color: #0d6b63;
+}
+
+/* Type column */
+td:nth-child(3) {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 8.5pt;
+	color: #555;
+}
+
+/* Null indicator column */
+td:nth-child(4) {
+	text-align: center;
+	font-weight: bold;
+	font-size: 8pt;
+}
+
+/* Default column */
+td:nth-child(5) {
+	font-size: 8pt;
+	color: #666;
+}
+
+/* Description column */
+td:nth-child(6) {
+	font-size: 9pt;
+	color: #333;
+	line-height: 1.35;
+}
+
+/* ===== Inline code ===== */
+code {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 8.5pt;
+	background: #eee;
+	padding: 1pt 3pt;
+	color: #0d6b63;
+}
+
+/* ===== Code blocks ===== */
+pre {
+	background: #1e293b;
+	color: #e2e8f0;
+	padding: 10pt 12pt;
+	font-size: 7.5pt;
+	line-height: 1.4;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+pre code {
+	background: none;
+	color: inherit;
+	padding: 0;
+	font-size: inherit;
+}
+
+/* ===== Lists ===== */
+ul,
+ol {
+	padding-left: 16pt;
+	margin: 4pt 0 6pt 0;
+}
+li {
+	margin-bottom: 2pt;
+	font-size: 9.5pt;
+}
+
+/* ===== Misc ===== */
+hr {
+	border: none;
+	border-top: 1px solid #ddd;
+	margin: 14pt 0;
+}
+a {
+	color: #0d6b63;
+}

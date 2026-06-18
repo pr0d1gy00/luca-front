@@ -1,0 +1,4625 @@
+<!doctype html>
+<html>
+  <head>
+    <title></title>
+    <meta charset="utf-8" />
+    <style>
+      /* Minimal, high-contrast stylesheet for md-to-pdf */
+      /* No external fonts, no fancy colors — just clean readability */
+
+      @page {
+        size: A3 landscape;
+        margin: 20mm 18mm 22mm 18mm;
+
+        @top-center {
+          content: "LUCA Health OS — Database Schema v3";
+          font-family: Arial, Helvetica, sans-serif;
+          font-size: 10pt;
+          color: #666;
+        }
+        @bottom-center {
+          content: "Page " counter(page) " of " counter(pages);
+          font-family: Arial, Helvetica, sans-serif;
+          font-size: 9pt;
+          color: #666;
+        }
+      }
+      @page :first {
+        @top-center {
+          content: none;
+        }
+      }
+
+      html {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 11pt;
+        line-height: 1.5;
+        color: #111;
+        background: white;
+      }
+
+      h1 {
+        font-size: 22pt;
+        color: #0f766e;
+        margin: 0 0 6pt 0;
+      }
+
+      h1 + blockquote {
+        margin: 0 0 20pt 0;
+        font-size: 10pt;
+        color: #555;
+        border-left: 3px solid #0f766e;
+        padding: 6pt 10pt;
+        background: #f5fdfb;
+      }
+
+      h2 {
+        font-size: 15pt;
+        color: #0f172a;
+        margin-top: 24pt;
+        margin-bottom: 8pt;
+        padding-bottom: 3pt;
+        border-bottom: 2px solid #ccc;
+        page-break-before: always;
+      }
+      h2:first-of-type {
+        page-break-before: avoid;
+      }
+
+      h3 {
+        font-size: 12pt;
+        color: #0f766e;
+        margin-top: 16pt;
+        margin-bottom: 6pt;
+      }
+
+      h4 {
+        font-size: 11pt;
+        color: #334155;
+        margin-top: 12pt;
+        margin-bottom: 4pt;
+      }
+
+      blockquote {
+        margin: 0 0 12pt;
+        padding: 6pt 10pt;
+        background: #f5fdfb;
+        border-left: 3px solid #0f766e;
+        font-size: 10pt;
+        color: #444;
+      }
+
+      p {
+        margin: 0 0 6pt 0;
+      }
+      strong {
+        color: #111;
+      }
+
+      /* === TABLES === */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8pt 0 14pt 0;
+        font-size: 10pt;
+      }
+
+      thead {
+        background: #0f766e;
+        color: white;
+      }
+      thead th {
+        padding: 6pt 8pt;
+        text-align: left;
+        font-size: 9pt;
+        font-weight: bold;
+      }
+
+      tbody td {
+        padding: 5pt 8pt;
+        border-bottom: 1px solid #ddd;
+        vertical-align: top;
+      }
+
+      tbody tr:nth-child(even) {
+        background: #f9fafb;
+      }
+
+      /* # */
+      td:first-child,
+      th:first-child {
+        width: 26pt;
+        text-align: center;
+        font-size: 9pt;
+      }
+
+      /* Field name */
+      td:nth-child(2) {
+        font-family: "Courier New", Courier, monospace;
+        font-size: 10pt;
+        font-weight: bold;
+        color: #0f766e;
+      }
+
+      /* Type */
+      td:nth-child(3) {
+        font-family: "Courier New", Courier, monospace;
+        font-size: 9pt;
+        color: #555;
+      }
+
+      /* Null */
+      td:nth-child(4) {
+        text-align: center;
+      }
+
+      /* Default */
+      td:nth-child(5) {
+        font-size: 9pt;
+        color: #555;
+      }
+
+      /* Description */
+      td:nth-child(6) {
+        font-size: 10pt;
+        line-height: 1.4;
+      }
+
+      code {
+        font-family: "Courier New", Courier, monospace;
+        font-size: 10pt;
+        background: #f0f0f0;
+        padding: 1pt 4pt;
+        color: #0f766e;
+      }
+
+      pre {
+        background: #1e293b;
+        color: #e2e8f0;
+        padding: 10pt 12pt;
+        font-size: 8pt;
+        line-height: 1.4;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      pre code {
+        background: none;
+        color: inherit;
+        padding: 0;
+        font-size: inherit;
+      }
+
+      ul,
+      ol {
+        padding-left: 18pt;
+        margin: 4pt 0 8pt 0;
+      }
+      li {
+        margin-bottom: 2pt;
+      }
+
+      hr {
+        border: none;
+        border-top: 1px solid #ddd;
+        margin: 16pt 0;
+      }
+      a {
+        color: #0f766e;
+      }
+      /*# sourceURL=docs/database-schema-styles.css*/
+    </style>
+    <style>
+      pre code.hljs {
+        display: block;
+        overflow-x: auto;
+        padding: 1em;
+      }
+      code.hljs {
+        padding: 3px 5px;
+      }
+      /*!
+  Theme: GitHub
+  Description: Light theme as seen on github.com
+  Author: github.com
+  Maintainer: @Hirse
+  Updated: 2021-05-15
+
+  Outdated base version: https://github.com/primer/github-syntax-light
+  Current colors taken from GitHub's CSS
+*/
+      .hljs {
+        color: #24292e;
+        background: #ffffff;
+      }
+      .hljs-doctag,
+      .hljs-keyword,
+      .hljs-meta .hljs-keyword,
+      .hljs-template-tag,
+      .hljs-template-variable,
+      .hljs-type,
+      .hljs-variable.language_ {
+        /* prettylights-syntax-keyword */
+        color: #d73a49;
+      }
+      .hljs-title,
+      .hljs-title.class_,
+      .hljs-title.class_.inherited__,
+      .hljs-title.function_ {
+        /* prettylights-syntax-entity */
+        color: #6f42c1;
+      }
+      .hljs-attr,
+      .hljs-attribute,
+      .hljs-literal,
+      .hljs-meta,
+      .hljs-number,
+      .hljs-operator,
+      .hljs-variable,
+      .hljs-selector-attr,
+      .hljs-selector-class,
+      .hljs-selector-id {
+        /* prettylights-syntax-constant */
+        color: #005cc5;
+      }
+      .hljs-regexp,
+      .hljs-string,
+      .hljs-meta .hljs-string {
+        /* prettylights-syntax-string */
+        color: #032f62;
+      }
+      .hljs-built_in,
+      .hljs-symbol {
+        /* prettylights-syntax-variable */
+        color: #e36209;
+      }
+      .hljs-comment,
+      .hljs-code,
+      .hljs-formula {
+        /* prettylights-syntax-comment */
+        color: #6a737d;
+      }
+      .hljs-name,
+      .hljs-quote,
+      .hljs-selector-tag,
+      .hljs-selector-pseudo {
+        /* prettylights-syntax-entity-tag */
+        color: #22863a;
+      }
+      .hljs-subst {
+        /* prettylights-syntax-storage-modifier-import */
+        color: #24292e;
+      }
+      .hljs-section {
+        /* prettylights-syntax-markup-heading */
+        color: #005cc5;
+        font-weight: bold;
+      }
+      .hljs-bullet {
+        /* prettylights-syntax-markup-list */
+        color: #735c0f;
+      }
+      .hljs-emphasis {
+        /* prettylights-syntax-markup-italic */
+        color: #24292e;
+        font-style: italic;
+      }
+      .hljs-strong {
+        /* prettylights-syntax-markup-bold */
+        color: #24292e;
+        font-weight: bold;
+      }
+      .hljs-addition {
+        /* prettylights-syntax-markup-inserted */
+        color: #22863a;
+        background-color: #f0fff4;
+      }
+      .hljs-deletion {
+        /* prettylights-syntax-markup-deleted */
+        color: #b31d28;
+        background-color: #ffeef0;
+      }
+      .hljs-char.escape_,
+      .hljs-link,
+      .hljs-params,
+      .hljs-property,
+      .hljs-punctuation,
+      .hljs-tag {
+        /* purposely ignored */
+      } /*# sourceURL=C:\Users\mendo\AppData\Local\npm-cache\_npx\55158e48eb5c59f7\node_modules\highlight.js\styles\github.css*/
+    </style>
+  </head>
+  <body class="">
+    <h1 id="luca-health-os--database-schema-documentation-v3">
+      LUCA Health OS — Database Schema Documentation v3
+    </h1>
+    <blockquote>
+      <p>
+        <strong>Last updated:</strong> 2026-06-09<br /><strong
+          >Database engine:</strong
+        >
+        PostgreSQL<br /><strong>Total modules:</strong> 14 |
+        <strong>Total tables:</strong> 31 | <strong>Total enums:</strong> 18
+      </p>
+    </blockquote>
+    <hr />
+    <h2 id="table-of-contents">Table of Contents</h2>
+    <ol>
+      <li>
+        <a href="#1-patient-identity">Patient Identity (PatientAccount)</a>
+      </li>
+      <li><a href="#2-users--roles">Users &amp; Roles (User)</a></li>
+      <li><a href="#3-patient-records">Patient Records (Patient)</a></li>
+      <li><a href="#4-clinical-module">Clinical Module</a></li>
+      <li><a href="#5-prescriptions">Prescriptions</a></li>
+      <li><a href="#6-marketplace">Marketplace</a></li>
+      <li><a href="#7-system">System</a></li>
+      <li><a href="#8-medical-background">Medical Background</a></li>
+      <li><a href="#9-institutional">Institutional (Clinics)</a></li>
+      <li><a href="#10-verification">Verification (KYC)</a></li>
+      <li><a href="#11-pharmacy-inventory">Pharmacy Inventory</a></li>
+      <li><a href="#12-lab-results">Lab Results</a></li>
+      <li><a href="#13-billing--payments">Billing &amp; Payments</a></li>
+      <li><a href="#14-audit-log">Audit Log</a></li>
+      <li>
+        <a href="#15-entity-relationship-diagram"
+          >Entity Relationship Diagram</a
+        >
+      </li>
+    </ol>
+    <hr />
+    <h2 id="1-patient-identity">1. Patient Identity</h2>
+    <p>
+      <strong>Module purpose:</strong> Global patient identity across the entire
+      LUCA ecosystem. A patient logs in once via WhatsApp/phone and can link to
+      multiple doctors' records.
+    </p>
+    <h3 id="patientaccount">PatientAccount</h3>
+    <p>
+      Stores the master identity for every patient in the system. One
+      <code>PatientAccount</code> can be linked to multiple
+      <code>Patient</code> records (one per doctor).
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>phone</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>
+            Global identifier — WhatsApp number. <strong>Unique.</strong> Used
+            for OTP login
+          </td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>email</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>
+            Optional email for notifications. <strong>Unique</strong> when set
+          </td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>passwordHash</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>bcrypt/argon2 hash. Used for web portal login</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>fullName</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Patient's full legal name</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>avatarUrl</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Profile picture URL (S3/Cloud Storage)</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>createdAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Account creation timestamp</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Business rules:</strong></p>
+    <ul>
+      <li>
+        A patient registers with their phone number (WhatsApp) — this is the
+        universal identifier
+      </li>
+      <li>Email is optional but must be unique when provided</li>
+      <li>
+        The phone number is the global key: a patient can have multiple doctors
+        but only one account
+      </li>
+    </ul>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>UNIQUE (phone)</code></li>
+      <li><code>UNIQUE (email)</code> — partial index, nulls not distinct</li>
+    </ul>
+    <p>
+      <strong>Zod schema:</strong>
+      <em>(not exposed to frontend directly — managed via auth flow)</em>
+    </p>
+    <hr />
+    <h2 id="2-users--roles">2. Users &amp; Roles</h2>
+    <p>
+      <strong>Module purpose:</strong> All professional users: doctors,
+      pharmacy/lab providers, and system administrators. Controls
+      authentication, plan tier, and professional branding.
+    </p>
+    <h3 id="user">User</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>email</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Login email. <strong>Unique</strong></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>passwordHash</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>bcrypt/argon2 hash</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>fullName</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Full legal name</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>phone</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Administrative WhatsApp number</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>role</code></td>
+          <td><code>UserRole</code></td>
+          <td>❌</td>
+          <td><code>DOCTOR</code></td>
+          <td>DOCTOR → PROVIDER → ADMIN</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>isActive</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td>❌</td>
+          <td><code>true</code></td>
+          <td>Soft-delete / account suspension</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>planType</code></td>
+          <td><code>PlanType</code></td>
+          <td>❌</td>
+          <td><code>FREE</code></td>
+          <td>FREE → PRO → ENTERPRISE</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><code>specialty</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>e.g. "Cardiología", "Pediatría" (DOCTOR only)</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>logoUrl</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Professional logo for prescriptions/certificates</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td><code>signatureUrl</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Digital signature image URL</td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td><code>createdAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Registration date</td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td><code>updatedAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Last profile update</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Business rules:</strong></p>
+    <ul>
+      <li>
+        <code>role=DOCTOR</code> → medical professional, can manage patients,
+        write prescriptions, conduct consultations
+      </li>
+      <li>
+        <code>role=PROVIDER</code> → pharmacy or laboratory, must have a linked
+        <code>ProviderProfile</code>
+      </li>
+      <li><code>role=ADMIN</code> → LUCA platform administrator</li>
+      <li>
+        <code>planType</code> controls feature access: FREE (basic), PRO (full
+        features), ENTERPRISE (multi-clinic, custom branding)
+      </li>
+      <li>
+        <code>specialty</code>, <code>logoUrl</code>,
+        <code>signatureUrl</code> are only relevant for DOCTOR role
+      </li>
+    </ul>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>UNIQUE (email)</code></li>
+    </ul>
+    <h3 id="enum-userrole">Enum: UserRole</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>DOCTOR</code></td>
+          <td>
+            Medical professional — can manage patients, prescribe, consult
+          </td>
+        </tr>
+        <tr>
+          <td><code>PROVIDER</code></td>
+          <td>Pharmacy or laboratory — marketplace participant</td>
+        </tr>
+        <tr>
+          <td><code>ADMIN</code></td>
+          <td>LUCA platform administrator</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3 id="enum-plantype">Enum: PlanType</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>FREE</code></td>
+          <td>Basic tier — limited patients, no marketplace</td>
+        </tr>
+        <tr>
+          <td><code>PRO</code></td>
+          <td>Full tier — unlimited patients, marketplace, templates</td>
+        </tr>
+        <tr>
+          <td><code>ENTERPRISE</code></td>
+          <td>Multi-clinic — custom branding, clinic management, API access</td>
+        </tr>
+      </tbody>
+    </table>
+    <hr />
+    <h2 id="3-patient-records">3. Patient Records</h2>
+    <p>
+      <strong>Module purpose:</strong> Medical CRM. Each doctor manages their
+      own patient records. A patient can exist in multiple doctors'
+      <code>Patient</code> tables linked to the same
+      <code>PatientAccount</code>.
+    </p>
+    <h3 id="patient">Patient</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>userId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → User</strong>. Doctor who owns this record</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>patientAccountId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td><strong>FK → PatientAccount</strong>. Global patient link</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>firstName</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Patient's first name</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>lastName</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Patient's last name</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>nationalId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>National ID / DNI / passport</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>birthDate</code></td>
+          <td><code>DATETIME</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Date of birth</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>gender</code></td>
+          <td><code>Gender</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>MALE → FEMALE → OTHER</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><code>email</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Contact email</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>phone</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Contact phone</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td><code>address</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Physical address</td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td><code>city</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>City of residence</td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td><code>emergencyContactName</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td><strong>v3 ⚪</strong> Emergency contact full name</td>
+        </tr>
+        <tr>
+          <td>14</td>
+          <td><code>emergencyContactPhone</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td><strong>v3 ⚪</strong> Emergency contact phone number</td>
+        </tr>
+        <tr>
+          <td>15</td>
+          <td><code>accessCode</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>
+            Unique code for patient portal access. <strong>Unique</strong>
+          </td>
+        </tr>
+        <tr>
+          <td>16</td>
+          <td><code>lastLogin</code></td>
+          <td><code>DATETIME</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Last patient portal login timestamp</td>
+        </tr>
+        <tr>
+          <td>17</td>
+          <td><code>bloodType</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>A+/A-/B+/B-/AB+/AB-/O+/O-</td>
+        </tr>
+        <tr>
+          <td>18</td>
+          <td><code>allergies</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Known allergies (comma-separated or JSON array)</td>
+        </tr>
+        <tr>
+          <td>19</td>
+          <td><code>chronicConditions</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Chronic conditions summary</td>
+        </tr>
+        <tr>
+          <td>20</td>
+          <td><code>privateNotes</code></td>
+          <td><code>TEXT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Doctor-only private notes (not visible to patient)</td>
+        </tr>
+        <tr>
+          <td>21</td>
+          <td><code>createdAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Record creation</td>
+        </tr>
+        <tr>
+          <td>22</td>
+          <td><code>updatedAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Last update</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Business rules:</strong></p>
+    <ul>
+      <li>
+        <code>userId</code> defines ownership: only the creating doctor can see
+        this record
+      </li>
+      <li>
+        <code>patientAccountId</code> links to the global account — enables
+        cross-doctor data sharing with patient consent
+      </li>
+      <li>
+        <code>accessCode</code> is auto-generated, used for patient portal login
+        without password
+      </li>
+      <li>
+        <code>privateNotes</code> are NEVER visible to the patient via the
+        portal
+      </li>
+      <li>
+        <code>emergencyContact*</code> fields were added in v3 — already present
+        in frontend Zod schema
+      </li>
+    </ul>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (userId)</code></li>
+      <li><code>INDEX (patientAccountId)</code></li>
+      <li><code>UNIQUE (accessCode)</code></li>
+    </ul>
+    <h3 id="enum-gender">Enum: Gender</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>MALE</code></td>
+          <td>Male</td>
+        </tr>
+        <tr>
+          <td><code>FEMALE</code></td>
+          <td>Female</td>
+        </tr>
+        <tr>
+          <td><code>OTHER</code></td>
+          <td>Other / non-binary</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>Zod schema:</strong> <code>src/features/patients/schemas.ts</code>
+    </p>
+    <hr />
+    <h2 id="4-clinical-module">4. Clinical Module</h2>
+    <p>
+      <strong>Module purpose:</strong> Core clinical workflow: dynamic form
+      templates → consultations with SOAP notes → vital signs → lab requests →
+      appointments.
+    </p>
+    <h3 id="formtemplate">FormTemplate</h3>
+    <p>
+      Dynamic form builder — doctors can create custom clinical history
+      templates or use global ones by specialty.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>userId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>
+            <strong>FK → User</strong>. NULL = global template, NOT NULL =
+            personal
+          </td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>specialty</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>e.g. "Cardiología". For global templates</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>schemaJson</code></td>
+          <td><code>JSON</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>
+            Array of input definitions:
+            <code>[{name, label, type, options?}]</code>
+          </td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>createdAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Creation timestamp</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Business rules:</strong></p>
+    <ul>
+      <li>
+        <code>userId=NULL</code> → global template curated by LUCA for a
+        specialty
+      </li>
+      <li>
+        <code>userId=NOT NULL</code> → personal template created by a doctor
+        (drag &amp; drop)
+      </li>
+      <li>
+        <code>schemaJson</code> structure:
+        <code
+          >[{name: "bpm", label: "Frecuencia cardíaca", type: "number", unit:
+          "bpm"}]</code
+        >
+      </li>
+      <li>
+        Supported field types: text, number, select, multiselect, date,
+        textarea, image
+      </li>
+    </ul>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (userId)</code></li>
+      <li><code>INDEX (specialty)</code> WHERE userId IS NULL</li>
+    </ul>
+    <h3 id="consultation">Consultation</h3>
+    <p>
+      The core clinical encounter. Every doctor-patient interaction is a
+      Consultation. Supports dynamic form data via <code>dynamicData</code>.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>userId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>
+            <strong>FK → User</strong>. Doctor conducting the consultation
+          </td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>patientId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Patient</strong>. Patient being seen</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>clinicId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td><strong>FK → Clinic</strong>. NULL if private practice</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>formTemplateId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>
+            <strong>FK → FormTemplate</strong>. Template used for this consult
+          </td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>date</code></td>
+          <td><code>DATETIME</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Consultation date and time</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>status</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td><code>pending</code></td>
+          <td>
+            <strong>v2:</strong> pending → in-progress → completed → cancelled
+          </td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>reason</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>
+            <strong>S (Subjective):</strong> Chief complaint / reason for visit
+          </td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><code>physicalExam</code></td>
+          <td><code>TEXT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td><strong>O (Objective):</strong> Physical examination findings</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>diagnosis</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td><strong>A (Assessment):</strong> Diagnosis</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td><code>treatmentPlan</code></td>
+          <td><code>TEXT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td><strong>P (Plan):</strong> Treatment plan</td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td><code>dynamicData</code></td>
+          <td><code>JSON</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Custom form responses: <code>{bpm: 85, perimetro: 35}</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Business rules:</strong></p>
+    <ul>
+      <li>
+        SOAP note structure: Subjective (reason), Objective (physicalExam +
+        vital signs), Assessment (diagnosis), Plan (treatmentPlan)
+      </li>
+      <li>
+        <code>dynamicData</code> stores form template responses — keyed by form
+        field <code>name</code>
+      </li>
+      <li>
+        Status workflow: <code>pending</code> (scheduled) →
+        <code>in-progress</code> (doctor started) →
+        <code>completed</code> (finished) → <code>cancelled</code> (not
+        attended)
+      </li>
+      <li>
+        A consultation can have exactly one <code>VitalSign</code> and one
+        <code>LabRequest</code>
+      </li>
+    </ul>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (userId, date)</code></li>
+      <li><code>INDEX (patientId)</code></li>
+      <li><code>INDEX (clinicId)</code></li>
+      <li><code>INDEX (status)</code></li>
+    </ul>
+    <h3 id="appointment">Appointment</h3>
+    <p>Scheduling/agenda system. Doctors manage their appointment calendar.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>patientId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Patient</strong></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>doctorId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → User</strong> (must have role=DOCTOR)</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>clinicId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td><strong>FK → Clinic</strong>. NULL if private practice</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>date</code></td>
+          <td><code>DATE</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Appointment date</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>time</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Time slot, e.g. "09:30"</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>type</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>e.g. "Control general", "Cardiología"</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>status</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td><code>pending</code></td>
+          <td>pending → in-progress → completed → cancelled</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><code>notes</code></td>
+          <td><code>TEXT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Internal doctor notes</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>createdAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Creation</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td><code>updatedAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Last update</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Business rules:</strong></p>
+    <ul>
+      <li>
+        Doctor (and clinic) calendar: appointments are scoped to doctor+date
+      </li>
+      <li>
+        Status drives the dashboard queue: <code>pending</code> appears in
+        "upcoming", <code>in-progress</code> in "now"
+      </li>
+      <li>No double-booking enforced at application level</li>
+    </ul>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (doctorId, date)</code></li>
+      <li><code>INDEX (patientId)</code></li>
+      <li><code>INDEX (clinicId)</code></li>
+    </ul>
+    <h3 id="vitalsign">VitalSign</h3>
+    <p>
+      Patient vitals taken during a consultation. 1:1 relationship with
+      Consultation.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>patientId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Patient</strong></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>consultationId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Consultation</strong>. Unique (1:1)</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>weight</code></td>
+          <td><code>FLOAT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>kg</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>height</code></td>
+          <td><code>FLOAT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>cm</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>systolicBP</code></td>
+          <td><code>INT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Systolic blood pressure (mmHg)</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>diastolicBP</code></td>
+          <td><code>INT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Diastolic blood pressure (mmHg)</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>heartRate</code></td>
+          <td><code>INT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>bpm</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><code>temperature</code></td>
+          <td><code>FLOAT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>°C</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>oxygenSat</code></td>
+          <td><code>INT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>SpO₂ percentage</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td><code>date</code></td>
+          <td><code>DATETIME</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Measurement date/time</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>UNIQUE (consultationId)</code></li>
+      <li><code>INDEX (patientId)</code></li>
+    </ul>
+    <h3 id="labrequest">LabRequest</h3>
+    <p>
+      Laboratory test order linked to a consultation. 1:1 relationship with
+      Consultation.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>consultationId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Consultation</strong>. Unique (1:1)</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>examsList</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>
+            JSON array of exam names: <code>["Hemograma", "Glicemia"]</code>
+          </td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>instructions</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Special instructions for patient/lab</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>isCompleted</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td>❌</td>
+          <td><code>false</code></td>
+          <td>All results received?</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>UNIQUE (consultationId)</code></li>
+    </ul>
+    <hr />
+    <h2 id="5-prescriptions">5. Prescriptions</h2>
+    <p>
+      <strong>Module purpose:</strong> Complete prescription workflow:
+      medication catalog → prescription templates → live prescriptions with
+      items.
+    </p>
+    <h3 id="medication">Medication</h3>
+    <p>
+      Global and personal medication catalog. Global medications are curated by
+      LUCA; doctors can add personal entries.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>userId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>
+            <strong>FK → User</strong>. NULL = global catalog, NOT NULL =
+            doctor's personal
+          </td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>activePrinciple</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Active ingredient, e.g. "Amoxicilina"</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>concentration</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>e.g. "500mg", "4mg/ml", "1g"</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>presentation</code></td>
+          <td><code>PresentationEnum</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>CAPSULA → TABLETA → JARABE → GOTAS → AMPOLLA → CREMA</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>administrationRoute</code></td>
+          <td><code>AdministrationRouteEnum</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>ORAL → INTRAVENOSA → INTRAMUSCULAR → TOPICA → OFTALMICA</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>commercialName</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Brand name, e.g. "Amoxil"</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>requiresPrescription</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td>❌</td>
+          <td><code>true</code></td>
+          <td>
+            <strong>v3 ⚪</strong> Does it require a medical prescription?
+          </td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><code>contraindications</code></td>
+          <td><code>TEXT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td><strong>v3 ⚪</strong> Known contraindications</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>isActive</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td>❌</td>
+          <td><code>true</code></td>
+          <td>Soft-delete / deprecate medication</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td><code>createdAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Creation</td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td><code>updatedAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Last update</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Business rules:</strong></p>
+    <ul>
+      <li>
+        Unique constraint:
+        <code
+          >(userId, activePrinciple, concentration, presentation,
+          administrationRoute)</code
+        >
+        — same doctor can't duplicate
+      </li>
+      <li>Global catalog: <code>userId=NULL</code>, visible to all doctors</li>
+      <li>
+        Personal catalog: <code>userId=NOT NULL</code>, visible only to that
+        doctor
+      </li>
+      <li>
+        Seed data: 12 common medications included in
+        <code>DATABASE_PATCH_v2.sql</code>
+      </li>
+    </ul>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li>
+        <code
+          >UNIQUE (userId, activePrinciple, concentration, presentation,
+          administrationRoute)</code
+        >
+      </li>
+      <li><code>INDEX (userId)</code></li>
+    </ul>
+    <p>
+      <strong>Zod schema:</strong>
+      <code>src/features/medications/schemas.ts</code>
+    </p>
+    <h3 id="enum-presentationenum">Enum: PresentationEnum</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Label (es)</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>CAPSULA</code></td>
+          <td>Cápsula</td>
+          <td>Capsule</td>
+        </tr>
+        <tr>
+          <td><code>TABLETA</code></td>
+          <td>Tableta</td>
+          <td>Tablet</td>
+        </tr>
+        <tr>
+          <td><code>JARABE</code></td>
+          <td>Jarabe</td>
+          <td>Syrup</td>
+        </tr>
+        <tr>
+          <td><code>GOTAS</code></td>
+          <td>Gotas</td>
+          <td>Drops</td>
+        </tr>
+        <tr>
+          <td><code>AMPOLLA</code></td>
+          <td>Ampolla</td>
+          <td>Ampoule / vial</td>
+        </tr>
+        <tr>
+          <td><code>CREMA</code></td>
+          <td>Crema</td>
+          <td>Cream / ointment</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3 id="enum-administrationrouteenum">Enum: AdministrationRouteEnum</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Label (es)</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ORAL</code></td>
+          <td>Oral</td>
+          <td>By mouth</td>
+        </tr>
+        <tr>
+          <td><code>INTRAVENOSA</code></td>
+          <td>Intravenosa</td>
+          <td>Intravenous</td>
+        </tr>
+        <tr>
+          <td><code>INTRAMUSCULAR</code></td>
+          <td>Intramuscular</td>
+          <td>Intramuscular injection</td>
+        </tr>
+        <tr>
+          <td><code>TOPICA</code></td>
+          <td>Tópica</td>
+          <td>Topical application</td>
+        </tr>
+        <tr>
+          <td><code>OFTALMICA</code></td>
+          <td>Oftálmica</td>
+          <td>Ophthalmic (eye)</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3 id="prescription">Prescription</h3>
+    <p>
+      A live prescription issued by a doctor. Can be linked to a consultation
+      (but not required).
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>userId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → User</strong>. Prescribing doctor</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>patientId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Patient</strong></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>consultationId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td><strong>FK → Consultation</strong>. Optional link. Unique</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>clinicId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td><strong>FK → Clinic</strong>. NULL if private practice</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>date</code></td>
+          <td><code>DATETIME</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Prescription date</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>expirationDate</code></td>
+          <td><code>DATETIME</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Expiration date</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>notes</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>General notes</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><code>publicToken</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>
+            Shareable token for pharmacy verification. <strong>Unique</strong>
+          </td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>status</code></td>
+          <td><code>RxStatus</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>ACTIVE → CANCELLED → EXPIRED</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Business rules:</strong></p>
+    <ul>
+      <li>
+        <code>publicToken</code> is a unique, shareable identifier — patients
+        share this with pharmacies (WhatsApp/link)
+      </li>
+      <li>
+        Status transitions: ACTIVE → CANCELLED (doctor revokes) or ACTIVE →
+        EXPIRED (past expirationDate)
+      </li>
+      <li>If linked to a consultation, it's 1:1 (unique constraint)</li>
+    </ul>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li>
+        <code>UNIQUE (consultationId)</code> — partial index, nulls not distinct
+      </li>
+      <li><code>UNIQUE (publicToken)</code></li>
+      <li><code>INDEX (userId)</code></li>
+      <li><code>INDEX (patientId)</code></li>
+    </ul>
+    <h3 id="prescriptionitem">PrescriptionItem</h3>
+    <p>Individual medication line item within a prescription.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>prescriptionId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Prescription</strong></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>medicationId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>
+            <strong>FK → Medication</strong>. <strong>v2:</strong> replaced
+            free-text <code>medication</code>
+          </td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>dose</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>e.g. "1 cápsula"</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>frequency</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>e.g. "Cada 8 horas"</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>duration</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>e.g. "7 días"</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>quantity</code></td>
+          <td><code>INT</code></td>
+          <td>❌</td>
+          <td><code>1</code></td>
+          <td><strong>v2:</strong> Number of units (boxes, blisters)</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>notes</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>
+            <strong>v2:</strong> Doctor observations for this specific item
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (prescriptionId)</code></li>
+      <li><code>INDEX (medicationId)</code></li>
+    </ul>
+    <h3 id="enum-rxstatus">Enum: RxStatus</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ACTIVE</code></td>
+          <td>Prescription is valid and can be dispensed</td>
+        </tr>
+        <tr>
+          <td><code>CANCELLED</code></td>
+          <td>Revoked by the prescribing doctor</td>
+        </tr>
+        <tr>
+          <td><code>EXPIRED</code></td>
+          <td>Past the expiration date</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3 id="prescriptiontemplate">PrescriptionTemplate</h3>
+    <p>
+      Saved prescription templates for quick reuse (e.g. "Post-operatorio
+      estándar").
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>userId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → User</strong>. Doctor who owns the template</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>title</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Template name, e.g. "Post-cirugía abdominal"</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (userId)</code></li>
+    </ul>
+    <h3 id="templateitem">TemplateItem</h3>
+    <p>Medication item within a prescription template.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>templateId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → PrescriptionTemplate</strong></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>medicationId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>
+            <strong>FK → Medication</strong>. <strong>v2:</strong> replaced
+            free-text
+          </td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>dose</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>e.g. "1 cápsula"</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>frequency</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>e.g. "Cada 8 horas"</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>duration</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>e.g. "7 días"</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (templateId)</code></li>
+      <li><code>INDEX (medicationId)</code></li>
+    </ul>
+    <hr />
+    <h2 id="6-marketplace">6. Marketplace</h2>
+    <p>
+      <strong>Module purpose:</strong> B2B marketplace connecting
+      patients/doctors with pharmacies and laboratories. Quote request → offer
+      workflow.
+    </p>
+    <h3 id="providerprofile">ProviderProfile</h3>
+    <p>
+      Business profile for pharmacies and laboratories participating in the
+      marketplace.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>userId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → User</strong>. Unique (1:1)</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>type</code></td>
+          <td><code>ProviderType</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>PHARMACY → LABORATORY</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>commercialName</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Business name</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>rif</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Tax ID (Venezuela RIF)</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>address</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Physical address</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>city</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>City</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>state</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>State / province</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><code>phone</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Business phone</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>isOpen</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td>❌</td>
+          <td><code>false</code></td>
+          <td>Currently accepting orders?</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td><code>isVerified</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td>❌</td>
+          <td><code>false</code></td>
+          <td>KYC verified?</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>UNIQUE (userId)</code></li>
+    </ul>
+    <h3 id="enum-providertype">Enum: ProviderType</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>PHARMACY</code></td>
+          <td>Retail pharmacy / drugstore</td>
+        </tr>
+        <tr>
+          <td><code>LABORATORY</code></td>
+          <td>Clinical laboratory</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3 id="quoterequest">QuoteRequest</h3>
+    <p>
+      A request for medication/lab quotes, typically created from a
+      prescription.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>prescriptionId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Prescription</strong></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>patientId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Patient</strong></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>city</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Target city for delivery/pickup</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>status</code></td>
+          <td><code>QuoteStatus</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>OPEN → CLOSED</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>createdAt</code></td>
+          <td><code>DATETIME</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Request creation</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (prescriptionId)</code></li>
+      <li><code>INDEX (patientId)</code></li>
+      <li><code>INDEX (status)</code></li>
+    </ul>
+    <h3 id="quoteoffer">QuoteOffer</h3>
+    <p>A provider's price offer for a quote request.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>quoteRequestId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → QuoteRequest</strong></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>providerId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → ProviderProfile</strong></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>price</code></td>
+          <td><code>FLOAT</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Total price</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>currency</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td><code>"USD"</code></td>
+          <td>Currency code</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>availability</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>e.g. "Entrega en 24h", "Retiro en sucursal"</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>comments</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Provider notes</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>createdAt</code></td>
+          <td><code>DATETIME</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Offer creation</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (quoteRequestId)</code></li>
+      <li><code>INDEX (providerId)</code></li>
+    </ul>
+    <h3 id="enum-quotestatus">Enum: QuoteStatus</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>OPEN</code></td>
+          <td>Accepting offers from providers</td>
+        </tr>
+        <tr>
+          <td><code>CLOSED</code></td>
+          <td>Request fulfilled or expired</td>
+        </tr>
+      </tbody>
+    </table>
+    <hr />
+    <h2 id="7-system">7. System</h2>
+    <p>
+      <strong>Module purpose:</strong> Cross-cutting system features:
+      notifications, medical documents, and patient follow-ups.
+    </p>
+    <h3 id="notification">Notification</h3>
+    <p>In-app notification system.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>userId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → User</strong>. Recipient</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>type</code></td>
+          <td><code>NotifType</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Notification category</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>title</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Notification title</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>message</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Notification body</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>isRead</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td>❌</td>
+          <td><code>false</code></td>
+          <td>Read status</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>link</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Deeplink URL</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>createdAt</code></td>
+          <td><code>DATETIME</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Creation timestamp</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (userId, isRead)</code></li>
+      <li><code>INDEX (createdAt)</code></li>
+    </ul>
+    <h3 id="enum-notiftype">Enum: NotifType</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>SYSTEM</code></td>
+          <td>General platform notification</td>
+        </tr>
+        <tr>
+          <td><code>NEW_QUOTE_REQUEST</code></td>
+          <td>New quote request in marketplace (→ pharmacies)</td>
+        </tr>
+        <tr>
+          <td><code>QUOTE_RECEIVED</code></td>
+          <td>Quote received (→ patient/doctor)</td>
+        </tr>
+        <tr>
+          <td><code>FOLLOW_UP_ALERT</code></td>
+          <td>Patient follow-up reminder</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3 id="medicaldocument">MedicalDocument</h3>
+    <p>Legal/medical documents: certificates, referrals, reports.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>userId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → User</strong>. Issuing doctor</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>patientId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Patient</strong></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>type</code></td>
+          <td><code>DocType</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>CERTIFICATE → REFERRAL → REPORT</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>content</code></td>
+          <td><code>TEXT</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Document body (HTML or plain text)</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>publicToken</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Shareable verification token. <strong>Unique</strong></td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>createdAt</code></td>
+          <td><code>DATETIME</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Creation timestamp</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>UNIQUE (publicToken)</code></li>
+      <li><code>INDEX (userId)</code></li>
+      <li><code>INDEX (patientId)</code></li>
+    </ul>
+    <h3 id="enum-doctype">Enum: DocType</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>CERTIFICATE</code></td>
+          <td>Medical certificate (work/school)</td>
+        </tr>
+        <tr>
+          <td><code>REFERRAL</code></td>
+          <td>Inter-doctor referral</td>
+        </tr>
+        <tr>
+          <td><code>REPORT</code></td>
+          <td>Medical report</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3 id="followup">FollowUp</h3>
+    <p>Scheduled patient follow-up tracking.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>userId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → User</strong>. Doctor</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>patientId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Patient</strong></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>scheduledDate</code></td>
+          <td><code>DATETIME</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>When to follow up</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>status</code></td>
+          <td><code>FollowStatus</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>PENDING → SENT → RESPONDED</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>response</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Patient's WhatsApp response</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (userId, scheduledDate)</code></li>
+      <li><code>INDEX (patientId)</code></li>
+    </ul>
+    <h3 id="enum-followstatus">Enum: FollowStatus</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>PENDING</code></td>
+          <td>Follow-up scheduled, not yet sent</td>
+        </tr>
+        <tr>
+          <td><code>SENT</code></td>
+          <td>WhatsApp message sent to patient</td>
+        </tr>
+        <tr>
+          <td><code>RESPONDED</code></td>
+          <td>Patient responded</td>
+        </tr>
+      </tbody>
+    </table>
+    <hr />
+    <h2 id="8-medical-background">8. Medical Background</h2>
+    <p>
+      <strong>Module purpose:</strong> Deep clinical history — antecedents,
+      surgical history, family history, lifestyle, obstetric history,
+      vaccinations.
+    </p>
+    <h3 id="medicalbackground">MedicalBackground</h3>
+    <p>Key chronic conditions and past hospitalizations. 1:1 with Patient.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>patientId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Patient</strong>. Unique (1:1)</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>hasDiabetes</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td>❌</td>
+          <td><code>false</code></td>
+          <td>Diabetes diagnosis</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>hasHypertension</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td>❌</td>
+          <td><code>false</code></td>
+          <td>Hypertension diagnosis</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>hasAsthma</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td>❌</td>
+          <td><code>false</code></td>
+          <td>Asthma diagnosis</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>otherConditions</code></td>
+          <td><code>TEXT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Other chronic conditions (free text)</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>pastHospitalizations</code></td>
+          <td><code>TEXT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Past hospitalizations summary</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>UNIQUE (patientId)</code></li>
+    </ul>
+    <h3 id="surgicalhistory">SurgicalHistory</h3>
+    <p>Past surgical procedures.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>patientId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Patient</strong></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>procedure</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Procedure name, e.g. "Apendicectomía"</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>date</code></td>
+          <td><code>DATETIME</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Surgery date</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>hospital</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Hospital where performed</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>notes</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Additional notes</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (patientId)</code></li>
+    </ul>
+    <h3 id="familyhistory">FamilyHistory</h3>
+    <p>Family medical history — hereditary conditions.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>patientId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Patient</strong></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>condition</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Condition name, e.g. "Diabetes tipo 2"</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>relationship</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Family relationship, e.g. "Madre", "Abuelo paterno"</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>note</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Additional details</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (patientId)</code></li>
+    </ul>
+    <h3 id="lifestyle">Lifestyle</h3>
+    <p>Patient lifestyle factors. 1:1 with Patient.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>patientId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Patient</strong>. Unique (1:1)</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>smokingStatus</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>e.g. "No fumador", "Fumador activo", "Ex-fumador"</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>alcoholConsumption</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>e.g. "No consume", "Ocasional", "Frecuente"</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>activityLevel</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>e.g. "Sedentario", "Moderado", "Activo"</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>dietType</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>e.g. "Omnívoro", "Vegetariano", "Vegano"</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>UNIQUE (patientId)</code></li>
+    </ul>
+    <h3 id="obstetrichistory">ObstetricHistory</h3>
+    <p>Gynecological/obstetric history. 1:1 with Patient.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>patientId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Patient</strong>. Unique (1:1)</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>lastPeriodDate</code></td>
+          <td><code>DATETIME</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>FUM / last menstrual period</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>pregnancies</code></td>
+          <td><code>INT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>G (Gravida) — total pregnancies</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>births</code></td>
+          <td><code>INT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>P (Para) — births</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>cesareans</code></td>
+          <td><code>INT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>C (Cesarean) — C-sections</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>abortions</code></td>
+          <td><code>INT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>A (Abortions) — miscarriages/abortions</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>contraceptiveMethod</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Current contraceptive method</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>UNIQUE (patientId)</code></li>
+    </ul>
+    <h3 id="vaccination">Vaccination</h3>
+    <p>Immunization records.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>patientId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Patient</strong></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>vaccine</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Vaccine name, e.g. "COVID-19 Pfizer", "Influenza"</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>doseNumber</code></td>
+          <td><code>INT</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Dose number (1, 2, booster...)</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>date</code></td>
+          <td><code>DATETIME</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Administration date</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (patientId)</code></li>
+    </ul>
+    <hr />
+    <h2 id="9-institutional">9. Institutional</h2>
+    <p>
+      <strong>Module purpose:</strong> Multi-clinic support. Clinics have
+      members (doctors, admins, receptionists) with role-based access.
+    </p>
+    <h3 id="clinic">Clinic</h3>
+    <p>Healthcare institution profile.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>name</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Clinic / hospital name</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>rif</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Tax ID (Venezuela RIF)</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>address</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Physical address</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>logoUrl</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Clinic logo</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>website</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Website URL</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>phone</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Main phone</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>createdAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Creation</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><code>updatedAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Last update</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+    </ul>
+    <h3 id="clinicmember">ClinicMember</h3>
+    <p>Membership linking users to clinics with role-based access.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>clinicId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Clinic</strong></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>userId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → User</strong></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>role</code></td>
+          <td><code>ClinicRole</code></td>
+          <td>❌</td>
+          <td><code>DOCTOR</code></td>
+          <td>OWNER → ADMIN → DOCTOR → RECEPTIONIST</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>isActive</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td>❌</td>
+          <td><code>true</code></td>
+          <td>Active membership?</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (clinicId)</code></li>
+      <li><code>INDEX (userId)</code></li>
+      <li><code>UNIQUE (clinicId, userId)</code></li>
+    </ul>
+    <h3 id="enum-clinicrole">Enum: ClinicRole</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Permissions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>OWNER</code></td>
+          <td>Full clinic control — billing, member management, analytics</td>
+        </tr>
+        <tr>
+          <td><code>ADMIN</code></td>
+          <td>Administrative — manage appointments, members, reports</td>
+        </tr>
+        <tr>
+          <td><code>DOCTOR</code></td>
+          <td>Clinical — see own patients, prescribe, consult</td>
+        </tr>
+        <tr>
+          <td><code>RECEPTIONIST</code></td>
+          <td>Front desk — schedule appointments, check-in patients</td>
+        </tr>
+      </tbody>
+    </table>
+    <hr />
+    <h2 id="10-verification-kyc">10. Verification (KYC)</h2>
+    <p>
+      <strong>Module purpose:</strong> Know Your Customer document verification
+      for doctors, pharmacies, and clinics.
+    </p>
+    <h3 id="verificationdocument">VerificationDocument</h3>
+    <p>Uploaded documents for identity/business verification.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>userId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → User</strong>. Who uploaded</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>type</code></td>
+          <td><code>DocVerificationType</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Document category</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>fileUrl</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>URL to file (S3/Google Cloud)</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>status</code></td>
+          <td><code>VerificationStatus</code></td>
+          <td>❌</td>
+          <td><code>PENDING</code></td>
+          <td>PENDING → APPROVED → REJECTED</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>comments</code></td>
+          <td><code>TEXT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Rejection reason if applicable</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>createdAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Upload date</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>updatedAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Last status change</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (userId, type)</code></li>
+    </ul>
+    <h3 id="enum-docverificationtype">Enum: DocVerificationType</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Required by</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>MEDICAL_LICENSE</code></td>
+          <td>DOCTOR — medical degree or college certification</td>
+        </tr>
+        <tr>
+          <td><code>NATIONAL_ID</code></td>
+          <td>All users — national ID card</td>
+        </tr>
+        <tr>
+          <td><code>BUSINESS_RIF</code></td>
+          <td>PROVIDER, CLINIC — tax registration</td>
+        </tr>
+        <tr>
+          <td><code>COMMERCIAL_REGISTER</code></td>
+          <td>PROVIDER, CLINIC — business registration</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3 id="enum-verificationstatus">Enum: VerificationStatus</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>PENDING</code></td>
+          <td>Awaiting review</td>
+        </tr>
+        <tr>
+          <td><code>APPROVED</code></td>
+          <td>Document verified</td>
+        </tr>
+        <tr>
+          <td><code>REJECTED</code></td>
+          <td>Document rejected (see <code>comments</code>)</td>
+        </tr>
+      </tbody>
+    </table>
+    <hr />
+    <h2 id="11-pharmacy-inventory-🟢-v3">11. Pharmacy Inventory 🟢 v3</h2>
+    <p>
+      <strong>Module purpose:</strong> Real-time inventory management for
+      pharmacies. Tracks stock levels, batches, expiration dates, and pricing.
+      Enables accurate quote generation in the marketplace.
+    </p>
+    <h3 id="pharmacyinventory">PharmacyInventory</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>providerId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>
+            <strong>FK → ProviderProfile</strong>. Pharmacy owning this stock
+          </td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>medicationId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Medication</strong>. Which medication</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>stock</code></td>
+          <td><code>INT</code></td>
+          <td>❌</td>
+          <td><code>0</code></td>
+          <td>Current units available</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>minStockAlert</code></td>
+          <td><code>INT</code></td>
+          <td>✅</td>
+          <td><code>10</code></td>
+          <td>Threshold that triggers low-stock alert</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>batchNumber</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Batch/lot number for traceability</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>expirationDate</code></td>
+          <td><code>DATE</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Expiration date of this batch</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>unitPrice</code></td>
+          <td><code>DECIMAL(10,2)</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Selling price per unit (used for auto-quoting)</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><code>createdAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Record creation</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>updatedAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Last update</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Business rules:</strong></p>
+    <ul>
+      <li>
+        Unique constraint:
+        <code>(providerId, medicationId, batchNumber)</code> — same pharmacy
+        can't have two records for the same batch
+      </li>
+      <li>
+        When <code>stock &lt;= minStockAlert</code>, the pharmacy receives a
+        "low stock" notification
+      </li>
+      <li>
+        <code>unitPrice</code> is used to auto-generate quote offers in the
+        marketplace
+      </li>
+      <li>
+        <code>batchNumber</code> enables recall tracking in case of medication
+        alerts
+      </li>
+      <li>Pharmacies update <code>stock</code> after each sale/dispensation</li>
+    </ul>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>UNIQUE (providerId, medicationId, batchNumber)</code></li>
+      <li><code>INDEX (providerId)</code></li>
+      <li><code>INDEX (medicationId)</code></li>
+      <li>
+        <code>INDEX (expirationDate)</code> WHERE expirationDate IS NOT NULL —
+        for expiration alerts
+      </li>
+    </ul>
+    <p>
+      <strong>Zod schema:</strong>
+      <code>src/features/inventory/schemas.ts</code>
+    </p>
+    <hr />
+    <h2 id="12-lab-results-🟢-v3">12. Lab Results 🟢 v3</h2>
+    <p>
+      <strong>Module purpose:</strong> Complements <code>LabRequest</code> by
+      storing actual laboratory test results. Supports structured JSON results
+      for flexible test types plus PDF uploads.
+    </p>
+    <h3 id="labresult">LabResult</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>labRequestId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → LabRequest</strong>. Unique (1:1)</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>patientId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>
+            <strong>FK → Patient</strong>. Denormalized for efficient queries
+          </td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>fileUrl</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>URL to the full PDF report (S3)</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>resultJson</code></td>
+          <td><code>JSONB</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>
+            Structured results: <code>{glucosa: 90, colesterol: 180, ...}</code>
+          </td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>notes</code></td>
+          <td><code>TEXT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Bioanalyst / lab technician notes</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>reviewedBy</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td><strong>FK → User</strong>. Doctor who reviewed results</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>reviewedAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>When the doctor reviewed</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><code>status</code></td>
+          <td><code>LabResultStatus</code></td>
+          <td>❌</td>
+          <td><code>PENDING</code></td>
+          <td>PENDING → COMPLETED → ABNORMAL → CANCELLED</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>performedAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Actual sample collection / analysis date</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td><code>createdAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Record creation</td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td><code>updatedAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Last update</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Business rules:</strong></p>
+    <ul>
+      <li>
+        1:1 with LabRequest — each lab order produces exactly one result record
+      </li>
+      <li>
+        <code>resultJson</code> is flexible JSONB: structure depends on the exam
+        type (e.g., hemogram has different fields than glicemia)
+      </li>
+      <li>
+        <code>status=ABNORMAL</code> triggers a notification to the requesting
+        doctor (values outside normal range)
+      </li>
+      <li>
+        <code>reviewedBy</code> + <code>reviewedAt</code> track when the doctor
+        acknowledged the results
+      </li>
+      <li>
+        <code>patientId</code> is denormalized for dashboard queries ("show all
+        results for patient X")
+      </li>
+    </ul>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>UNIQUE (labRequestId)</code></li>
+      <li><code>INDEX (patientId)</code></li>
+      <li><code>INDEX (status)</code></li>
+    </ul>
+    <h3 id="enum-labresultstatus">Enum: LabResultStatus</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>PENDING</code></td>
+          <td>Awaiting lab processing</td>
+        </tr>
+        <tr>
+          <td><code>COMPLETED</code></td>
+          <td>Results ready, within normal range</td>
+        </tr>
+        <tr>
+          <td><code>ABNORMAL</code></td>
+          <td>Results contain values outside normal range — flag for doctor</td>
+        </tr>
+        <tr>
+          <td><code>CANCELLED</code></td>
+          <td>Lab request cancelled</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>Zod schema:</strong>
+      <code>src/features/lab-results/schemas.ts</code>
+    </p>
+    <hr />
+    <h2 id="13-billing--payments-🟢-v3">13. Billing &amp; Payments 🟢 v3</h2>
+    <p>
+      <strong>Module purpose:</strong> Complete medical billing workflow.
+      Doctors/clinics create invoices linked to consultations/prescriptions.
+      Supports multiple line items and partial payments via different methods.
+    </p>
+    <h3 id="invoice">Invoice</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>userId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → User</strong>. Doctor/clinic issuing the invoice</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>patientId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Patient</strong></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>consultationId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td><strong>FK → Consultation</strong>. Optional link</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>prescriptionId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td><strong>FK → Prescription</strong>. Optional link</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>subtotal</code></td>
+          <td><code>DECIMAL(10,2)</code></td>
+          <td>❌</td>
+          <td><code>0</code></td>
+          <td>Sum of line items before tax/discount</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>tax</code></td>
+          <td><code>DECIMAL(10,2)</code></td>
+          <td>✅</td>
+          <td><code>0</code></td>
+          <td>Tax amount</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>discount</code></td>
+          <td><code>DECIMAL(10,2)</code></td>
+          <td>✅</td>
+          <td><code>0</code></td>
+          <td>Discount amount</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><code>total</code></td>
+          <td><code>DECIMAL(10,2)</code></td>
+          <td>❌</td>
+          <td><code>0</code></td>
+          <td>Final amount due (subtotal + tax - discount)</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>currency</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td><code>USD</code></td>
+          <td>Currency code (ISO 4217)</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td><code>status</code></td>
+          <td><code>InvoiceStatus</code></td>
+          <td>❌</td>
+          <td><code>DRAFT</code></td>
+          <td>DRAFT → SENT → PAID → PARTIALLY_PAID → OVERDUE → CANCELLED</td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td><code>dueDate</code></td>
+          <td><code>DATE</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Payment due date</td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td><code>notes</code></td>
+          <td><code>TEXT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Invoice notes / payment instructions</td>
+        </tr>
+        <tr>
+          <td>14</td>
+          <td><code>createdAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Creation</td>
+        </tr>
+        <tr>
+          <td>15</td>
+          <td><code>updatedAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Last update</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Business rules:</strong></p>
+    <ul>
+      <li>
+        Status workflow: <code>DRAFT</code> (being edited) →
+        <code>SENT</code> (sent to patient) → <code>PAID</code> (fully settled)
+        / <code>PARTIALLY_PAID</code> (partial payment) /
+        <code>OVERDUE</code> (past dueDate) / <code>CANCELLED</code> (voided)
+      </li>
+      <li>
+        <code>total</code> should equal sum of <code>InvoiceItem.total</code> +
+        <code>tax</code> - <code>discount</code>
+      </li>
+      <li>
+        Multiple <code>Payment</code> records can be linked to one invoice
+        (partial payments)
+      </li>
+      <li>
+        <code>userId</code> is RESTRICT on delete — invoices cannot be orphaned
+      </li>
+    </ul>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (userId)</code></li>
+      <li><code>INDEX (patientId)</code></li>
+      <li><code>INDEX (status)</code></li>
+      <li>
+        <code>INDEX (dueDate)</code> WHERE status IN ('SENT', 'PARTIALLY_PAID')
+        — overdue detection
+      </li>
+    </ul>
+    <h3 id="invoiceitem">InvoiceItem</h3>
+    <p>Line item within an invoice.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>invoiceId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Invoice</strong>. CASCADE delete</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>description</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>e.g. "Consulta general", "Amoxicilina 500mg x30"</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>quantity</code></td>
+          <td><code>INT</code></td>
+          <td>❌</td>
+          <td><code>1</code></td>
+          <td>Quantity of this item</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>unitPrice</code></td>
+          <td><code>DECIMAL(10,2)</code></td>
+          <td>❌</td>
+          <td><code>0</code></td>
+          <td>Price per unit</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>total</code></td>
+          <td><code>DECIMAL(10,2)</code></td>
+          <td>❌</td>
+          <td><code>0</code></td>
+          <td>quantity × unitPrice</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (invoiceId)</code></li>
+    </ul>
+    <h3 id="payment">Payment</h3>
+    <p>Payment received against an invoice.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>invoiceId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td><strong>FK → Invoice</strong>. CASCADE delete</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>amount</code></td>
+          <td><code>DECIMAL(10,2)</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Payment amount</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>method</code></td>
+          <td><code>PaymentMethod</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>CASH → CARD → TRANSFER → INSURANCE → OTHER</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>reference</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Transaction reference number</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>paidAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Payment timestamp</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>notes</code></td>
+          <td><code>TEXT</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Payment notes</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (invoiceId)</code></li>
+    </ul>
+    <h3 id="enum-invoicestatus">Enum: InvoiceStatus</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>DRAFT</code></td>
+          <td>Being created/edited, not yet sent</td>
+        </tr>
+        <tr>
+          <td><code>SENT</code></td>
+          <td>Sent to patient, awaiting payment</td>
+        </tr>
+        <tr>
+          <td><code>PAID</code></td>
+          <td>Fully paid</td>
+        </tr>
+        <tr>
+          <td><code>PARTIALLY_PAID</code></td>
+          <td>Partial payment received</td>
+        </tr>
+        <tr>
+          <td><code>OVERDUE</code></td>
+          <td>Past due date without full payment</td>
+        </tr>
+        <tr>
+          <td><code>CANCELLED</code></td>
+          <td>Voided/cancelled invoice</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3 id="enum-paymentmethod">Enum: PaymentMethod</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Label (es)</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>CASH</code></td>
+          <td>Efectivo</td>
+          <td>Cash payment</td>
+        </tr>
+        <tr>
+          <td><code>CARD</code></td>
+          <td>Tarjeta</td>
+          <td>Credit/debit card</td>
+        </tr>
+        <tr>
+          <td><code>TRANSFER</code></td>
+          <td>Transferencia</td>
+          <td>Bank transfer</td>
+        </tr>
+        <tr>
+          <td><code>INSURANCE</code></td>
+          <td>Seguro</td>
+          <td>Insurance payment</td>
+        </tr>
+        <tr>
+          <td><code>OTHER</code></td>
+          <td>Otro</td>
+          <td>Other method</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>Zod schema:</strong> <code>src/features/billing/schemas.ts</code>
+    </p>
+    <hr />
+    <h2 id="14-audit-log-🟢-v3">14. Audit Log 🟢 v3</h2>
+    <p>
+      <strong>Module purpose:</strong> HIPAA/GDPR-compliant access tracking.
+      Every view, create, update, delete, export, or print of patient data is
+      recorded with user identity, IP address, and action details.
+    </p>
+    <h3 id="auditlog">AuditLog</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code>id</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Primary key (UUID v7)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>userId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>
+            <strong>FK → User</strong>. Who performed the action. NULL if user
+            deleted
+          </td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>patientId</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>
+            <strong>FK → Patient</strong>. Whose data was accessed. NULL for
+            non-patient actions
+          </td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>action</code></td>
+          <td><code>AuditAction</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Type of action performed</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>resource</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Resource identifier, e.g. "Consultation:abc123"</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>resourceType</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>❌</td>
+          <td>—</td>
+          <td>Resource type, e.g. "Consultation", "Prescription"</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>details</code></td>
+          <td><code>JSONB</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>
+            Action metadata:
+            <code>{changedFields: [...], oldValues: {...}}</code>
+          </td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>ipAddress</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Client IP address</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><code>userAgent</code></td>
+          <td><code>VARCHAR</code></td>
+          <td>✅</td>
+          <td>—</td>
+          <td>Client user agent string</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>createdAt</code></td>
+          <td><code>TIMESTAMP</code></td>
+          <td>❌</td>
+          <td><code>NOW()</code></td>
+          <td>Action timestamp</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>Business rules:</strong></p>
+    <ul>
+      <li>
+        Every VIEW of patient data MUST be logged (HIPAA access log requirement)
+      </li>
+      <li>
+        CREATE/UPDATE/DELETE store changed field names and old values in
+        <code>details</code> JSONB for rollback
+      </li>
+      <li>EXPORT logs when data is downloaded (CSV, PDF)</li>
+      <li>PRINT logs when data is printed</li>
+      <li>LOGIN/LOGOUT track session activity</li>
+      <li>
+        <code>userId</code> is SET NULL on user deletion — preserves the audit
+        trail
+      </li>
+      <li>
+        Recommended: partition table by month for performance with large volumes
+      </li>
+    </ul>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+      <li><code>PRIMARY KEY (id)</code></li>
+      <li><code>INDEX (userId)</code></li>
+      <li><code>INDEX (patientId)</code></li>
+      <li><code>INDEX (resourceType, resource)</code></li>
+      <li><code>INDEX (createdAt DESC)</code> — time-based queries</li>
+    </ul>
+    <h3 id="enum-auditaction">Enum: AuditAction</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>VIEW</code></td>
+          <td>Data was viewed/read</td>
+        </tr>
+        <tr>
+          <td><code>CREATE</code></td>
+          <td>New record created</td>
+        </tr>
+        <tr>
+          <td><code>UPDATE</code></td>
+          <td>Existing record modified</td>
+        </tr>
+        <tr>
+          <td><code>DELETE</code></td>
+          <td>Record deleted (soft or hard)</td>
+        </tr>
+        <tr>
+          <td><code>EXPORT</code></td>
+          <td>Data exported/downloaded</td>
+        </tr>
+        <tr>
+          <td><code>LOGIN</code></td>
+          <td>User logged in</td>
+        </tr>
+        <tr>
+          <td><code>LOGOUT</code></td>
+          <td>User logged out</td>
+        </tr>
+        <tr>
+          <td><code>PRINT</code></td>
+          <td>Data sent to printer</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>Zod schema:</strong> <code>src/features/audit/schemas.ts</code>
+    </p>
+    <hr />
+    <h2 id="15-entity-relationship-diagram">15. Entity Relationship Diagram</h2>
+    <pre><code>┌─────────────────┐       ┌─────────────────┐
+│  PatientAccount  │       │      User        │
+│  (Global ID)     │◄──────│  (Doctors/Prov)  │
+└────────┬─────────┘       └────────┬─────────┘
+         │                          │
+         │ 1:N                      │ 1:N
+         ▼                          ▼
+┌─────────────────┐       ┌─────────────────┐
+│     Patient      │◄──────│   Consultation   │──────► FormTemplate
+│   (CRM Record)   │       │   (SOAP Notes)   │
+└──┬────┬────┬─────┘       └──┬──────┬───────┘
+   │    │    │                │      │
+   │    │    │          1:1   │      │ 1:1
+   │    │    │    ┌───────────┘      └──────────┐
+   │    │    │    ▼                              ▼
+   │    │    │  VitalSign                  LabRequest ──► LabResult (v3)
+   │    │    │
+   │    │    │       ┌─────────────────┐
+   │    │    └──────►│   Prescription   │──────► PrescriptionItem ──► Medication
+   │    │            └────────┬─────────┘
+   │    │                     │
+   │    │                     ▼
+   │    │            ┌─────────────────┐
+   │    │            │  QuoteRequest    │──────► QuoteOffer ◄── ProviderProfile
+   │    │            └─────────────────┘
+   │    │
+   │    ├──────► Appointment ──► Clinic ◄── ClinicMember
+   │    │
+   │    ├──────► MedicalBackground (1:1)
+   │    ├──────► SurgicalHistory (1:N)
+   │    ├──────► FamilyHistory (1:N)
+   │    ├──────► Lifestyle (1:1)
+   │    ├──────► ObstetricHistory (1:1)
+   │    ├──────► Vaccination (1:N)
+   │    │
+   │    ├──────► MedicalDocument
+   │    ├──────► FollowUp
+   │    │
+   │    └──────► Invoice (v3) ──► InvoiceItem
+   │                  │
+   │                  └──► Payment
+   │
+   └──────► AuditLog (v3) — tracks all access to patient data
+
+   ┌─────────────────┐
+   │PharmacyInventory │──► ProviderProfile + Medication
+   │     (v3)         │
+   └─────────────────┘
+
+   ┌─────────────────┐
+   │VerificationDocument│──► User (KYC)
+   └─────────────────┘
+</code></pre>
+    <p><strong>Relationship notation:</strong></p>
+    <ul>
+      <li><code>──►</code> : Foreign key (many-to-one)</li>
+      <li><code>────►</code> : One-to-one</li>
+      <li><code>1:1</code> : Unique constraint on FK</li>
+      <li><code>1:N</code> : One-to-many</li>
+    </ul>
+    <hr />
+    <h2 id="appendix-quick-reference">Appendix: Quick Reference</h2>
+    <h3 id="all-enums">All Enums</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Enum</th>
+          <th>Module</th>
+          <th>Values</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>UserRole</code></td>
+          <td>2</td>
+          <td>DOCTOR, PROVIDER, ADMIN</td>
+        </tr>
+        <tr>
+          <td><code>PlanType</code></td>
+          <td>2</td>
+          <td>FREE, PRO, ENTERPRISE</td>
+        </tr>
+        <tr>
+          <td><code>Gender</code></td>
+          <td>3</td>
+          <td>MALE, FEMALE, OTHER</td>
+        </tr>
+        <tr>
+          <td><code>PresentationEnum</code></td>
+          <td>5</td>
+          <td>CAPSULA, TABLETA, JARABE, GOTAS, AMPOLLA, CREMA</td>
+        </tr>
+        <tr>
+          <td><code>AdministrationRouteEnum</code></td>
+          <td>5</td>
+          <td>ORAL, INTRAVENOSA, INTRAMUSCULAR, TOPICA, OFTALMICA</td>
+        </tr>
+        <tr>
+          <td><code>RxStatus</code></td>
+          <td>5</td>
+          <td>ACTIVE, CANCELLED, EXPIRED</td>
+        </tr>
+        <tr>
+          <td><code>ProviderType</code></td>
+          <td>6</td>
+          <td>PHARMACY, LABORATORY</td>
+        </tr>
+        <tr>
+          <td><code>QuoteStatus</code></td>
+          <td>6</td>
+          <td>OPEN, CLOSED</td>
+        </tr>
+        <tr>
+          <td><code>NotifType</code></td>
+          <td>7</td>
+          <td>SYSTEM, NEW_QUOTE_REQUEST, QUOTE_RECEIVED, FOLLOW_UP_ALERT</td>
+        </tr>
+        <tr>
+          <td><code>DocType</code></td>
+          <td>7</td>
+          <td>CERTIFICATE, REFERRAL, REPORT</td>
+        </tr>
+        <tr>
+          <td><code>FollowStatus</code></td>
+          <td>7</td>
+          <td>PENDING, SENT, RESPONDED</td>
+        </tr>
+        <tr>
+          <td><code>ClinicRole</code></td>
+          <td>9</td>
+          <td>OWNER, ADMIN, DOCTOR, RECEPTIONIST</td>
+        </tr>
+        <tr>
+          <td><code>DocVerificationType</code></td>
+          <td>10</td>
+          <td>
+            MEDICAL_LICENSE, NATIONAL_ID, BUSINESS_RIF, COMMERCIAL_REGISTER
+          </td>
+        </tr>
+        <tr>
+          <td><code>VerificationStatus</code></td>
+          <td>10</td>
+          <td>PENDING, APPROVED, REJECTED</td>
+        </tr>
+        <tr>
+          <td><code>LabResultStatus</code></td>
+          <td>12 🟢</td>
+          <td>PENDING, COMPLETED, ABNORMAL, CANCELLED</td>
+        </tr>
+        <tr>
+          <td><code>InvoiceStatus</code></td>
+          <td>13 🟢</td>
+          <td>DRAFT, SENT, PAID, PARTIALLY_PAID, OVERDUE, CANCELLED</td>
+        </tr>
+        <tr>
+          <td><code>PaymentMethod</code></td>
+          <td>13 🟢</td>
+          <td>CASH, CARD, TRANSFER, INSURANCE, OTHER</td>
+        </tr>
+        <tr>
+          <td><code>AuditAction</code></td>
+          <td>14 🟢</td>
+          <td>VIEW, CREATE, UPDATE, DELETE, EXPORT, LOGIN, LOGOUT, PRINT</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3 id="all-sql-patches">All SQL Patches</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Version</th>
+          <th>Contents</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>DATABASE_PATCH_v2.sql</code></td>
+          <td>v2 (2026-06-08)</td>
+          <td>
+            Medication, Appointment, Consultation.status, PrescriptionItem
+            updates
+          </td>
+        </tr>
+        <tr>
+          <td><code>DATABASE_PATCH_v3.sql</code></td>
+          <td>v3 (2026-06-09)</td>
+          <td>
+            PharmacyInventory, LabResult, Invoice/InvoiceItem/Payment, AuditLog,
+            Patient/Medication improvements
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <h3 id="frontend-zod-schemas">Frontend Zod Schemas</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Schema file</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Patients</td>
+          <td><code>src/features/patients/schemas.ts</code></td>
+        </tr>
+        <tr>
+          <td>Medications</td>
+          <td><code>src/features/medications/schemas.ts</code></td>
+        </tr>
+        <tr>
+          <td>Appointments</td>
+          <td><code>src/features/appointments/schemas.ts</code></td>
+        </tr>
+        <tr>
+          <td>Consultations</td>
+          <td><code>src/features/consultations/schemas.ts</code></td>
+        </tr>
+        <tr>
+          <td>Inventory 🟢</td>
+          <td><code>src/features/inventory/schemas.ts</code></td>
+        </tr>
+        <tr>
+          <td>Lab Results 🟢</td>
+          <td><code>src/features/lab-results/schemas.ts</code></td>
+        </tr>
+        <tr>
+          <td>Billing 🟢</td>
+          <td><code>src/features/billing/schemas.ts</code></td>
+        </tr>
+        <tr>
+          <td>Audit 🟢</td>
+          <td><code>src/features/audit/schemas.ts</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <hr />
+    <p><em>Generated by LUCA Health OS engineering team — 2026-06-09</em></p>
+  </body>
+</html>
