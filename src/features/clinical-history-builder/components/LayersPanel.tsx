@@ -4,11 +4,29 @@ import { useState } from "react";
 import {
   ChevronRight,
   ChevronDown,
+  ChevronUp,
   GripVertical,
   Eye,
   EyeOff,
   Lock,
+  Trash2,
+  Type,
+  AlignLeft,
+  Hash,
+  Calendar,
+  CheckSquare,
+  ChevronDown as DropdownIcon,
+  ToggleLeft,
+  Heart,
+  Search,
+  Paperclip,
+  Columns2,
+  FolderOpen,
+  Minus,
+  Heading,
+  HelpCircle,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { CanvasElement } from "../types";
 
 interface LayersPanelProps {
@@ -22,20 +40,41 @@ interface LayersPanelProps {
 
 interface TreeItemProps {
   element: CanvasElement;
-  isSelected: boolean;
-  isExpanded: boolean;
-  onToggleExpand: () => void;
-  onSelect: () => void;
-  onToggleHidden: () => void;
-  onDelete: () => void;
-  onMove: (dir: "up" | "down") => void;
+  selectedId: string | null;
+  expandedIds: Set<string>;
+  onToggleExpand: (id: string) => void;
+  onSelect: (id: string) => void;
+  onToggleHidden: (id: string) => void;
+  onDelete: (id: string) => void;
+  onMove: (id: string, dir: "up" | "down") => void;
   depth: number;
+}
+
+function getBlockIcon(type: string, className = "w-3.5 h-3.5 text-slate-400") {
+  const icons: Record<string, React.ComponentType<{ className?: string }>> = {
+    "text-short": Type,
+    "text-paragraph": AlignLeft,
+    number: Hash,
+    datetime: Calendar,
+    "checkbox-multiple": CheckSquare,
+    dropdown: DropdownIcon,
+    toggle: ToggleLeft,
+    "vital-signs": Heart,
+    "cie10-selector": Search,
+    "file-upload": Paperclip,
+    "grid-row": Columns2,
+    section: FolderOpen,
+    "visual-separator": Minus,
+    "section-title": Heading,
+  };
+  const IconComp = icons[type] ?? HelpCircle;
+  return <IconComp className={className} />;
 }
 
 function TreeItem({
   element,
-  isSelected,
-  isExpanded,
+  selectedId,
+  expandedIds,
   onToggleExpand,
   onSelect,
   onToggleHidden,
@@ -43,18 +82,23 @@ function TreeItem({
   onMove,
   depth,
 }: TreeItemProps) {
+  const isSelected = selectedId === element.id;
+  const isExpanded = expandedIds.has(element.id);
   const hasChildren = "children" in element && element.children.length > 0;
-  const isContainer = hasChildren;
+  const isContainer =
+    hasChildren || element.type === "grid-row" || element.type === "section";
 
   return (
     <div className="select-none">
       {/* Row */}
       <div
-        onClick={onSelect}
-        className={`
-          group flex items-center gap-1.5 px-2 py-1.5 rounded-lg cursor-pointer transition-colors
-          ${isSelected ? "bg-pharmako-primary-light border border-pharmako-primary-muted" : "hover:bg-slate-50 border border-transparent"}
-        `}
+        onClick={() => onSelect(element.id)}
+        className={cn(
+          "group flex items-center gap-2 px-2.5 py-1.5 rounded-xl cursor-pointer transition-all border border-transparent",
+          isSelected
+            ? "bg-pharmako-primary-light border-pharmako-primary-muted/65 shadow-xs"
+            : "hover:bg-slate-50",
+        )}
         style={{ paddingLeft: `${depth * 16 + 8}px` }}
       >
         {/* Expand toggle */}
@@ -62,92 +106,123 @@ function TreeItem({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onToggleExpand();
+              onToggleExpand(element.id);
             }}
-            className="p-0.5 rounded hover:bg-slate-200"
+            className="p-0.5 rounded hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
           >
             {isExpanded ? (
-              <ChevronDown className="w-3 h-3 text-slate-400" />
+              <ChevronDown className="w-3.5 h-3.5" />
             ) : (
-              <ChevronRight className="w-3 h-3 text-slate-400" />
+              <ChevronRight className="w-3.5 h-3.5" />
             )}
           </button>
         ) : (
-          <div className="w-4" />
+          <div className="w-4.5" />
         )}
 
         {/* Drag handle */}
-        <GripVertical className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-400 flex-shrink-0" />
+        <GripVertical className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-400 flex-shrink-0 cursor-grab" />
 
         {/* Type icon */}
-        <span className="text-xs flex-shrink-0 w-4 text-center">
-          {getBlockIcon(element.type)}
-        </span>
+        <div
+          className={cn(
+            "flex items-center justify-center p-1 rounded-lg shrink-0 transition-colors border border-transparent",
+            isSelected
+              ? "bg-pharmako-primary-light/50 text-pharmako-primary"
+              : "bg-slate-50 border-slate-100 text-slate-400 group-hover:text-pharmako-primary group-hover:bg-pharmako-primary-light group-hover:border-pharmako-primary-muted/40",
+          )}
+        >
+          {getBlockIcon(
+            element.type,
+            isSelected
+              ? "w-3.5 h-3.5 text-pharmako-primary"
+              : "w-3.5 h-3.5 text-slate-400",
+          )}
+        </div>
 
         {/* Title */}
         <span
-          className={`flex-1 text-xs truncate ${isSelected ? "text-pharmako-primary font-medium" : "text-slate-600"}`}
+          className={cn(
+            "flex-1 text-xs truncate",
+            isSelected
+              ? "text-pharmako-primary font-semibold"
+              : "text-slate-600 font-medium group-hover:text-slate-900",
+          )}
         >
           {element.title || "Sin título"}
         </span>
 
-        {/* Status icons */}
-        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Action buttons in hover */}
+        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ml-auto flex-shrink-0">
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onToggleHidden();
+              onMove(element.id, "up");
             }}
-            className="p-1 rounded hover:bg-slate-200"
+            className="p-1 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+            title="Mover arriba"
+          >
+            <ChevronUp className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onMove(element.id, "down");
+            }}
+            className="p-1 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+            title="Mover abajo"
+          >
+            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleHidden(element.id);
+            }}
+            className="p-1 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
             title={element.hidden ? "Mostrar" : "Ocultar"}
           >
             {element.hidden ? (
-              <EyeOff className="w-3 h-3 text-slate-400" />
+              <EyeOff className="w-3.5 h-3.5 text-slate-400" />
             ) : (
-              <Eye className="w-3 h-3 text-slate-400" />
+              <Eye className="w-3.5 h-3.5 text-slate-500" />
             )}
           </button>
-          {element.locked && <Lock className="w-3 h-3 text-amber-400" />}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(element.id);
+            }}
+            className="p-1 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+            title="Eliminar"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
         </div>
 
-        {/* Move buttons */}
-        <div className="flex items-center gap-px opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onMove("up");
-            }}
-            className="px-1 py-0.5 rounded text-[10px] text-slate-400 hover:bg-slate-200 hover:text-slate-600"
-          >
-            ↑
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onMove("down");
-            }}
-            className="px-1 py-0.5 rounded text-[10px] text-slate-400 hover:bg-slate-200 hover:text-slate-600"
-          >
-            ↓
-          </button>
-        </div>
+        {/* Lock indicator (if locked and not hovered) */}
+        {element.locked && (
+          <div className="group-hover:hidden flex items-center justify-center ml-auto shrink-0 pl-1">
+            <Lock className="w-3.5 h-3.5 text-pharmako-warning" />
+          </div>
+        )}
       </div>
 
-      {/* Children */}
+      {/* Children elements */}
       {isContainer && isExpanded && (
-        <div>
+        <div className="space-y-0.5 mt-0.5">
           {"children" in element &&
-            (element.children as CanvasElement[]).map((child, idx) => (
+            (element.children as CanvasElement[]).map((child) => (
               <TreeItem
                 key={child.id}
                 element={child}
-                isSelected={false}
-                isExpanded={false}
-                onToggleExpand={() => {}}
-                onSelect={() => {}}
-                onToggleHidden={() => {}}
-                onDelete={() => {}}
-                onMove={() => {}}
+                selectedId={selectedId}
+                expandedIds={expandedIds}
+                onToggleExpand={onToggleExpand}
+                onSelect={onSelect}
+                onToggleHidden={onToggleHidden}
+                onDelete={onDelete}
+                onMove={onMove}
                 depth={depth + 1}
               />
             ))}
@@ -155,26 +230,6 @@ function TreeItem({
       )}
     </div>
   );
-}
-
-function getBlockIcon(type: string): string {
-  const icons: Record<string, string> = {
-    "text-short": "T",
-    "text-paragraph": "¶",
-    number: "#",
-    datetime: "📅",
-    "checkbox-multiple": "☑",
-    dropdown: "▼",
-    toggle: "◉",
-    "vital-signs": "❤️",
-    "cie10-selector": "🔍",
-    "file-upload": "📎",
-    "grid-row": "⊞",
-    section: "📂",
-    "visual-separator": "―",
-    "section-title": "T",
-  };
-  return icons[type] ?? "◇";
 }
 
 export function LayersPanel({
@@ -213,13 +268,13 @@ export function LayersPanel({
         <TreeItem
           key={element.id}
           element={element}
-          isSelected={selectedId === element.id}
-          isExpanded={expandedIds.has(element.id)}
-          onToggleExpand={() => toggleExpand(element.id)}
-          onSelect={() => onSelect(element.id)}
-          onToggleHidden={() => onToggleHidden(element.id)}
-          onDelete={() => onDelete(element.id)}
-          onMove={(dir) => onMove(element.id, dir)}
+          selectedId={selectedId}
+          expandedIds={expandedIds}
+          onToggleExpand={toggleExpand}
+          onSelect={onSelect}
+          onToggleHidden={onToggleHidden}
+          onDelete={onDelete}
+          onMove={onMove}
           depth={0}
         />
       ))}
