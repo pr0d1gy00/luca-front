@@ -240,7 +240,7 @@ function ToolboxSidebar({
             className={`flex-1 px-2 py-2.5 text-xs font-medium transition-colors ${
               activeTab === cat.id
                 ? "text-pharmako-care border-b-2 border-pharmako-care bg-pharmako-care-light"
-                : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                : "text-slate-500 hover:text-pharmako-care hover:bg-pharmako-care-light"
             }`}
           >
             {cat.label}
@@ -506,7 +506,7 @@ function PropertiesPanel({
           className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors ${
             activeTab === "properties"
               ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
-              : "text-slate-500 hover:text-slate-700"
+              : "text-slate-500 hover:text-pharmako-primary hover:bg-pharmako-primary-light"
           }`}
         >
           <Settings className="w-3.5 h-3.5" />
@@ -517,7 +517,7 @@ function PropertiesPanel({
           className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors ${
             activeTab === "layers"
               ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
-              : "text-slate-500 hover:text-slate-700"
+              : "text-slate-500 hover:text-pharmako-primary hover:bg-pharmako-primary-light"
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
