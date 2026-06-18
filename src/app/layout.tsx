@@ -26,6 +26,9 @@ export const metadata: Metadata = {
   title: "Pharmako",
   description:
     "Pharmako es una plataforma de gestión de farmacias que ofrece una solución integral para optimizar las operaciones diarias, mejorar la atención al cliente y aumentar la eficiencia en la administración de inventarios y ventas.",
+  icons: {
+    icon: "/pharmako-favicon.svg",
+  },
 };
 
 export default function RootLayout({
