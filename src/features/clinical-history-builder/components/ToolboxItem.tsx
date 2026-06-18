@@ -50,7 +50,7 @@ export function ToolboxItem({
       `}
     >
       {/* Icon */}
-      <div className="p-2 bg-slate-50 border border-slate-100 rounded-lg text-slate-500 group-hover:text-pharmako-primary group-hover:bg-pharmako-primary-light group-hover:border-pharmako-primary-muted transition-colors shrink-0">
+      <div className="p-2 bg-pharmako-care-light border border-pharmako-care/20 rounded-lg text-pharmako-care group-hover:text-pharmako-care-hover group-hover:bg-pharmako-care-light/80 group-hover:border-pharmako-care/40 transition-colors shrink-0">
         <Icon className="w-4 h-full max-h-4" />
       </div>
 
