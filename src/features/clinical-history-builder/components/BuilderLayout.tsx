@@ -460,6 +460,7 @@ function PropertiesPanel({
   onSchemaNameChange,
   onSchemaDescriptionChange,
   onCollapse,
+  schemaStatus,
 }: {
   selectedElement: CanvasElement | null;
   onUpdate: (updates: Partial<CanvasElement>) => void;
@@ -478,6 +479,7 @@ function PropertiesPanel({
   onSchemaNameChange: (v: string) => void;
   onSchemaDescriptionChange: (v: string) => void;
   onCollapse?: () => void;
+  schemaStatus: "draft" | "published";
 }) {
   return (
     <aside className="w-full bg-white border-l border-slate-100 flex flex-col h-full">
@@ -757,7 +759,7 @@ function PropertiesPanel({
                     disabled={statusMutation.isPending}
                     className={cn(
                       "flex-1 py-2 px-3 rounded-xl text-xs font-medium border transition-colors",
-                      schema.status === "published"
+                      schemaStatus === "published"
                         ? "bg-pharmako-success-light border-pharmako-success/20 text-pharmako-success"
                         : "bg-slate-50 border-slate-100 text-slate-500 hover:border-pharmako-success/20 hover:text-pharmako-success",
                       statusMutation.isPending &&
@@ -772,7 +774,7 @@ function PropertiesPanel({
                     disabled={statusMutation.isPending}
                     className={cn(
                       "flex-1 py-2 px-3 rounded-xl text-xs font-medium border transition-colors",
-                      schema.status === "draft"
+                      schemaStatus === "draft"
                         ? "bg-pharmako-warning-light border-pharmako-warning/20 text-pharmako-warning"
                         : "bg-slate-50 border-slate-100 text-slate-500 hover:border-pharmako-warning/20 hover:text-pharmako-warning",
                       statusMutation.isPending &&
@@ -1264,6 +1266,7 @@ export function ClinicalHistoryBuilder() {
                 onSchemaNameChange={setSchemaName}
                 onSchemaDescriptionChange={setSchemaDescription}
                 onCollapse={() => setIsRightCollapsed(true)}
+                schemaStatus={schemaStatus}
               />
             </div>
 
