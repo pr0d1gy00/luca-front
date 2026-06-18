@@ -160,7 +160,7 @@ export function MobileToolboxPanel({
             onClick={() => onTabChange(cat.id)}
             className={`flex-1 px-2 py-2.5 text-xs font-medium transition-colors ${
               activeTab === cat.id
-                ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
+                ? "text-blue-700 border-b-2 border-blue-700 bg-blue-50"
                 : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
             }`}
           >
@@ -219,7 +219,7 @@ export function MobilePropertiesPanel({
           onClick={() => onTabChange("properties")}
           className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
             activeTab === "properties"
-              ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
+              ? "text-blue-700 border-b-2 border-blue-700 bg-blue-50"
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
@@ -229,7 +229,7 @@ export function MobilePropertiesPanel({
           onClick={() => onTabChange("layers")}
           className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
             activeTab === "layers"
-              ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
+              ? "text-blue-700 border-b-2 border-blue-700 bg-blue-50"
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
@@ -273,9 +273,7 @@ export function MobilePropertiesPanel({
                   onUpdate({ required: !selectedElement.required })
                 }
                 className={`relative w-10 h-6 rounded-full transition-colors ${
-                  selectedElement.required
-                    ? "bg-pharmako-primary"
-                    : "bg-slate-200"
+                  selectedElement.required ? "bg-blue-700" : "bg-slate-200"
                 }`}
               >
                 <div
@@ -343,7 +341,7 @@ export function MobileBottomNav({
       </button>
       <button
         onClick={onOpenProperties}
-        className="px-4 py-2 rounded-xl text-sm font-medium text-pharmako-primary bg-pharmako-primary-light transition-colors"
+        className="px-4 py-2 rounded-xl text-sm font-medium text-blue-700 bg-blue-50 transition-colors"
       >
         Editar
       </button>

@@ -45,7 +45,7 @@ export function ToolboxItem({
         bg-slate-50 hover:bg-slate-100 border border-slate-100
         hover:border-slate-200 transition-all cursor-grab active:cursor-grabbing
         group
-        ${isDragging ? "opacity-50 ring-2 ring-pharmako-primary-muted" : ""}
+        ${isDragging ? "opacity-50 ring-2 ring-blue-100" : ""}
       `}
     >
       {/* Icon */}

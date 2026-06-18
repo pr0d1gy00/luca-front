@@ -80,7 +80,7 @@ export function VitalSignsBlock({
       className={cn(
         "bg-white rounded-xl border transition-all overflow-hidden",
         isSelected
-          ? "border-pharmako-primary ring-2 ring-pharmako-primary-light"
+          ? "border-blue-700 ring-2 ring-blue-100"
           : "border-slate-100 hover:border-slate-200",
       )}
     >
@@ -145,8 +145,8 @@ export function VitalSignsBlock({
                         }
                         if (e.key === "Escape") setEditingLabel(null);
                       }}
-                      className="w-full px-1.5 py-0.5 rounded border border-pharmako-primary-muted text-xs text-slate-700 bg-white
-                                 focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20"
+                      className="w-full px-1.5 py-0.5 rounded border border-blue-200 text-xs text-slate-700 bg-white
+                                 focus:outline-none focus:ring-2 focus:ring-blue-700/20"
                     />
                   ) : (
                     <button
@@ -154,7 +154,7 @@ export function VitalSignsBlock({
                         e.stopPropagation();
                         setEditingLabel(field.key);
                       }}
-                      className="text-xs font-medium text-slate-600 hover:text-pharmako-primary transition-colors text-left w-full truncate"
+                      className="text-xs font-medium text-slate-600 hover:text-blue-700 transition-colors text-left w-full truncate"
                       title="Haz clic para editar la etiqueta"
                     >
                       {field.label}
@@ -169,7 +169,7 @@ export function VitalSignsBlock({
                       max={field.max}
                       onClick={(e) => e.stopPropagation()}
                       className="w-14 px-1.5 py-0.5 rounded border border-slate-100 text-xs text-slate-700 bg-white
-                                 focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
+                                 focus:outline-none focus:ring-2 focus:ring-blue-700/20 focus:border-blue-700"
                     />
                     <span className="text-xs text-slate-400">{field.unit}</span>
                   </div>
@@ -227,8 +227,8 @@ export function VitalSignsBlock({
                   addField(opt.key);
                 }}
                 className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-slate-500
-                            bg-slate-50 border border-slate-100 hover:border-pharmako-primary-hover hover:text-pharmako-primary
-                            hover:bg-pharmako-primary-light transition-colors"
+                            bg-slate-50 border border-slate-100 hover:border-blue-800 hover:text-blue-700
+                            hover:bg-blue-50 transition-colors"
               >
                 <Plus className="w-3 h-3" />
                 {opt.label}
