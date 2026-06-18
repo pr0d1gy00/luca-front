@@ -1,4 +1,5 @@
 import { MdOutlineDashboard } from "react-icons/md";
+import { PiPillBold, PiUsersBold } from "react-icons/pi";
 import React from "react";
 
 export type NavItem = {
@@ -21,5 +22,19 @@ export const navigationConfig: NavItem[] = [
     href: "/dashboard",
     icon: MdOutlineDashboard,
     roles: ["patient", "doctor", "clinic", "pharmacy"],
+  },
+  {
+    title: "Pacientes",
+    name: "patients",
+    href: "/dashboard/patients",
+    icon: PiUsersBold,
+    roles: ["doctor"],
+  },
+  {
+    title: "Medicamentos",
+    name: "medications",
+    href: "/dashboard/medications",
+    icon: PiPillBold,
+    roles: ["doctor"],
   },
 ];
