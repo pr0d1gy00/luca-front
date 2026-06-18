@@ -2,11 +2,22 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, X } from "lucide-react";
+import {
+  Plus,
+  X,
+  User,
+  Calendar,
+  FileText,
+  Phone,
+  Mail,
+  MapPin,
+  Droplet,
+  UserCheck,
+  AlertTriangle,
+} from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { patientSchema, type Patient } from "../schemas";
 
 interface PatientFormProps {
@@ -32,14 +43,22 @@ const SEX_OPTIONS = [
 ];
 
 const inputClassName =
-  "h-9 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-luca-muted-dark placeholder:text-luca-muted/50 transition-colors outline-none focus-visible:border-luca-primary focus-visible:ring-2 focus-visible:ring-luca-primary/20 disabled:cursor-not-allowed disabled:opacity-50";
+  "h-11 pl-10 w-full rounded-xl border border-slate-200 bg-white pr-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 transition-all outline-none focus-visible:border-pharmako-care focus-visible:ring-2 focus-visible:ring-pharmako-care/20 disabled:cursor-not-allowed disabled:opacity-50";
 
 const selectClassName =
-  "h-9 w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm text-luca-muted-dark transition-colors outline-none focus-visible:border-luca-primary focus-visible:ring-2 focus-visible:ring-luca-primary/20";
+  "h-11 pl-10 pr-10 w-full rounded-xl border border-slate-200 bg-white text-sm text-slate-900 transition-all outline-none focus-visible:border-pharmako-care focus-visible:ring-2 focus-visible:ring-pharmako-care/20";
 
-export function PatientForm({ initialData, onSubmit, onCancel }: PatientFormProps) {
-  const [allergies, setAllergies] = useState<string[]>(initialData?.allergies ?? []);
-  const [chronicConditions, setChronicConditions] = useState<string[]>(initialData?.chronicConditions ?? []);
+export function PatientForm({
+  initialData,
+  onSubmit,
+  onCancel,
+}: PatientFormProps) {
+  const [allergies, setAllergies] = useState<string[]>(
+    initialData?.allergies ?? [],
+  );
+  const [chronicConditions, setChronicConditions] = useState<string[]>(
+    initialData?.chronicConditions ?? [],
+  );
   const [newAllergy, setNewAllergy] = useState("");
   const [newCondition, setNewCondition] = useState("");
 
@@ -54,7 +73,9 @@ export function PatientForm({ initialData, onSubmit, onCancel }: PatientFormProp
       firstName: initialData?.firstName ?? "",
       lastName: initialData?.lastName ?? "",
       documentId: initialData?.documentId ?? "",
-      birthDate: initialData?.birthDate ?? new Date(),
+      birthDate: initialData?.birthDate
+        ? new Date(initialData.birthDate)
+        : undefined,
       biologicalSex: initialData?.biologicalSex ?? "MALE",
       phone: initialData?.phone ?? "",
       email: initialData?.email ?? "",
@@ -98,160 +119,303 @@ export function PatientForm({ initialData, onSubmit, onCancel }: PatientFormProp
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
-
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-10">
       {/* ── Identidad ─────────────────────────────────── */}
-      <section>
-        <h2 className="text-xs font-medium uppercase tracking-wide text-luca-muted mb-4 pb-2 border-b border-slate-100">
-          Identidad
+      <section className="space-y-6">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6 pb-2 border-b border-slate-100">
+          DATOS DE IDENTIDAD
         </h2>
-        <div className="grid grid-cols-2 gap-5">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="firstName" className="text-sm font-medium text-luca-muted-dark">
-              Nombre
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="firstName"
+              className="text-sm font-semibold text-slate-800"
+            >
+              Nombre <span className="text-red-500">*</span>
             </label>
-            <input id="firstName" type="text" placeholder="Juan" className={inputClassName} aria-invalid={!!errors.firstName} {...register("firstName")} />
+            <div className="relative group">
+              <User className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+              <input
+                id="firstName"
+                type="text"
+                placeholder="Juan"
+                className={inputClassName}
+                aria-invalid={!!errors.firstName}
+                {...register("firstName")}
+              />
+            </div>
             {errors.firstName && (
-              <p className="text-xs text-luca-accent mt-0.5">{errors.firstName.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.firstName.message}
+              </p>
             )}
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="lastName" className="text-sm font-medium text-luca-muted-dark">
-              Apellido
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="lastName"
+              className="text-sm font-semibold text-slate-800"
+            >
+              Apellido <span className="text-red-500">*</span>
             </label>
-            <input id="lastName" type="text" placeholder="Pérez" className={inputClassName} aria-invalid={!!errors.lastName} {...register("lastName")} />
+            <div className="relative group">
+              <User className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+              <input
+                id="lastName"
+                type="text"
+                placeholder="Pérez"
+                className={inputClassName}
+                aria-invalid={!!errors.lastName}
+                {...register("lastName")}
+              />
+            </div>
             {errors.lastName && (
-              <p className="text-xs text-luca-accent mt-0.5">{errors.lastName.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.lastName.message}
+              </p>
             )}
           </div>
+        </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="documentId" className="text-sm font-medium text-luca-muted-dark">
-              Cédula / DNI
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="documentId"
+              className="text-sm font-semibold text-slate-800"
+            >
+              Cédula / DNI <span className="text-red-500">*</span>
             </label>
-            <input id="documentId" type="text" placeholder="12.345.678" className={inputClassName} aria-invalid={!!errors.documentId} {...register("documentId")} />
+            <div className="relative group">
+              <FileText className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+              <input
+                id="documentId"
+                type="text"
+                placeholder="12.345.678"
+                className={inputClassName}
+                aria-invalid={!!errors.documentId}
+                {...register("documentId")}
+              />
+            </div>
             {errors.documentId && (
-              <p className="text-xs text-luca-accent mt-0.5">{errors.documentId.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.documentId.message}
+              </p>
             )}
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="birthDate" className="text-sm font-medium text-luca-muted-dark">
-              Fecha de Nacimiento
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="birthDate"
+              className="text-sm font-semibold text-slate-800"
+            >
+              Fecha de Nacimiento <span className="text-red-500">*</span>
             </label>
-            <input id="birthDate" type="date" className={inputClassName} aria-invalid={!!errors.birthDate} {...register("birthDate", { valueAsDate: true })} />
+            <div className="relative group">
+              <Calendar className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+              <input
+                id="birthDate"
+                type="date"
+                className={inputClassName}
+                aria-invalid={!!errors.birthDate}
+                {...register("birthDate", { valueAsDate: true })}
+              />
+            </div>
             {errors.birthDate && (
-              <p className="text-xs text-luca-accent mt-0.5">{errors.birthDate.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.birthDate.message}
+              </p>
             )}
           </div>
+        </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="biologicalSex" className="text-sm font-medium text-luca-muted-dark">
-              Sexo
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="biologicalSex"
+              className="text-sm font-semibold text-slate-800"
+            >
+              Sexo biológico <span className="text-red-500">*</span>
             </label>
-            <select id="biologicalSex" className={selectClassName} {...register("biologicalSex")}>
-              {SEX_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+            <div className="relative group">
+              <UserCheck className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+              <select
+                id="biologicalSex"
+                className={selectClassName}
+                {...register("biologicalSex")}
+              >
+                {SEX_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             {errors.biologicalSex && (
-              <p className="text-xs text-luca-accent mt-0.5">{errors.biologicalSex.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.biologicalSex.message}
+              </p>
             )}
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="bloodType" className="text-sm font-medium text-luca-muted-dark">
-              Tipo de Sangre
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="bloodType"
+              className="text-sm font-semibold text-slate-800"
+            >
+              Grupo Sanguíneo <span className="text-red-500">*</span>
             </label>
-            <select id="bloodType" className={selectClassName} {...register("bloodType")}>
-              {BLOOD_TYPES.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+            <div className="relative group">
+              <Droplet className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+              <select
+                id="bloodType"
+                className={selectClassName}
+                {...register("bloodType")}
+              >
+                {BLOOD_TYPES.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             {errors.bloodType && (
-              <p className="text-xs text-luca-accent mt-0.5">{errors.bloodType.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.bloodType.message}
+              </p>
             )}
           </div>
         </div>
       </section>
 
       {/* ── Contacto ──────────────────────────────────── */}
-      <section>
-        <h2 className="text-xs font-medium uppercase tracking-wide text-luca-muted mb-4 pb-2 border-b border-slate-100">
-          Contacto
+      <section className="space-y-6">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6 pb-2 border-b border-slate-100">
+          DATOS DE CONTACTO
         </h2>
-        <div className="grid grid-cols-2 gap-5">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="phone" className="text-sm font-medium text-luca-muted-dark">
-              Teléfono
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="phone"
+              className="text-sm font-semibold text-slate-800"
+            >
+              Teléfono de contacto <span className="text-red-500">*</span>
             </label>
-            <input id="phone" type="text" placeholder="+54 11 1234-5678" className={inputClassName} aria-invalid={!!errors.phone} {...register("phone")} />
+            <div className="relative group">
+              <Phone className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+              <input
+                id="phone"
+                type="text"
+                placeholder="+54 11 1234-5678"
+                className={inputClassName}
+                aria-invalid={!!errors.phone}
+                {...register("phone")}
+              />
+            </div>
             {errors.phone && (
-              <p className="text-xs text-luca-accent mt-0.5">{errors.phone.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.phone.message}
+              </p>
             )}
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-sm font-medium text-luca-muted-dark">
-              Email
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="email"
+              className="text-sm font-semibold text-slate-800"
+            >
+              Correo electrónico <span className="text-red-500">*</span>
             </label>
-            <input id="email" type="email" placeholder="juan.perez@mail.com" className={inputClassName} aria-invalid={!!errors.email} {...register("email")} />
+            <div className="relative group">
+              <Mail className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+              <input
+                id="email"
+                type="email"
+                placeholder="juan.perez@mail.com"
+                className={inputClassName}
+                aria-invalid={!!errors.email}
+                {...register("email")}
+              />
+            </div>
             {errors.email && (
-              <p className="text-xs text-luca-accent mt-0.5">{errors.email.message}</p>
-            )}
-          </div>
-
-          <div className="col-span-2 flex flex-col gap-1.5">
-            <label htmlFor="address" className="text-sm font-medium text-luca-muted-dark">
-              Dirección
-            </label>
-            <input id="address" type="text" placeholder="Av. Rivadavia 1234, Buenos Aires" className={inputClassName} aria-invalid={!!errors.address} {...register("address")} />
-            {errors.address && (
-              <p className="text-xs text-luca-accent mt-0.5">{errors.address.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.email.message}
+              </p>
             )}
           </div>
         </div>
+
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor="address"
+            className="text-sm font-semibold text-slate-800"
+          >
+            Dirección residencial <span className="text-red-500">*</span>
+          </label>
+          <div className="relative group">
+            <MapPin className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+            <input
+              id="address"
+              type="text"
+              placeholder="Av. Rivadavia 1234, Buenos Aires"
+              className={inputClassName}
+              aria-invalid={!!errors.address}
+              {...register("address")}
+            />
+          </div>
+          {errors.address && (
+            <p className="text-xs text-red-500 mt-1">
+              {errors.address.message}
+            </p>
+          )}
+        </div>
       </section>
 
-      {/* ── Médico Base ───────────────────────────────── */}
-      <section>
-        <h2 className="text-xs font-medium uppercase tracking-wide text-luca-muted mb-4 pb-2 border-b border-slate-100">
-          Médico Base
+      {/* ── Perfil Médico Base ────────────────────────── */}
+      <section className="space-y-6">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6 pb-2 border-b border-slate-100">
+          CONDICIONES MÉDICAS Y ALERGIAS
         </h2>
-        <div className="grid grid-cols-2 gap-5">
-
+        <div className="grid grid-cols-1 gap-6">
           {/* Alergias */}
-          <div className="col-span-2 flex flex-col gap-2">
-            <label className="text-sm font-medium text-luca-muted-dark">Alergias</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-semibold text-slate-800">
+              Alergias
+            </label>
             <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Agregar alergia..."
-                value={newAllergy}
-                onChange={(e) => setNewAllergy(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addAllergy())}
-                className={inputClassName}
-              />
+              <div className="relative group flex-1">
+                <AlertTriangle className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Ej: Penicilina, mariscos, etc."
+                  value={newAllergy}
+                  onChange={(e) => setNewAllergy(e.target.value)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && (e.preventDefault(), addAllergy())
+                  }
+                  className={inputClassName}
+                />
+              </div>
               <Button
                 type="button"
-                variant="ghost"
-                size="sm"
                 onClick={addAllergy}
-                className="h-9 shrink-0 bg-luca-surface-light text-luca-primary hover:bg-luca-surface-dark rounded-xl px-3"
+                className="h-11 shrink-0 bg-pharmako-care-light text-pharmako-care hover:bg-pharmako-care-light/80 rounded-xl px-4 font-semibold active:scale-[0.98]"
               >
-                <Plus className="size-4" />
+                <Plus className="size-5" />
               </Button>
             </div>
             {allergies.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-1">
+              <div className="flex flex-wrap gap-2 mt-2">
                 {allergies.map((a, i) => (
                   <span
                     key={i}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-luca-accent/10 px-3 py-1 text-xs font-medium text-luca-accent"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-red-50 border border-red-100 px-3 py-1 text-xs font-semibold text-red-700"
                   >
                     {a}
-                    <button type="button" onClick={() => removeAllergy(i)} className="hover:text-luca-accent/70 ml-0.5">
+                    <button
+                      type="button"
+                      onClick={() => removeAllergy(i)}
+                      className="hover:text-red-500 ml-1 inline-flex p-0.5"
+                    >
                       <X className="size-3" />
                     </button>
                   </span>
@@ -261,36 +425,45 @@ export function PatientForm({ initialData, onSubmit, onCancel }: PatientFormProp
           </div>
 
           {/* Enfermedades Crónicas */}
-          <div className="col-span-2 flex flex-col gap-2">
-            <label className="text-sm font-medium text-luca-muted-dark">Enfermedades Crónicas</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-semibold text-slate-800">
+              Enfermedades Crónicas
+            </label>
             <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Agregar condición..."
-                value={newCondition}
-                onChange={(e) => setNewCondition(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCondition())}
-                className={inputClassName}
-              />
+              <div className="relative group flex-1">
+                <FileText className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Ej: Diabetes Tipo II, Hipertensión arterial, etc."
+                  value={newCondition}
+                  onChange={(e) => setNewCondition(e.target.value)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && (e.preventDefault(), addCondition())
+                  }
+                  className={inputClassName}
+                />
+              </div>
               <Button
                 type="button"
-                variant="ghost"
-                size="sm"
                 onClick={addCondition}
-                className="h-9 shrink-0 bg-luca-surface-light text-luca-primary hover:bg-luca-surface-dark rounded-xl px-3"
+                className="h-11 shrink-0 bg-pharmako-care-light text-pharmako-care hover:bg-pharmako-care-light/80 rounded-xl px-4 font-semibold active:scale-[0.98]"
               >
-                <Plus className="size-4" />
+                <Plus className="size-5" />
               </Button>
             </div>
             {chronicConditions.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-1">
+              <div className="flex flex-wrap gap-2 mt-2">
                 {chronicConditions.map((c, i) => (
                   <span
                     key={i}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-luca-surface-dark px-3 py-1 text-xs font-medium text-luca-muted-dark"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700"
                   >
                     {c}
-                    <button type="button" onClick={() => removeCondition(i)} className="hover:text-luca-muted-dark/70 ml-0.5">
+                    <button
+                      type="button"
+                      onClick={() => removeCondition(i)}
+                      className="hover:text-slate-500 ml-1 inline-flex p-0.5"
+                    >
                       <X className="size-3" />
                     </button>
                   </span>
@@ -301,46 +474,66 @@ export function PatientForm({ initialData, onSubmit, onCancel }: PatientFormProp
         </div>
       </section>
 
-      {/* ── Emergencia ────────────────────────────────── */}
-      <section>
-        <h2 className="text-xs font-medium uppercase tracking-wide text-luca-muted mb-4 pb-2 border-b border-slate-100">
-          Contacto de Emergencia
+      {/* ── Contacto de Emergencia ────────────────────── */}
+      <section className="space-y-6">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6 pb-2 border-b border-slate-100">
+          CONTACTO DE EMERGENCIA
         </h2>
-        <div className="grid grid-cols-2 gap-5">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="emergencyContactName" className="text-sm font-medium text-luca-muted-dark">
-              Nombre
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="emergencyContactName"
+              className="text-sm font-semibold text-slate-800"
+            >
+              Nombre completo
             </label>
-            <input
-              id="emergencyContactName"
-              type="text"
-              placeholder="María Pérez"
-              className={inputClassName}
-              {...register("emergencyContactName")}
-            />
+            <div className="relative group">
+              <User className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+              <input
+                id="emergencyContactName"
+                type="text"
+                placeholder="Ej: María Pérez (Cónyuge)"
+                className={inputClassName}
+                {...register("emergencyContactName")}
+              />
+            </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="emergencyContactPhone" className="text-sm font-medium text-luca-muted-dark">
-              Teléfono
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="emergencyContactPhone"
+              className="text-sm font-semibold text-slate-800"
+            >
+              Teléfono de emergencia
             </label>
-            <input
-              id="emergencyContactPhone"
-              type="text"
-              placeholder="+54 11 9876-5432"
-              className={inputClassName}
-              {...register("emergencyContactPhone")}
-            />
+            <div className="relative group">
+              <Phone className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+              <input
+                id="emergencyContactPhone"
+                type="text"
+                placeholder="Ej: +54 11 9876-5432"
+                className={inputClassName}
+                {...register("emergencyContactPhone")}
+              />
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── Actions ───────────────────────────────────── */}
-      <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
-        <Button type="button" variant="outline" onClick={onCancel} className="rounded-xl">
+      <div className="flex justify-end gap-3 border-t border-slate-100 pt-6 mt-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          className="rounded-xl h-11 px-6 font-semibold transition-all duration-250 hover:bg-slate-50 active:scale-[0.98]"
+        >
           Cancelar
         </Button>
-        <Button type="submit" className="rounded-xl bg-luca-primary text-luca-fg-on-primary hover:bg-luca-primary-hover">
+        <Button
+          type="submit"
+          className="rounded-xl bg-pharmako-primary text-white hover:bg-pharmako-primary-hover h-11 px-8 font-semibold transition-all duration-250 active:scale-[0.98]"
+        >
           Guardar Paciente
         </Button>
       </div>

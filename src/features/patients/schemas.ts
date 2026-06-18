@@ -20,7 +20,7 @@ export const patientSchema = z.object({
   firstName: z.string().min(1, "El nombre es requerido"),
   lastName: z.string().min(1, "El apellido es requerido"),
   documentId: z.string().min(1, "La cédula/DNI es requerida"),
-  birthDate: z.date({ required_error: "La fecha de nacimiento es requerida" }),
+  birthDate: z.date({ message: "La fecha de nacimiento es requerida" }),
   biologicalSex: biologicalSexEnum,
 
   // Contacto
@@ -30,8 +30,8 @@ export const patientSchema = z.object({
 
   // Médico Base
   bloodType: bloodTypeEnum,
-  allergies: z.array(z.string()).optional().default([]),
-  chronicConditions: z.array(z.string()).optional().default([]),
+  allergies: z.array(z.string()),
+  chronicConditions: z.array(z.string()),
 
   // Emergencia
   emergencyContactName: z.string().optional(),
