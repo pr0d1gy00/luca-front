@@ -68,7 +68,7 @@ export function GridRowBlock({
       className={cn(
         "bg-white rounded-xl border transition-all",
         isSelected
-          ? "border-pharmako-primary ring-2 ring-pharmako-primary-light"
+          ? "border-pharmako-care ring-2 ring-pharmako-care-light"
           : "border-slate-100 hover:border-slate-200",
       )}
     >
@@ -167,7 +167,7 @@ function ColumnDropZone({
       className={cn(
         "min-h-[80px] rounded-lg border-2 border-dashed transition-colors",
         isOver
-          ? "border-pharmako-primary bg-pharmako-primary-light/50"
+          ? "border-pharmako-care bg-pharmako-care-light/50"
           : "border-slate-200 hover:border-slate-300",
       )}
     >
@@ -184,7 +184,7 @@ function ColumnDropZone({
               title: "Nuevo Campo",
             })
           }
-          className="p-0.5 rounded text-slate-400 hover:text-pharmako-primary hover:bg-pharmako-primary-light transition-colors"
+          className="p-0.5 rounded text-slate-400 hover:text-pharmako-care hover:bg-pharmako-care-light transition-colors"
         >
           <Plus className="w-3 h-3" />
         </button>

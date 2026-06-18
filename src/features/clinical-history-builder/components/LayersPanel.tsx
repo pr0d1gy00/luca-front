@@ -96,7 +96,7 @@ function TreeItem({
         className={cn(
           "group flex items-center gap-2 px-2.5 py-1.5 rounded-xl cursor-pointer transition-all border border-transparent",
           isSelected
-            ? "bg-pharmako-primary-light border-pharmako-primary-muted/65 shadow-xs"
+            ? "bg-pharmako-care-light border-pharmako-care/40 shadow-xs"
             : "hover:bg-slate-50",
         )}
         style={{ paddingLeft: `${depth * 16 + 8}px` }}
@@ -128,14 +128,14 @@ function TreeItem({
           className={cn(
             "flex items-center justify-center p-1 rounded-lg shrink-0 transition-colors border border-transparent",
             isSelected
-              ? "bg-pharmako-primary-light/50 text-pharmako-primary"
-              : "bg-slate-50 border-slate-100 text-slate-400 group-hover:text-pharmako-primary group-hover:bg-pharmako-primary-light group-hover:border-pharmako-primary-muted/40",
+              ? "bg-pharmako-care-light/50 text-pharmako-care"
+              : "bg-slate-50 border-slate-100 text-slate-400 group-hover:text-pharmako-care group-hover:bg-pharmako-care-light group-hover:border-pharmako-care/40",
           )}
         >
           {getBlockIcon(
             element.type,
             isSelected
-              ? "w-3.5 h-3.5 text-pharmako-primary"
+              ? "w-3.5 h-3.5 text-pharmako-care"
               : "w-3.5 h-3.5 text-slate-400",
           )}
         </div>
@@ -145,7 +145,7 @@ function TreeItem({
           className={cn(
             "flex-1 text-xs truncate",
             isSelected
-              ? "text-pharmako-primary font-semibold"
+              ? "text-pharmako-care font-semibold"
               : "text-slate-600 font-medium group-hover:text-slate-900",
           )}
         >

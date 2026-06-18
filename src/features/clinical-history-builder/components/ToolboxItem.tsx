@@ -46,7 +46,7 @@ export function ToolboxItem({
         bg-white hover:bg-slate-50 border border-slate-100/60 hover:border-slate-200
         transition-all cursor-grab active:cursor-grabbing
         group select-none
-        ${isDragging ? "opacity-50 ring-2 ring-pharmako-primary-light shadow-sm" : ""}
+        ${isDragging ? "opacity-50 ring-2 ring-pharmako-care-light shadow-sm" : ""}
       `}
     >
       {/* Icon */}

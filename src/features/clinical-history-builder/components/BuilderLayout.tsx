@@ -355,7 +355,7 @@ function CanvasArea({
         <div
           className={`min-h-[500px] bg-white rounded-2xl border-2 border-dashed transition-colors ${
             isDragOver
-              ? "border-pharmako-primary bg-pharmako-primary-light/30"
+              ? "border-pharmako-care bg-pharmako-care-light/30"
               : elements.length === 0
                 ? "border-slate-200"
                 : "border-transparent"
@@ -505,8 +505,8 @@ function PropertiesPanel({
           onClick={() => onTabChange("properties")}
           className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors ${
             activeTab === "properties"
-              ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
-              : "text-slate-500 hover:text-pharmako-primary hover:bg-pharmako-primary-light"
+              ? "text-pharmako-care border-b-2 border-pharmako-care bg-pharmako-care-light"
+              : "text-slate-500 hover:text-pharmako-care hover:bg-pharmako-care-light"
           }`}
         >
           <Settings className="w-3.5 h-3.5" />
@@ -516,8 +516,8 @@ function PropertiesPanel({
           onClick={() => onTabChange("layers")}
           className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors ${
             activeTab === "layers"
-              ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
-              : "text-slate-500 hover:text-pharmako-primary hover:bg-pharmako-primary-light"
+              ? "text-pharmako-care border-b-2 border-pharmako-care bg-pharmako-care-light"
+              : "text-slate-500 hover:text-pharmako-care hover:bg-pharmako-care-light"
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
@@ -540,7 +540,7 @@ function PropertiesPanel({
                   onChange={(e) => onSchemaNameChange(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
                              text-slate-900 placeholder-slate-400
-                             focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
+                             focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
                   placeholder="Nombre de la plantilla"
                 />
               </div>
@@ -554,7 +554,7 @@ function PropertiesPanel({
                   rows={6}
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
                              text-slate-900 placeholder-slate-400 resize-y min-h-[120px] xl:min-h-[160px] 2xl:min-h-[200px]
-                             focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
+                             focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
                   placeholder="Descripción (opcional)"
                 />
               </div>
@@ -573,7 +573,7 @@ function PropertiesPanel({
                   onChange={(e) => onUpdate({ title: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
                              text-slate-900 placeholder-slate-400
-                             focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
+                             focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
                 />
               </div>
 
@@ -587,7 +587,7 @@ function PropertiesPanel({
                   rows={6}
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
                              text-slate-900 placeholder-slate-400 resize-y min-h-[120px] xl:min-h-[160px] 2xl:min-h-[200px]
-                             focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
+                             focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
                 />
               </div>
 
@@ -601,7 +601,7 @@ function PropertiesPanel({
                   }
                   className={`relative w-10 h-6 rounded-full transition-colors ${
                     selectedElement.required
-                      ? "bg-pharmako-primary"
+                      ? "bg-pharmako-care"
                       : "bg-slate-200"
                   }`}
                 >
@@ -628,7 +628,7 @@ function PropertiesPanel({
                   }
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
                              text-slate-900 bg-white
-                             focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
+                             focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
                 >
                   <option value="full">Ancho Completo</option>
                   <option value="2/3">2/3</option>
@@ -645,9 +645,7 @@ function PropertiesPanel({
                 <button
                   onClick={() => onUpdate({ hidden: !selectedElement.hidden })}
                   className={`relative w-10 h-6 rounded-full transition-colors ${
-                    selectedElement.hidden
-                      ? "bg-pharmako-primary"
-                      : "bg-slate-200"
+                    selectedElement.hidden ? "bg-pharmako-care" : "bg-slate-200"
                   }`}
                 >
                   <div
@@ -717,7 +715,7 @@ function PropertiesPanel({
                         } as Partial<CanvasElement>)
                       }
                       className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white
-                                 focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
+                                 focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
                     >
                       <option value={2}>2 columnas</option>
                       <option value={3}>3 columnas</option>
@@ -736,7 +734,7 @@ function PropertiesPanel({
                         } as Partial<CanvasElement>)
                       }
                       className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white
-                                 focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
+                                 focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
                     >
                       <option value="none">Sin espacio</option>
                       <option value="sm">Pequeño</option>
@@ -796,8 +794,8 @@ function PropertiesPanel({
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-40 text-center">
-              <div className="w-10 h-10 rounded-full bg-pharmako-primary-light flex items-center justify-center mb-3">
-                <Settings className="w-4 h-4 text-pharmako-primary" />
+              <div className="w-10 h-10 rounded-full bg-pharmako-care-light flex items-center justify-center mb-3">
+                <Settings className="w-4 h-4 text-pharmako-care" />
               </div>
               <p className="text-sm text-slate-500">Sin bloque seleccionado</p>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -825,11 +823,11 @@ function PropertiesPanel({
 // ─── DRAG OVERLAY ────────────────────────────────────────────
 function DragOverlayContent({ elementType }: { elementType: string }) {
   return (
-    <div className="w-72 bg-white rounded-xl border-2 border-pharmako-primary shadow-xl p-4 opacity-95">
+    <div className="w-72 bg-white rounded-xl border-2 border-pharmako-care shadow-xl p-4 opacity-95">
       <p className="text-sm font-medium text-slate-700 capitalize">
         {elementType.replace(/-/g, " ")}
       </p>
-      <p className="text-xs text-pharmako-primary mt-0.5">Soltar para añadir</p>
+      <p className="text-xs text-pharmako-care mt-0.5">Soltar para añadir</p>
     </div>
   );
 }
@@ -1179,8 +1177,8 @@ export function ClinicalHistoryBuilder() {
             <button
               onClick={handleSave}
               disabled={saveMutation.isPending}
-              className="flex items-center gap-1.5 px-4 py-2 xl:px-5 xl:py-2.5 rounded-xl bg-pharmako-primary text-white text-xs xl:text-sm font-semibold
-                         hover:bg-pharmako-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+              className="flex items-center gap-1.5 px-4 py-2 xl:px-5 xl:py-2.5 rounded-xl bg-pharmako-care text-white text-xs xl:text-sm font-semibold
+                         hover:bg-pharmako-care-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
             >
               <Save className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
               {saveMutation.isPending ? "Guardando..." : "Guardar plantilla"}
@@ -1325,8 +1323,8 @@ export function ClinicalHistoryBuilder() {
                 <button
                   onClick={handleSave}
                   disabled={saveMutation.isPending}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pharmako-primary text-white text-xs font-medium
-                           hover:bg-pharmako-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pharmako-care text-white text-xs font-medium
+                           hover:bg-pharmako-care-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <Save className="w-3.5 h-3.5" />
                   {saveMutation.isPending ? "..." : "Guardar"}

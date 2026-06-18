@@ -67,7 +67,7 @@ export function FieldOptionsEditor({
           type="button"
           onClick={addOption}
           className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium
-                     text-pharmako-primary bg-pharmako-primary-light hover:bg-pharmako-primary-light/80 transition-colors"
+                     text-pharmako-care bg-pharmako-care-light hover:bg-pharmako-care-light/80 transition-colors"
         >
           <Plus className="w-3 h-3" />
           Agregar
@@ -102,7 +102,7 @@ export function FieldOptionsEditor({
                       if (e.key === "Escape") setEditingIndex(null);
                     }}
                     className="w-full px-1.5 py-1 rounded border border-slate-200 text-xs text-slate-600 bg-white
-                               focus:outline-none focus:border-pharmako-primary focus:ring-1 focus:ring-pharmako-primary/20"
+                               focus:outline-none focus:border-pharmako-care focus:ring-1 focus:ring-pharmako-care/20"
                   />
                 ) : (
                   <button
@@ -135,8 +135,8 @@ export function FieldOptionsEditor({
                         );
                       if (e.key === "Escape") setEditingIndex(null);
                     }}
-                    className="w-full px-2 py-1 rounded border border-pharmako-primary-muted text-xs text-slate-700 bg-white
-                               focus:outline-none focus:border-pharmako-primary focus:ring-1 focus:ring-pharmako-primary/20"
+                    className="w-full px-2 py-1 rounded border border-pharmako-care/40 text-xs text-slate-700 bg-white
+                               focus:outline-none focus:border-pharmako-care focus:ring-1 focus:ring-pharmako-care/20"
                   />
                 ) : (
                   <button

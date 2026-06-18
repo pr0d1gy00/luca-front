@@ -178,7 +178,7 @@ export function MobileToolboxPanel({
             onClick={() => onTabChange(cat.id)}
             className={`flex-1 px-2 py-2.5 text-xs font-medium transition-colors ${
               activeTab === cat.id
-                ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
+                ? "text-pharmako-care border-b-2 border-pharmako-care bg-pharmako-care-light"
                 : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
             }`}
           >
@@ -237,8 +237,8 @@ export function MobilePropertiesPanel({
           onClick={() => onTabChange("properties")}
           className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
             activeTab === "properties"
-              ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
-              : "text-slate-500 hover:text-slate-700"
+              ? "text-pharmako-care border-b-2 border-pharmako-care bg-pharmako-care-light"
+              : "text-slate-500 hover:text-pharmako-care hover:bg-pharmako-care-light"
           }`}
         >
           Propiedades
@@ -247,8 +247,8 @@ export function MobilePropertiesPanel({
           onClick={() => onTabChange("layers")}
           className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
             activeTab === "layers"
-              ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
-              : "text-slate-500 hover:text-slate-700"
+              ? "text-pharmako-care border-b-2 border-pharmako-care bg-pharmako-care-light"
+              : "text-slate-500 hover:text-pharmako-care hover:bg-pharmako-care-light"
           }`}
         >
           Capas
@@ -291,9 +291,7 @@ export function MobilePropertiesPanel({
                   onUpdate({ required: !selectedElement.required })
                 }
                 className={`relative w-10 h-6 rounded-full transition-colors ${
-                  selectedElement.required
-                    ? "bg-pharmako-primary"
-                    : "bg-slate-200"
+                  selectedElement.required ? "bg-pharmako-care" : "bg-slate-200"
                 }`}
               >
                 <div
@@ -361,7 +359,7 @@ export function MobileBottomNav({
       </button>
       <button
         onClick={onOpenProperties}
-        className="px-4 py-2 rounded-xl text-sm font-medium text-pharmako-primary bg-pharmako-primary-light transition-colors"
+        className="px-4 py-2 rounded-xl text-sm font-medium text-pharmako-care bg-pharmako-care-light transition-colors"
       >
         Editar
       </button>
