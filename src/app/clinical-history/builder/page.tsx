@@ -32,7 +32,7 @@ export default function BuilderPage() {
   return (
     <div className="h-screen flex flex-col">
       {/* Top bar */}
-      <header className="h-14 flex items-center gap-3 px-4 bg-white border-b border-slate-100 flex-shrink-0">
+      {/* <header className="h-14 flex items-center gap-3 px-4 bg-white border-b border-slate-100 flex-shrink-0">
         <Link
           href="/clinical-history"
           className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-slate-600
@@ -63,7 +63,7 @@ export default function BuilderPage() {
           <LayoutList className="w-4 h-4" />
           Ver plantillas
         </Link>
-      </header>
+      </header> */}
 
       {/* Builder (fills remaining height) */}
       <div className="flex-1 overflow-hidden">

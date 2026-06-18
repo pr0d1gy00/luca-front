@@ -1177,8 +1177,8 @@ export function ClinicalHistoryBuilder() {
             <button
               onClick={handleSave}
               disabled={saveMutation.isPending}
-              className="flex items-center gap-1.5 px-4 py-2 xl:px-5 xl:py-2.5 rounded-xl bg-pharmako-care text-white text-xs xl:text-sm font-semibold
-                         hover:bg-pharmako-care-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+              className="flex items-center gap-1.5 px-4 py-2 xl:px-5 xl:py-2.5 rounded-xl bg-pharmako-primary text-white text-xs xl:text-sm font-semibold
+                         hover:bg-pharmako-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
             >
               <Save className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
               {saveMutation.isPending ? "Guardando..." : "Guardar plantilla"}
