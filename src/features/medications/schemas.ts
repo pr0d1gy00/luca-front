@@ -1,9 +1,22 @@
 import { z } from "zod";
 
-export const presentationEnum = z.enum(["CAPSULA", "TABLETA", "JARABE", "GOTAS", "AMPOLLA", "CREMA"]);
+export const presentationEnum = z.enum([
+  "CAPSULA",
+  "TABLETA",
+  "JARABE",
+  "GOTAS",
+  "AMPOLLA",
+  "CREMA",
+]);
 export type Presentation = z.infer<typeof presentationEnum>;
 
-export const administrationRouteEnum = z.enum(["ORAL", "INTRAVENOSA", "INTRAMUSCULAR", "TOPICA", "OFTALMICA"]);
+export const administrationRouteEnum = z.enum([
+  "ORAL",
+  "INTRAVENOSA",
+  "INTRAMUSCULAR",
+  "TOPICA",
+  "OFTALMICA",
+]);
 export type AdministrationRoute = z.infer<typeof administrationRouteEnum>;
 
 export const medicationSchema = z.object({
@@ -12,6 +25,8 @@ export const medicationSchema = z.object({
   concentration: z.string().min(1, "La concentración es requerida"),
   presentation: presentationEnum,
   administrationRoute: administrationRouteEnum,
+  requiresPrescription: z.boolean(),
+  contraindications: z.string().optional(),
 });
 
 export type Medication = z.infer<typeof medicationSchema>;

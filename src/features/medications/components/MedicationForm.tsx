@@ -2,8 +2,16 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Tag,
+  Pill,
+  FlaskConical,
+  Box,
+  Route,
+  AlertTriangle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { medicationSchema, type Medication, presentationLabels, administrationRouteLabels } from "../schemas";
+import { medicationSchema, type Medication } from "../schemas";
 
 interface MedicationFormProps {
   initialData?: Partial<Medication>;
@@ -29,12 +37,19 @@ const ROUTE_OPTIONS = [
 ];
 
 const inputClassName =
-  "h-9 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-luca-muted-dark placeholder:text-luca-muted/50 transition-colors outline-none focus-visible:border-luca-primary focus-visible:ring-2 focus-visible:ring-luca-primary/20 disabled:cursor-not-allowed disabled:opacity-50";
+  "h-11 pl-10 w-full rounded-xl border border-slate-200 bg-white pr-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 transition-all outline-none focus-visible:border-pharmako-care focus-visible:ring-2 focus-visible:ring-pharmako-care/20 disabled:cursor-not-allowed disabled:opacity-50";
 
 const selectClassName =
-  "h-9 w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm text-luca-muted-dark transition-colors outline-none focus-visible:border-luca-primary focus-visible:ring-2 focus-visible:ring-luca-primary/20";
+  "h-11 pl-10 pr-10 w-full rounded-xl border border-slate-200 bg-white text-sm text-slate-900 transition-all outline-none focus-visible:border-pharmako-care focus-visible:ring-2 focus-visible:ring-pharmako-care/20";
 
-export function MedicationForm({ initialData, onSubmit, onCancel }: MedicationFormProps) {
+const textareaClassName =
+  "w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all outline-none focus-visible:border-pharmako-care focus-visible:ring-2 focus-visible:ring-pharmako-care/20 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px]";
+
+export function MedicationForm({
+  initialData,
+  onSubmit,
+  onCancel,
+}: MedicationFormProps) {
   const {
     register,
     handleSubmit,
@@ -47,119 +62,204 @@ export function MedicationForm({ initialData, onSubmit, onCancel }: MedicationFo
       concentration: initialData?.concentration ?? "",
       presentation: initialData?.presentation ?? "TABLETA",
       administrationRoute: initialData?.administrationRoute ?? "ORAL",
+      requiresPrescription: initialData?.requiresPrescription ?? true,
+      contraindications: initialData?.contraindications ?? "",
     },
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-10">
       {/* ── Datos del Medicamento ─────────────────────── */}
-      <section>
-        <h2 className="text-xs font-medium uppercase tracking-wide text-luca-muted mb-4 pb-2 border-b border-slate-100">
-          Datos del Medicamento
+      <section className="space-y-6">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6 pb-2 border-b border-slate-100">
+          DATOS DEL MEDICAMENTO
         </h2>
 
         {/* Fila 1: Nombre Comercial + Principio Activo */}
-        <div className="grid grid-cols-2 gap-5 mb-5">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="commercialName" className="text-sm font-medium text-luca-muted-dark">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="commercialName"
+              className="text-sm font-semibold text-slate-800"
+            >
               Nombre Comercial
             </label>
-            <input
-              id="commercialName"
-              type="text"
-              placeholder="Ej: Amoxil"
-              className={inputClassName}
-              {...register("commercialName")}
-            />
+            <div className="relative group">
+              <Tag className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+              <input
+                id="commercialName"
+                type="text"
+                placeholder="Ej: Amoxil"
+                className={inputClassName}
+                {...register("commercialName")}
+              />
+            </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="activePrinciple" className="text-sm font-medium text-luca-muted-dark">
-              Principio Activo <span className="text-luca-accent">*</span>
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="activePrinciple"
+              className="text-sm font-semibold text-slate-800"
+            >
+              Principio Activo <span className="text-red-500">*</span>
             </label>
-            <input
-              id="activePrinciple"
-              type="text"
-              placeholder="Ej: Amoxicilina"
-              className={inputClassName}
-              aria-invalid={!!errors.activePrinciple}
-              {...register("activePrinciple")}
-            />
+            <div className="relative group">
+              <Pill className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+              <input
+                id="activePrinciple"
+                type="text"
+                placeholder="Ej: Amoxicilina"
+                className={inputClassName}
+                aria-invalid={!!errors.activePrinciple}
+                {...register("activePrinciple")}
+              />
+            </div>
             {errors.activePrinciple && (
-              <p className="text-xs text-luca-accent mt-0.5">{errors.activePrinciple.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.activePrinciple.message}
+              </p>
             )}
           </div>
         </div>
 
-        {/* Fila 2: Concentración + Presentación + Vía */}
-        <div className="grid grid-cols-3 gap-5">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="concentration" className="text-sm font-medium text-luca-muted-dark">
-              Concentración <span className="text-luca-accent">*</span>
+        {/* Fila 2: Concentración + Presentación */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="concentration"
+              className="text-sm font-semibold text-slate-800"
+            >
+              Concentración <span className="text-red-500">*</span>
             </label>
-            <input
-              id="concentration"
-              type="text"
-              placeholder="Ej: 500mg"
-              className={inputClassName}
-              aria-invalid={!!errors.concentration}
-              {...register("concentration")}
-            />
+            <div className="relative group">
+              <FlaskConical className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+              <input
+                id="concentration"
+                type="text"
+                placeholder="Ej: 500mg"
+                className={inputClassName}
+                aria-invalid={!!errors.concentration}
+                {...register("concentration")}
+              />
+            </div>
             {errors.concentration && (
-              <p className="text-xs text-luca-accent mt-0.5">{errors.concentration.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.concentration.message}
+              </p>
             )}
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="presentation" className="text-sm font-medium text-luca-muted-dark">
-              Presentación <span className="text-luca-accent">*</span>
-            </label>
-            <select
-              id="presentation"
-              className={selectClassName}
-              aria-invalid={!!errors.presentation}
-              {...register("presentation")}
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="presentation"
+              className="text-sm font-semibold text-slate-800"
             >
-              {PRESENTATION_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              Presentación <span className="text-red-500">*</span>
+            </label>
+            <div className="relative group">
+              <Box className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+              <select
+                id="presentation"
+                className={selectClassName}
+                aria-invalid={!!errors.presentation}
+                {...register("presentation")}
+              >
+                {PRESENTATION_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             {errors.presentation && (
-              <p className="text-xs text-luca-accent mt-0.5">{errors.presentation.message}</p>
+              <p className="text-xs text-red-500 mt-1">
+                {errors.presentation.message}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Fila 3: Vía de Administración + Requiere Receta */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="administrationRoute"
+              className="text-sm font-semibold text-slate-800"
+            >
+              Vía de Administración <span className="text-red-500">*</span>
+            </label>
+            <div className="relative group">
+              <Route className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+              <select
+                id="administrationRoute"
+                className={selectClassName}
+                aria-invalid={!!errors.administrationRoute}
+                {...register("administrationRoute")}
+              >
+                {ROUTE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {errors.administrationRoute && (
+              <p className="text-xs text-red-500 mt-1">
+                {errors.administrationRoute.message}
+              </p>
             )}
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="administrationRoute" className="text-sm font-medium text-luca-muted-dark">
-              Vía de Administración <span className="text-luca-accent">*</span>
-            </label>
-            <select
-              id="administrationRoute"
-              className={selectClassName}
-              aria-invalid={!!errors.administrationRoute}
-              {...register("administrationRoute")}
+          <div className="flex items-center gap-3 md:pb-3 select-none">
+            <input
+              id="requiresPrescription"
+              type="checkbox"
+              className="size-5 rounded border-slate-300 text-pharmako-care focus:ring-pharmako-care/20 cursor-pointer transition-all"
+              {...register("requiresPrescription")}
+            />
+            <label
+              htmlFor="requiresPrescription"
+              className="text-sm font-semibold text-slate-800 cursor-pointer"
             >
-              {ROUTE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            {errors.administrationRoute && (
-              <p className="text-xs text-luca-accent mt-0.5">{errors.administrationRoute.message}</p>
-            )}
+              Requiere Receta Médica
+            </label>
+          </div>
+        </div>
+
+        {/* Fila 4: Contraindicaciones */}
+        <div className="flex flex-col gap-2 pt-2">
+          <label
+            htmlFor="contraindications"
+            className="text-sm font-semibold text-slate-800"
+          >
+            Contraindicaciones
+          </label>
+          <div className="relative group">
+            <AlertTriangle className="absolute left-3.5 top-4 size-4 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
+            <textarea
+              id="contraindications"
+              placeholder="Ej: No administrar en pacientes alérgicos a la penicilina..."
+              className={textareaClassName}
+              {...register("contraindications")}
+            />
           </div>
         </div>
       </section>
 
       {/* ── Actions ───────────────────────────────────── */}
-      <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
-        <Button type="button" variant="outline" onClick={onCancel} className="rounded-xl">
+      <div className="flex justify-end gap-3 border-t border-slate-100 pt-6 mt-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          className="rounded-xl h-11 px-6 font-semibold transition-all duration-250 hover:bg-slate-50 active:scale-[0.98]"
+        >
           Cancelar
         </Button>
-        <Button type="submit" className="rounded-xl bg-luca-primary text-luca-fg-on-primary hover:bg-luca-primary-hover">
+        <Button
+          type="submit"
+          className="rounded-xl bg-pharmako-primary text-white hover:bg-pharmako-primary-hover h-11 px-8 font-semibold transition-all duration-250 active:scale-[0.98]"
+        >
           Guardar Medicamento
         </Button>
       </div>
