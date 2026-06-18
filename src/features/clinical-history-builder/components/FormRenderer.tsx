@@ -835,7 +835,8 @@ function CanvasElementRenderer({
       return (
         <div
           className={cn(
-            "flex flex-col gap-4",
+            "grid grid-cols-1",
+            gapSize[gridEl.gap ?? "md"],
             gridEl.columns === 2
               ? "sm:grid-cols-2"
               : gridEl.columns === 3
