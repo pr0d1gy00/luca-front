@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { X } from 'lucide-react';
+import { useState } from "react";
+import { X } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -9,11 +9,11 @@ import {
   SheetTitle,
   SheetTrigger,
   SheetClose,
-} from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import type { ActiveToolboxTab, ActivePanelTab } from '../types';
-import type { CanvasElement } from '../types';
-import { ToolboxItem } from './ToolboxItem';
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import type { ActiveToolboxTab, ActivePanelTab } from "../types";
+import type { CanvasElement } from "../types";
+import { ToolboxItem } from "./ToolboxItem";
 
 interface MobilePanelsProps {
   activeToolboxTab: ActiveToolboxTab;
@@ -30,25 +30,100 @@ interface MobilePanelsProps {
 
 const TOOLBOX_BLOCKS = {
   structural: [
-    { type: 'grid-row', label: 'Fila de 2 Columnas', icon: '⬛⬛', description: 'Divide el espacio en 2 columnas' },
-    { type: 'grid-row', label: 'Fila de 3 Columnas', icon: '⬛⬛⬛', description: 'Divide el espacio en 3 columnas' },
-    { type: 'section', label: 'Sección / Acordeón', icon: '📂', description: 'Grupo collapsible de campos' },
-    { type: 'visual-separator', label: 'Separador Visual', icon: '―', description: 'Línea o espacio divisor' },
-    { type: 'section-title', label: 'Título de Sección', icon: 'T', description: 'Encabezado decorativo' },
+    {
+      type: "grid-row",
+      label: "Fila de 2 Columnas",
+      icon: "⬛⬛",
+      description: "Divide el espacio en 2 columnas",
+    },
+    {
+      type: "grid-row",
+      label: "Fila de 3 Columnas",
+      icon: "⬛⬛⬛",
+      description: "Divide el espacio en 3 columnas",
+    },
+    {
+      type: "section",
+      label: "Sección / Acordeón",
+      icon: "📂",
+      description: "Grupo collapsible de campos",
+    },
+    {
+      type: "visual-separator",
+      label: "Separador Visual",
+      icon: "―",
+      description: "Línea o espacio divisor",
+    },
+    {
+      type: "section-title",
+      label: "Título de Sección",
+      icon: "T",
+      description: "Encabezado decorativo",
+    },
   ],
   basic: [
-    { type: 'text-short', label: 'Texto Corto', icon: 'T_', description: 'Campo de una línea' },
-    { type: 'text-paragraph', label: 'Párrafo', icon: '¶', description: 'Área de texto multilínea' },
-    { type: 'number', label: 'Número', icon: '#', description: 'Campo numérico con validación' },
-    { type: 'datetime', label: 'Fecha / Hora', icon: '📅', description: 'Selector de fecha y/u hora' },
-    { type: 'checkbox-multiple', label: 'Checkbox Múltiple', icon: '☑', description: 'Selección múltiple de opciones' },
-    { type: 'dropdown', label: 'Desplegable', icon: '▼', description: 'Selector de una opción' },
-    { type: 'toggle', label: 'Interruptor (Toggle)', icon: '◉', description: 'Encendido / Apagado' },
+    {
+      type: "text-short",
+      label: "Texto Corto",
+      icon: "T_",
+      description: "Campo de una línea",
+    },
+    {
+      type: "text-paragraph",
+      label: "Párrafo",
+      icon: "¶",
+      description: "Área de texto multilínea",
+    },
+    {
+      type: "number",
+      label: "Número",
+      icon: "#",
+      description: "Campo numérico con validación",
+    },
+    {
+      type: "datetime",
+      label: "Fecha / Hora",
+      icon: "📅",
+      description: "Selector de fecha y/u hora",
+    },
+    {
+      type: "checkbox-multiple",
+      label: "Checkbox Múltiple",
+      icon: "☑",
+      description: "Selección múltiple de opciones",
+    },
+    {
+      type: "dropdown",
+      label: "Desplegable",
+      icon: "▼",
+      description: "Selector de una opción",
+    },
+    {
+      type: "toggle",
+      label: "Interruptor (Toggle)",
+      icon: "◉",
+      description: "Encendido / Apagado",
+    },
   ],
   clinical: [
-    { type: 'vital-signs', label: 'Signos Vitales', icon: '❤️', description: 'Grupo de signos vitales integrados' },
-    { type: 'cie10-selector', label: 'Diagnóstico CIE-10', icon: '🔍', description: 'Selector de diagnóstico CIE-10' },
-    { type: 'file-upload', label: 'Subida de Archivos', icon: '📎', description: 'Adjunta imágenes o documentos' },
+    {
+      type: "vital-signs",
+      label: "Signos Vitales",
+      icon: "❤️",
+      description: "Grupo de signos vitales integrados",
+    },
+    {
+      type: "cie10-selector",
+      label: "Diagnóstico CIE-10",
+      icon: "🔍",
+      description: "Selector de diagnóstico CIE-10",
+    },
+    {
+      type: "file-upload",
+      label: "Subida de Archivos",
+      icon: "📎",
+      description: "Adjunta imágenes o documentos",
+    },
   ],
 } as const;
 
@@ -62,9 +137,9 @@ export function MobileToolboxPanel({
   onAddElement: (element: CanvasElement) => void;
 }) {
   const categories: { id: ActiveToolboxTab; label: string }[] = [
-    { id: 'structural', label: 'Estructura' },
-    { id: 'basic', label: 'Campos' },
-    { id: 'clinical', label: 'Clínicos' },
+    { id: "structural", label: "Estructura" },
+    { id: "basic", label: "Campos" },
+    { id: "clinical", label: "Clínicos" },
   ];
 
   const blocks = TOOLBOX_BLOCKS[activeTab];
@@ -85,8 +160,8 @@ export function MobileToolboxPanel({
             onClick={() => onTabChange(cat.id)}
             className={`flex-1 px-2 py-2.5 text-xs font-medium transition-colors ${
               activeTab === cat.id
-                ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50'
-                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
+                : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
             }`}
           >
             {cat.label}
@@ -103,10 +178,13 @@ export function MobileToolboxPanel({
             label={block.label}
             icon={block.icon}
             description={block.description}
-            onAdd={() => onAddElement(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              { id: `mobile-${Date.now()}`, type: block.type, title: block.label } as any
-            )}
+            onAdd={() =>
+              onAddElement({
+                id: `mobile-${Date.now()}`,
+                type: block.type,
+                title: block.label,
+              } as unknown as CanvasElement)
+            }
           />
         ))}
       </div>
@@ -138,21 +216,21 @@ export function MobilePropertiesPanel({
       {/* Tabs */}
       <div className="flex border-b border-slate-100">
         <button
-          onClick={() => onTabChange('properties')}
+          onClick={() => onTabChange("properties")}
           className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
-            activeTab === 'properties'
-              ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50'
-              : 'text-slate-500 hover:text-slate-700'
+            activeTab === "properties"
+              ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
+              : "text-slate-500 hover:text-slate-700"
           }`}
         >
           Propiedades
         </button>
         <button
-          onClick={() => onTabChange('layers')}
+          onClick={() => onTabChange("layers")}
           className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
-            activeTab === 'layers'
-              ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50'
-              : 'text-slate-500 hover:text-slate-700'
+            activeTab === "layers"
+              ? "text-pharmako-primary border-b-2 border-pharmako-primary bg-pharmako-primary-light"
+              : "text-slate-500 hover:text-slate-700"
           }`}
         >
           Capas
@@ -163,7 +241,9 @@ export function MobilePropertiesPanel({
         {selectedElement ? (
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">Título</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                Título
+              </label>
               <input
                 type="text"
                 value={selectedElement.title}
@@ -173,9 +253,11 @@ export function MobilePropertiesPanel({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">Descripción</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                Descripción
+              </label>
               <textarea
-                value={selectedElement.description ?? ''}
+                value={selectedElement.description ?? ""}
                 onChange={(e) => onUpdate({ description: e.target.value })}
                 rows={2}
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 resize-none"
@@ -183,27 +265,35 @@ export function MobilePropertiesPanel({
             </div>
 
             <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-slate-600">Obligatorio</label>
+              <label className="text-xs font-medium text-slate-600">
+                Obligatorio
+              </label>
               <button
-                onClick={() => onUpdate({ required: !selectedElement.required })}
+                onClick={() =>
+                  onUpdate({ required: !selectedElement.required })
+                }
                 className={`relative w-10 h-6 rounded-full transition-colors ${
-                  selectedElement.required ? 'bg-teal-600' : 'bg-slate-200'
+                  selectedElement.required
+                    ? "bg-pharmako-primary"
+                    : "bg-slate-200"
                 }`}
               >
                 <div
                   className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform ${
-                    selectedElement.required ? 'translate-x-5' : 'translate-x-1'
+                    selectedElement.required ? "translate-x-5" : "translate-x-1"
                   }`}
                 />
               </button>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">Ancho</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                Ancho
+              </label>
               <select
-                value={selectedElement.width ?? 'full'}
+                value={selectedElement.width ?? "full"}
                 onChange={(e) =>
-                  onUpdate({ width: e.target.value as CanvasElement['width'] })
+                  onUpdate({ width: e.target.value as CanvasElement["width"] })
                 }
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white"
               >
@@ -253,7 +343,7 @@ export function MobileBottomNav({
       </button>
       <button
         onClick={onOpenProperties}
-        className="px-4 py-2 rounded-xl text-sm font-medium text-teal-600 bg-teal-50 transition-colors"
+        className="px-4 py-2 rounded-xl text-sm font-medium text-pharmako-primary bg-pharmako-primary-light transition-colors"
       >
         Editar
       </button>

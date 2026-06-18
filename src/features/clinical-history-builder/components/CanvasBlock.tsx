@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Lock, EyeOff, Asterisk } from 'lucide-react';
-import type { CanvasElement } from '../types';
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical, Lock, EyeOff, Asterisk } from "lucide-react";
+import type { CanvasElement } from "../types";
 
 interface CanvasBlockProps {
   element: CanvasElement;
@@ -30,7 +30,7 @@ export function CanvasBlock({
   } = useSortable({
     id: element.id,
     data: {
-      type: 'canvas-item',
+      type: "canvas-item",
       element,
     },
     disabled: element.locked,
@@ -42,52 +42,54 @@ export function CanvasBlock({
   };
 
   const borderClass = isSelected
-    ? 'border-teal-400 ring-2 ring-teal-100'
+    ? "border-pharmako-primary ring-2 ring-pharmako-primary-light"
     : isDragging
-      ? 'border-teal-300 border-dashed opacity-60'
-      : 'border-slate-100 hover:border-slate-200';
+      ? "border-pharmako-primary-muted border-dashed opacity-60"
+      : "border-slate-100 hover:border-slate-200";
 
-  const shadowClass = isDragging ? 'shadow-lg' : 'hover:shadow-sm';
+  const shadowClass = isDragging ? "shadow-lg" : "hover:shadow-sm";
 
   // ─── Block Type Visual ─────────────────────────────
   function renderBlockPreview(el: CanvasElement) {
     switch (el.type) {
-      case 'text-short':
+      case "text-short":
         return (
           <div className="h-8 bg-slate-50 rounded-lg border border-slate-100" />
         );
-      case 'text-paragraph':
+      case "text-paragraph":
         return (
           <div className="h-16 bg-slate-50 rounded-lg border border-slate-100" />
         );
-      case 'number':
+      case "number":
         return (
           <div className="h-8 bg-slate-50 rounded-lg border border-slate-100 flex items-center px-2">
             <span className="text-xs text-slate-400">0</span>
           </div>
         );
-      case 'datetime':
+      case "datetime":
         return (
           <div className="h-8 bg-slate-50 rounded-lg border border-slate-100 flex items-center px-2 gap-1.5">
             <span className="text-xs text-slate-400">📅</span>
             <span className="text-xs text-slate-400">Seleccionar fecha</span>
           </div>
         );
-      case 'toggle':
+      case "toggle":
         return (
           <div className="flex items-center gap-2">
             <div className="w-10 h-6 rounded-full bg-slate-200" />
-            <span className="text-xs text-slate-400">{el.labelOff ?? 'No'}</span>
+            <span className="text-xs text-slate-400">
+              {el.labelOff ?? "No"}
+            </span>
           </div>
         );
-      case 'dropdown':
+      case "dropdown":
         return (
           <div className="h-8 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between px-2">
             <span className="text-xs text-slate-400">Seleccionar...</span>
             <span className="text-xs text-slate-400">▼</span>
           </div>
         );
-      case 'checkbox-multiple':
+      case "checkbox-multiple":
         return (
           <div className="space-y-1">
             {(el.options ?? []).slice(0, 3).map((opt) => (
@@ -98,7 +100,7 @@ export function CanvasBlock({
             ))}
           </div>
         );
-      case 'vital-signs':
+      case "vital-signs":
         return (
           <div className="grid grid-cols-2 gap-2">
             {el.fields?.slice(0, 4).map((field) => (
@@ -114,22 +116,27 @@ export function CanvasBlock({
             ))}
           </div>
         );
-      case 'cie10-selector':
+      case "cie10-selector":
         return (
           <div className="h-8 bg-slate-50 rounded-lg border border-slate-100 flex items-center px-2 gap-1.5">
             <span className="text-xs text-slate-400">🔍</span>
-            <span className="text-xs text-slate-400">Buscar diagnóstico CIE-10...</span>
+            <span className="text-xs text-slate-400">
+              Buscar diagnóstico CIE-10...
+            </span>
           </div>
         );
-      case 'file-upload':
+      case "file-upload":
         return (
           <div className="h-20 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200 flex items-center justify-center">
             <span className="text-xs text-slate-400">📎 Adjuntar archivos</span>
           </div>
         );
-      case 'grid-row':
+      case "grid-row":
         return (
-          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${el.columns}, 1fr)` }}>
+          <div
+            className="grid gap-2"
+            style={{ gridTemplateColumns: `repeat(${el.columns}, 1fr)` }}
+          >
             {Array.from({ length: el.columns }).map((_, i) => (
               <div
                 key={i}
@@ -140,22 +147,23 @@ export function CanvasBlock({
             ))}
           </div>
         );
-      case 'section':
+      case "section":
         return (
           <div className="space-y-2">
             <div className="h-4 bg-slate-100 rounded w-1/3" />
             <div className="space-y-1">
               {el.children?.slice(0, 2).map((child) => (
-                <div key={child.id} className="h-6 bg-slate-50 rounded border border-slate-100" />
+                <div
+                  key={child.id}
+                  className="h-6 bg-slate-50 rounded border border-slate-100"
+                />
               ))}
             </div>
           </div>
         );
-      case 'section-title':
-        return (
-          <div className="h-6 bg-slate-100 rounded w-2/3" />
-        );
-      case 'visual-separator':
+      case "section-title":
+        return <div className="h-6 bg-slate-100 rounded w-2/3" />;
+      case "visual-separator":
         return <div className="h-px bg-slate-200" />;
       default:
         return (
@@ -172,8 +180,8 @@ export function CanvasBlock({
       className={`
         relative bg-white rounded-xl border ${borderClass} ${shadowClass}
         transition-all cursor-pointer group
-        ${isOverlay ? 'shadow-xl cursor-grabbing' : ''}
-        ${element.locked ? 'opacity-75' : ''}
+        ${isOverlay ? "shadow-xl cursor-grabbing" : ""}
+        ${element.locked ? "opacity-75" : ""}
       `}
     >
       {/* ── Header Row ────────────────────────────── */}
@@ -194,10 +202,10 @@ export function CanvasBlock({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <p className="text-sm font-medium text-slate-700 truncate">
-              {element.title || 'Sin título'}
+              {element.title || "Sin título"}
             </p>
             {element.required && (
-              <Asterisk className="w-3 h-3 text-teal-500 flex-shrink-0" />
+              <Asterisk className="w-3 h-3 text-pharmako-primary flex-shrink-0" />
             )}
           </div>
           {element.description && (
@@ -230,9 +238,7 @@ export function CanvasBlock({
       </div>
 
       {/* ── Preview / Children ────────────────────── */}
-      <div className="px-4 pb-4">
-        {renderBlockPreview(element)}
-      </div>
+      <div className="px-4 pb-4">{renderBlockPreview(element)}</div>
 
       {/* ── Delete Button ──────────────────────────── */}
       {isSelected && !element.locked && onDelete && (

@@ -117,8 +117,8 @@ export function TemplatesDashboard() {
         </div>
         <Link
           href="/clinical-history/builder"
-          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-teal-600 text-white text-sm font-semibold
-                     hover:bg-teal-700 transition-colors shadow-sm self-start sm:self-auto shrink-0"
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-pharmako-primary text-white text-sm font-semibold
+                     hover:bg-pharmako-primary-hover transition-colors shadow-sm self-start sm:self-auto shrink-0"
         >
           <Plus className="w-5 h-5" />
           Nueva Plantilla
@@ -133,7 +133,7 @@ export function TemplatesDashboard() {
             <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
               Modelos Clínicos
             </span>
-            <div className="bg-teal-50 rounded-lg p-2 text-teal-600">
+            <div className="bg-pharmako-primary-light rounded-lg p-2 text-pharmako-primary">
               <Layers className="w-4 h-4" />
             </div>
           </div>
@@ -214,7 +214,7 @@ export function TemplatesDashboard() {
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-5 flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="bg-teal-50 rounded-xl p-2.5 text-teal-600 shrink-0">
+              <div className="bg-pharmako-primary-light rounded-xl p-2.5 text-pharmako-primary shrink-0">
                 <Layers className="w-5 h-5" />
               </div>
               <div>
@@ -228,13 +228,13 @@ export function TemplatesDashboard() {
             </div>
             {/* Search Input */}
             <div className="relative w-full sm:max-w-xs group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none group-focus-within:text-teal-600 transition-colors" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none group-focus-within:text-pharmako-primary transition-colors" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar plantilla o especialidad..."
-                className="h-10 pl-9 pr-3 w-full rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 transition-all outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20"
+                className="h-10 pl-9 pr-3 w-full rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 transition-all outline-none focus:border-pharmako-primary focus:ring-2 focus:ring-pharmako-primary/20"
               />
             </div>
           </div>
@@ -363,7 +363,7 @@ export function TemplatesDashboard() {
             <span className="text-xs font-semibold text-slate-500 tracking-wider uppercase">
               Prevalencia CIE-10 Registrada
             </span>
-            <span className="text-[10px] font-semibold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-semibold text-pharmako-primary bg-pharmako-primary-light px-2 py-0.5 rounded-full">
               Frecuencia
             </span>
           </div>
@@ -394,7 +394,7 @@ export function TemplatesDashboard() {
                 </div>
                 <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-teal-500 h-full rounded-full transition-all"
+                    className="bg-pharmako-primary h-full rounded-full transition-all"
                     style={{ width: `${diag.percentage}%` }}
                   />
                 </div>
@@ -403,7 +403,7 @@ export function TemplatesDashboard() {
           </div>
 
           <div className="bg-slate-50 border border-slate-150 rounded-xl p-3 flex items-start gap-2.5">
-            <TrendingUp className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+            <TrendingUp className="w-4 h-4 text-pharmako-primary shrink-0 mt-0.5" />
             <p className="text-[10px] text-slate-500 leading-normal">
               La automatización de códigos CIE-10 en tus plantillas reduce en un{" "}
               <strong>35%</strong> el tiempo de documentación de la consulta.

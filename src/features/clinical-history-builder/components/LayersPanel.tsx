@@ -1,8 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { ChevronRight, ChevronDown, GripVertical, Eye, EyeOff, Lock } from 'lucide-react';
-import type { CanvasElement } from '../types';
+import { useState } from "react";
+import {
+  ChevronRight,
+  ChevronDown,
+  GripVertical,
+  Eye,
+  EyeOff,
+  Lock,
+} from "lucide-react";
+import type { CanvasElement } from "../types";
 
 interface LayersPanelProps {
   elements: CanvasElement[];
@@ -10,7 +17,7 @@ interface LayersPanelProps {
   onSelect: (id: string) => void;
   onToggleHidden: (id: string) => void;
   onDelete: (id: string) => void;
-  onMove: (id: string, direction: 'up' | 'down') => void;
+  onMove: (id: string, direction: "up" | "down") => void;
 }
 
 interface TreeItemProps {
@@ -21,7 +28,7 @@ interface TreeItemProps {
   onSelect: () => void;
   onToggleHidden: () => void;
   onDelete: () => void;
-  onMove: (dir: 'up' | 'down') => void;
+  onMove: (dir: "up" | "down") => void;
   depth: number;
 }
 
@@ -36,7 +43,7 @@ function TreeItem({
   onMove,
   depth,
 }: TreeItemProps) {
-  const hasChildren = 'children' in element && element.children.length > 0;
+  const hasChildren = "children" in element && element.children.length > 0;
   const isContainer = hasChildren;
 
   return (
@@ -46,7 +53,7 @@ function TreeItem({
         onClick={onSelect}
         className={`
           group flex items-center gap-1.5 px-2 py-1.5 rounded-lg cursor-pointer transition-colors
-          ${isSelected ? 'bg-teal-50 border border-teal-200' : 'hover:bg-slate-50 border border-transparent'}
+          ${isSelected ? "bg-pharmako-primary-light border border-pharmako-primary-muted/30" : "hover:bg-slate-50 border border-transparent"}
         `}
         style={{ paddingLeft: `${depth * 16 + 8}px` }}
       >
@@ -78,8 +85,10 @@ function TreeItem({
         </span>
 
         {/* Title */}
-        <span className={`flex-1 text-xs truncate ${isSelected ? 'text-teal-700 font-medium' : 'text-slate-600'}`}>
-          {element.title || 'Sin título'}
+        <span
+          className={`flex-1 text-xs truncate ${isSelected ? "text-pharmako-primary font-medium" : "text-slate-600"}`}
+        >
+          {element.title || "Sin título"}
         </span>
 
         {/* Status icons */}
@@ -90,7 +99,7 @@ function TreeItem({
               onToggleHidden();
             }}
             className="p-1 rounded hover:bg-slate-200"
-            title={element.hidden ? 'Mostrar' : 'Ocultar'}
+            title={element.hidden ? "Mostrar" : "Ocultar"}
           >
             {element.hidden ? (
               <EyeOff className="w-3 h-3 text-slate-400" />
@@ -106,7 +115,7 @@ function TreeItem({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onMove('up');
+              onMove("up");
             }}
             className="px-1 py-0.5 rounded text-[10px] text-slate-400 hover:bg-slate-200 hover:text-slate-600"
           >
@@ -115,7 +124,7 @@ function TreeItem({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onMove('down');
+              onMove("down");
             }}
             className="px-1 py-0.5 rounded text-[10px] text-slate-400 hover:bg-slate-200 hover:text-slate-600"
           >
@@ -127,7 +136,7 @@ function TreeItem({
       {/* Children */}
       {isContainer && isExpanded && (
         <div>
-          {'children' in element &&
+          {"children" in element &&
             (element.children as CanvasElement[]).map((child, idx) => (
               <TreeItem
                 key={child.id}
@@ -150,22 +159,22 @@ function TreeItem({
 
 function getBlockIcon(type: string): string {
   const icons: Record<string, string> = {
-    'text-short': 'T',
-    'text-paragraph': '¶',
-    'number': '#',
-    'datetime': '📅',
-    'checkbox-multiple': '☑',
-    'dropdown': '▼',
-    'toggle': '◉',
-    'vital-signs': '❤️',
-    'cie10-selector': '🔍',
-    'file-upload': '📎',
-    'grid-row': '⊞',
-    'section': '📂',
-    'visual-separator': '―',
-    'section-title': 'T',
+    "text-short": "T",
+    "text-paragraph": "¶",
+    number: "#",
+    datetime: "📅",
+    "checkbox-multiple": "☑",
+    dropdown: "▼",
+    toggle: "◉",
+    "vital-signs": "❤️",
+    "cie10-selector": "🔍",
+    "file-upload": "📎",
+    "grid-row": "⊞",
+    section: "📂",
+    "visual-separator": "―",
+    "section-title": "T",
   };
-  return icons[type] ?? '◇';
+  return icons[type] ?? "◇";
 }
 
 export function LayersPanel({

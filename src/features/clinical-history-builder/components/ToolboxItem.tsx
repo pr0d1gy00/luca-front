@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useDraggable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
+import { useDraggable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical } from "lucide-react";
 
 interface ToolboxItemProps {
   blockType: string;
@@ -23,7 +23,7 @@ export function ToolboxItem({
     useDraggable({
       id: `toolbox-${blockType}-${label}`,
       data: {
-        type: 'toolbox-item',
+        type: "toolbox-item",
         elementType: blockType,
         isNew: true,
       },
@@ -45,7 +45,7 @@ export function ToolboxItem({
         bg-slate-50 hover:bg-slate-100 border border-slate-100
         hover:border-slate-200 transition-all cursor-grab active:cursor-grabbing
         group
-        ${isDragging ? 'opacity-50 ring-2 ring-teal-300' : ''}
+        ${isDragging ? "opacity-50 ring-2 ring-pharmako-primary-muted" : ""}
       `}
     >
       {/* Icon */}

@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Plus, Trash2, GripVertical, Check } from 'lucide-react';
-import { arrayMove } from '@dnd-kit/sortable';
-import { cn } from '@/lib/utils';
-import type { SelectorOption } from '../types';
+import { useState } from "react";
+import { Plus, Trash2, GripVertical, Check } from "lucide-react";
+import { arrayMove } from "@dnd-kit/sortable";
+import { cn } from "@/lib/utils";
+import type { SelectorOption } from "../types";
 
 interface FieldOptionsEditorProps {
   options: SelectorOption[];
@@ -38,12 +38,16 @@ export function FieldOptionsEditor({
     }
   }
 
-  function updateOption(index: number, field: 'label' | 'value', raw: string) {
+  function updateOption(index: number, field: "label" | "value", raw: string) {
     const updated = options.map((opt, i) => {
       if (i !== index) return opt;
-      const value = field === 'value'
-        ? raw.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-        : raw;
+      const value =
+        field === "value"
+          ? raw
+              .toLowerCase()
+              .replace(/\s+/g, "-")
+              .replace(/[^a-z0-9-]/g, "")
+          : raw;
       return { ...opt, [field]: value };
     });
     onChange(updated);
@@ -63,7 +67,7 @@ export function FieldOptionsEditor({
           type="button"
           onClick={addOption}
           className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium
-                     text-teal-600 bg-teal-50 hover:bg-teal-100 transition-colors"
+                     text-pharmako-primary bg-pharmako-primary-light hover:bg-pharmako-primary-muted/30 transition-colors"
         >
           <Plus className="w-3 h-3" />
           Agregar
@@ -72,7 +76,7 @@ export function FieldOptionsEditor({
 
       {options.length === 0 ? (
         <p className="text-xs text-slate-400 text-center py-4">
-          Sin opciones. Haz clic en "Agregar".
+          Sin opciones. Haz clic en &quot;Agregar&quot;.
         </p>
       ) : (
         <ul className="space-y-1.5">
@@ -87,13 +91,18 @@ export function FieldOptionsEditor({
                   <input
                     type="text"
                     defaultValue={opt.value}
-                    onBlur={(e) => updateOption(idx, 'value', e.target.value)}
+                    onBlur={(e) => updateOption(idx, "value", e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') updateOption(idx, 'value', (e.target as HTMLInputElement).value);
-                      if (e.key === 'Escape') setEditingIndex(null);
+                      if (e.key === "Enter")
+                        updateOption(
+                          idx,
+                          "value",
+                          (e.target as HTMLInputElement).value,
+                        );
+                      if (e.key === "Escape") setEditingIndex(null);
                     }}
                     className="w-full px-1.5 py-1 rounded border border-slate-200 text-xs text-slate-600 bg-white
-                               focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-500/20"
+                               focus:outline-none focus:border-pharmako-primary focus:ring-1 focus:ring-pharmako-primary/20"
                   />
                 ) : (
                   <button
@@ -116,13 +125,18 @@ export function FieldOptionsEditor({
                     type="text"
                     defaultValue={opt.label}
                     autoFocus
-                    onBlur={(e) => updateOption(idx, 'label', e.target.value)}
+                    onBlur={(e) => updateOption(idx, "label", e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') updateOption(idx, 'label', (e.target as HTMLInputElement).value);
-                      if (e.key === 'Escape') setEditingIndex(null);
+                      if (e.key === "Enter")
+                        updateOption(
+                          idx,
+                          "label",
+                          (e.target as HTMLInputElement).value,
+                        );
+                      if (e.key === "Escape") setEditingIndex(null);
                     }}
-                    className="w-full px-2 py-1 rounded border border-teal-300 text-xs text-slate-700 bg-white
-                               focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-500/20"
+                    className="w-full px-2 py-1 rounded border border-pharmako-primary-muted text-xs text-slate-700 bg-white
+                               focus:outline-none focus:border-pharmako-primary focus:ring-1 focus:ring-pharmako-primary/20"
                   />
                 ) : (
                   <button
@@ -169,7 +183,7 @@ export function FieldOptionsEditor({
 
       {options.length < minOptions && (
         <p className="text-xs text-amber-500 mt-1">
-          Se requiere al menos {minOptions} opción{minOptions > 1 ? 'es' : ''}.
+          Se requiere al menos {minOptions} opción{minOptions > 1 ? "es" : ""}.
         </p>
       )}
     </div>

@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 import {
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { useDroppable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Plus, Trash2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { CanvasBlock } from './CanvasBlock';
-import type { CanvasElement, GridRowBlock as GridRowBlockType } from '../types';
+} from "@dnd-kit/sortable";
+import { useDroppable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical, Plus, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { CanvasBlock } from "./CanvasBlock";
+import type { CanvasElement, GridRowBlock as GridRowBlockType } from "../types";
 
 interface GridRowBlockProps {
   element: GridRowBlockType;
@@ -24,16 +24,16 @@ interface GridRowBlockProps {
 }
 
 const COLUMN_GRID: Record<2 | 3 | 4, string> = {
-  2: 'grid-cols-2',
-  3: 'grid-cols-3',
-  4: 'grid-cols-4',
+  2: "grid-cols-2",
+  3: "grid-cols-3",
+  4: "grid-cols-4",
 };
 
-const GAP_SIZE: Record<'none' | 'sm' | 'md' | 'lg', string> = {
-  none: 'gap-0',
-  sm: 'gap-2',
-  md: 'gap-4',
-  lg: 'gap-6',
+const GAP_SIZE: Record<"none" | "sm" | "md" | "lg", string> = {
+  none: "gap-0",
+  sm: "gap-2",
+  md: "gap-4",
+  lg: "gap-6",
 };
 
 export function GridRowBlock({
@@ -66,8 +66,10 @@ export function GridRowBlock({
     <div
       onClick={onSelect}
       className={cn(
-        'bg-white rounded-xl border transition-all',
-        isSelected ? 'border-teal-400 ring-2 ring-teal-100' : 'border-slate-100 hover:border-slate-200',
+        "bg-white rounded-xl border transition-all",
+        isSelected
+          ? "border-pharmako-primary ring-2 ring-pharmako-primary-light"
+          : "border-slate-100 hover:border-slate-200",
       )}
     >
       {/* Header */}
@@ -96,9 +98,9 @@ export function GridRowBlock({
       {/* Columns Grid */}
       <div
         className={cn(
-          'p-4 grid',
+          "p-4 grid",
           COLUMN_GRID[element.columns],
-          GAP_SIZE[element.gap ?? 'md'],
+          GAP_SIZE[element.gap ?? "md"],
         )}
       >
         {Array.from({ length: element.columns }).map((_, colIndex) => (
@@ -106,7 +108,9 @@ export function GridRowBlock({
             key={colIndex}
             columnIndex={colIndex}
             gridId={element.id}
-            children={element.children.filter((_, i) => i % element.columns === colIndex)}
+            columnElements={element.children.filter(
+              (_, i) => i % element.columns === colIndex,
+            )}
             allChildren={element.children}
             isExpanded={expandedColumns.has(colIndex)}
             onToggleExpand={() => toggleColumn(colIndex)}
@@ -122,7 +126,7 @@ export function GridRowBlock({
 // ─── COLUMN DROP ZONE ─────────────────────────────────────────
 interface ColumnDropZoneProps {
   columnIndex: number;
-  children: CanvasElement[];
+  columnElements: CanvasElement[];
   allChildren: CanvasElement[];
   isExpanded: boolean;
   onToggleExpand: () => void;
@@ -132,7 +136,7 @@ interface ColumnDropZoneProps {
 
 function ColumnDropZone({
   columnIndex,
-  children,
+  columnElements,
   allChildren,
   isExpanded,
   onToggleExpand,
@@ -143,7 +147,7 @@ function ColumnDropZone({
   const { setNodeRef, isOver } = useDroppable({
     id: `col-dropzone-${columnIndex}`,
     data: {
-      type: 'column-dropzone',
+      type: "column-dropzone",
       columnIndex,
       gridId, // include grid ID for drop handling
     },
@@ -161,10 +165,10 @@ function ColumnDropZone({
     <div
       ref={setNodeRef}
       className={cn(
-        'min-h-[80px] rounded-lg border-2 border-dashed transition-colors',
+        "min-h-[80px] rounded-lg border-2 border-dashed transition-colors",
         isOver
-          ? 'border-teal-400 bg-teal-50/50'
-          : 'border-slate-200 hover:border-slate-300',
+          ? "border-pharmako-primary bg-pharmako-primary-light/50"
+          : "border-slate-200 hover:border-slate-300",
       )}
     >
       {/* Column Header */}
@@ -173,12 +177,14 @@ function ColumnDropZone({
           Columna {columnIndex + 1}
         </span>
         <button
-          onClick={() => handleAdd({
-            id: `new-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-            type: 'text-short',
-            title: 'Nuevo Campo',
-          })}
-          className="p-0.5 rounded text-slate-400 hover:text-teal-600 hover:bg-teal-50 transition-colors"
+          onClick={() =>
+            handleAdd({
+              id: `new-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+              type: "text-short",
+              title: "Nuevo Campo",
+            })
+          }
+          className="p-0.5 rounded text-slate-400 hover:text-pharmako-primary hover:bg-pharmako-primary-light transition-colors"
         >
           <Plus className="w-3 h-3" />
         </button>
@@ -186,8 +192,8 @@ function ColumnDropZone({
 
       {/* Items in this column */}
       <div className="space-y-2 px-2 pb-2">
-        {children.length > 0 ? (
-          children.map((child) => (
+        {columnElements.length > 0 ? (
+          columnElements.map((child) => (
             <SortableContext
               key={child.id}
               items={[child.id]}
@@ -199,7 +205,9 @@ function ColumnDropZone({
                   isSelected={false}
                   onSelect={() => {}}
                   onDelete={() => {
-                    const updated = allChildren.filter((c) => c.id !== child.id);
+                    const updated = allChildren.filter(
+                      (c) => c.id !== child.id,
+                    );
                     onUpdateChildren(updated);
                   }}
                 />
@@ -208,9 +216,7 @@ function ColumnDropZone({
           ))
         ) : (
           <div className="flex items-center justify-center h-16 text-center">
-            <p className="text-xs text-slate-400">
-              Arrastra un bloque aquí
-            </p>
+            <p className="text-xs text-slate-400">Arrastra un bloque aquí</p>
           </div>
         )}
       </div>

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import type { ClinicalHistorySchema } from '../types';
-import { FormRenderer } from './FormRenderer';
+import { useState } from "react";
+import type { ClinicalHistorySchema } from "../types";
+import { FormRenderer } from "./FormRenderer";
 
 interface FormPreviewProps {
   schema: ClinicalHistorySchema | null;
@@ -11,7 +11,9 @@ interface FormPreviewProps {
 }
 
 export function FormPreview({ schema, isLoading, onSave }: FormPreviewProps) {
-  const [submitted, setSubmitted] = useState<Record<string, unknown> | null>(null);
+  const [submitted, setSubmitted] = useState<Record<string, unknown> | null>(
+    null,
+  );
 
   if (!schema) {
     return (
@@ -41,7 +43,7 @@ export function FormPreview({ schema, isLoading, onSave }: FormPreviewProps) {
             v{schema.version}
           </span>
           {schema.specialty && (
-            <span className="px-2 py-0.5 rounded-full bg-teal-50 text-xs text-teal-600">
+            <span className="px-2 py-0.5 rounded-full bg-pharmako-primary-light text-xs text-pharmako-primary">
               {schema.specialty}
             </span>
           )}
@@ -50,7 +52,11 @@ export function FormPreview({ schema, isLoading, onSave }: FormPreviewProps) {
 
       {/* Form */}
       <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-        <FormRenderer elements={schema.canvas.elements} onSubmit={handleSubmit} isLoading={isLoading} />
+        <FormRenderer
+          elements={schema.canvas.elements}
+          onSubmit={handleSubmit}
+          isLoading={isLoading}
+        />
       </div>
 
       {/* Submitted data preview */}

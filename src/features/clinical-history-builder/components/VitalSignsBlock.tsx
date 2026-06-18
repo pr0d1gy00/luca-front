@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Plus, Trash2, GripVertical } from 'lucide-react';
-import { arrayMove } from '@dnd-kit/sortable';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { Plus, Trash2, GripVertical } from "lucide-react";
+import { arrayMove } from "@dnd-kit/sortable";
+import { cn } from "@/lib/utils";
 import type {
   CanvasElement,
   VitalSignsBlock as VitalSignsBlockType,
   VitalSignsField,
   VitalSignsKey,
-} from '../types';
+} from "../types";
 
 interface VitalSignsBlockProps {
   element: VitalSignsBlockType;
@@ -19,16 +19,20 @@ interface VitalSignsBlockProps {
   onUpdate: (updates: Partial<VitalSignsBlockType>) => void;
 }
 
-const VITAL_SIGNS_OPTIONS: { key: VitalSignsKey; label: string; unit: string }[] = [
-  { key: 'systolic', label: 'Presión Sistólica', unit: 'mmHg' },
-  { key: 'diastolic', label: 'Presión Diastólica', unit: 'mmHg' },
-  { key: 'heart-rate', label: 'Frecuencia Cardíaca', unit: 'lpm' },
-  { key: 'respiratory-rate', label: 'Frecuencia Respiratoria', unit: 'rpm' },
-  { key: 'temperature', label: 'Temperatura', unit: '°C' },
-  { key: 'oxygen-saturation', label: 'Saturación O₂', unit: '%' },
-  { key: 'weight', label: 'Peso', unit: 'kg' },
-  { key: 'height', label: 'Talla', unit: 'cm' },
-  { key: 'bmi', label: 'IMC', unit: 'kg/m²' },
+const VITAL_SIGNS_OPTIONS: {
+  key: VitalSignsKey;
+  label: string;
+  unit: string;
+}[] = [
+  { key: "systolic", label: "Presión Sistólica", unit: "mmHg" },
+  { key: "diastolic", label: "Presión Diastólica", unit: "mmHg" },
+  { key: "heart-rate", label: "Frecuencia Cardíaca", unit: "lpm" },
+  { key: "respiratory-rate", label: "Frecuencia Respiratoria", unit: "rpm" },
+  { key: "temperature", label: "Temperatura", unit: "°C" },
+  { key: "oxygen-saturation", label: "Saturación O₂", unit: "%" },
+  { key: "weight", label: "Peso", unit: "kg" },
+  { key: "height", label: "Talla", unit: "cm" },
+  { key: "bmi", label: "IMC", unit: "kg/m²" },
 ];
 
 export function VitalSignsBlock({
@@ -56,7 +60,9 @@ export function VitalSignsBlock({
   function addField(key: VitalSignsKey) {
     const def = VITAL_SIGNS_OPTIONS.find((o) => o.key === key);
     if (!def || fields.find((f) => f.key === key)) return;
-    onUpdate({ fields: [...fields, { key, label: def.label, unit: def.unit }] });
+    onUpdate({
+      fields: [...fields, { key, label: def.label, unit: def.unit }],
+    });
   }
 
   function moveField(from: number, to: number) {
@@ -72,17 +78,23 @@ export function VitalSignsBlock({
     <div
       onClick={onSelect}
       className={cn(
-        'bg-white rounded-xl border transition-all overflow-hidden',
-        isSelected ? 'border-teal-400 ring-2 ring-teal-100' : 'border-slate-100 hover:border-slate-200',
+        "bg-white rounded-xl border transition-all overflow-hidden",
+        isSelected
+          ? "border-pharmako-primary ring-2 ring-pharmako-primary-light"
+          : "border-slate-100 hover:border-slate-200",
       )}
     >
       {/* Header */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
         <GripVertical className="w-4 h-4 text-slate-300 cursor-grab" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-slate-700">{element.title || 'Signos Vitales'}</p>
+          <p className="text-sm font-medium text-slate-700">
+            {element.title || "Signos Vitales"}
+          </p>
           {element.description && (
-            <p className="text-xs text-slate-400 mt-0.5">{element.description}</p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {element.description}
+            </p>
           )}
         </div>
         <span className="px-2 py-0.5 rounded-full bg-red-50 text-xs text-red-400">
@@ -90,7 +102,10 @@ export function VitalSignsBlock({
         </span>
         {isSelected && (
           <button
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
             className="p-1 rounded hover:bg-red-50 text-red-400 hover:text-red-500 transition-colors"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -122,19 +137,24 @@ export function VitalSignsBlock({
                         setEditingLabel(null);
                       }}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          updateField(field.key, { label: (e.target as HTMLInputElement).value });
+                        if (e.key === "Enter") {
+                          updateField(field.key, {
+                            label: (e.target as HTMLInputElement).value,
+                          });
                           setEditingLabel(null);
                         }
-                        if (e.key === 'Escape') setEditingLabel(null);
+                        if (e.key === "Escape") setEditingLabel(null);
                       }}
-                      className="w-full px-1.5 py-0.5 rounded border border-teal-300 text-xs text-slate-700 bg-white
-                                 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                      className="w-full px-1.5 py-0.5 rounded border border-pharmako-primary-muted text-xs text-slate-700 bg-white
+                                 focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20"
                     />
                   ) : (
                     <button
-                      onClick={(e) => { e.stopPropagation(); setEditingLabel(field.key); }}
-                      className="text-xs font-medium text-slate-600 hover:text-teal-600 transition-colors text-left w-full truncate"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingLabel(field.key);
+                      }}
+                      className="text-xs font-medium text-slate-600 hover:text-pharmako-primary transition-colors text-left w-full truncate"
                       title="Haz clic para editar la etiqueta"
                     >
                       {field.label}
@@ -149,7 +169,7 @@ export function VitalSignsBlock({
                       max={field.max}
                       onClick={(e) => e.stopPropagation()}
                       className="w-14 px-1.5 py-0.5 rounded border border-slate-100 text-xs text-slate-700 bg-white
-                                 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400"
+                                 focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
                     />
                     <span className="text-xs text-slate-400">{field.unit}</span>
                   </div>
@@ -158,21 +178,30 @@ export function VitalSignsBlock({
                 {/* Range indicators */}
                 <div className="hidden group-hover:flex items-center gap-1 flex-shrink-0">
                   <button
-                    onClick={(e) => { e.stopPropagation(); moveField(idx, idx - 1); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      moveField(idx, idx - 1);
+                    }}
                     disabled={idx === 0}
                     className="p-0.5 rounded text-slate-300 hover:text-slate-500 disabled:opacity-30"
                   >
                     ↑
                   </button>
                   <button
-                    onClick={(e) => { e.stopPropagation(); moveField(idx, idx + 1); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      moveField(idx, idx + 1);
+                    }}
                     disabled={idx === fields.length - 1}
                     className="p-0.5 rounded text-slate-300 hover:text-slate-500 disabled:opacity-30"
                   >
                     ↓
                   </button>
                   <button
-                    onClick={(e) => { e.stopPropagation(); removeField(field.key); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeField(field.key);
+                    }}
                     className="p-0.5 rounded text-slate-300 hover:text-red-400 transition-colors"
                   >
                     <Trash2 className="w-3 h-3" />
@@ -193,10 +222,13 @@ export function VitalSignsBlock({
             {availableOptions.map((opt) => (
               <button
                 key={opt.key}
-                onClick={(e) => { e.stopPropagation(); addField(opt.key); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  addField(opt.key);
+                }}
                 className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-slate-500
-                           bg-slate-50 border border-slate-100 hover:border-teal-300 hover:text-teal-600
-                           hover:bg-teal-50 transition-colors"
+                            bg-slate-50 border border-slate-100 hover:border-pharmako-primary-hover hover:text-pharmako-primary
+                            hover:bg-pharmako-primary-light transition-colors"
               >
                 <Plus className="w-3 h-3" />
                 {opt.label}
