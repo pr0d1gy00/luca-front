@@ -294,7 +294,7 @@ function CanvasArea({
 }) {
   return (
     <main className="flex-1 bg-slate-50 overflow-y-auto">
-      <div className="max-w-3xl mx-auto py-8 px-4">
+      <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-6xl mx-auto py-8 px-4 xl:px-6 2xl:px-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
           <div className="flex-1 min-w-0">
             <input
@@ -551,9 +551,9 @@ function PropertiesPanel({
                 <textarea
                   value={schemaDescription ?? ""}
                   onChange={(e) => onSchemaDescriptionChange(e.target.value)}
-                  rows={4}
+                  rows={6}
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
-                             text-slate-900 placeholder-slate-400 resize-y min-h-[96px]
+                             text-slate-900 placeholder-slate-400 resize-y min-h-[120px] xl:min-h-[160px] 2xl:min-h-[200px]
                              focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
                   placeholder="Descripción (opcional)"
                 />
@@ -584,9 +584,9 @@ function PropertiesPanel({
                 <textarea
                   value={selectedElement.description ?? ""}
                   onChange={(e) => onUpdate({ description: e.target.value })}
-                  rows={4}
+                  rows={6}
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
-                             text-slate-900 placeholder-slate-400 resize-y min-h-[96px]
+                             text-slate-900 placeholder-slate-400 resize-y min-h-[120px] xl:min-h-[160px] 2xl:min-h-[200px]
                              focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
                 />
               </div>
@@ -1123,7 +1123,7 @@ export function ClinicalHistoryBuilder() {
     >
       <div className="flex flex-col h-full bg-slate-50 overflow-hidden relative">
         {/* Global Header (Desktop Only) */}
-        <header className="hidden lg:flex h-14 bg-white border-b border-slate-100 items-center justify-between px-6 shrink-0 z-10 shadow-sm">
+        <header className="hidden lg:flex h-14 xl:h-16 bg-white border-b border-slate-100 items-center justify-between px-6 xl:px-8 shrink-0 z-10 shadow-sm">
           <div className="flex items-center gap-3">
             <Link
               href="/clinical-history"
@@ -1133,7 +1133,7 @@ export function ClinicalHistoryBuilder() {
               <ChevronLeft className="w-5 h-5 text-slate-500" />
             </Link>
             <div className="h-4 w-px bg-slate-200" />
-            <h1 className="text-sm font-semibold text-slate-700">
+            <h1 className="text-sm xl:text-base font-semibold text-slate-700">
               Constructor de Historia Clínica
             </h1>
           </div>
@@ -1144,28 +1144,28 @@ export function ClinicalHistoryBuilder() {
               onClick={undo}
               disabled={!canUndo}
               title="Deshacer (Ctrl+Z)"
-              className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 xl:p-2 rounded-lg hover:bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
-              <Undo2 className="w-4 h-4" />
+              <Undo2 className="w-4 h-4 xl:w-5 h-5" />
             </button>
             <button
               onClick={redo}
               disabled={!canRedo}
               title="Rehacer (Ctrl+Shift+Z)"
-              className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 xl:p-2 rounded-lg hover:bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
-              <Redo2 className="w-4 h-4" />
+              <Redo2 className="w-4 h-4 xl:w-5 h-5" />
             </button>
 
-            <div className="h-4 w-px bg-slate-200 mx-1.5" />
+            <div className="h-4 w-px bg-slate-200 mx-1.5 xl:mx-2" />
 
             {/* Preview & Import/Export */}
             <button
               onClick={() => window.open(previewUrl, "_blank")}
               title="Vista previa"
-              className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-600 transition-colors"
+              className="p-1.5 xl:p-2 rounded-lg hover:bg-slate-50 text-slate-600 transition-colors"
             >
-              <Eye className="w-4 h-4" />
+              <Eye className="w-4 h-4 xl:w-5 h-5" />
             </button>
             <ImportExportMenu
               schema={activeSchema}
@@ -1179,10 +1179,10 @@ export function ClinicalHistoryBuilder() {
             <button
               onClick={handleSave}
               disabled={saveMutation.isPending}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-pharmako-primary text-white text-xs font-semibold
+              className="flex items-center gap-1.5 px-4 py-2 xl:px-5 xl:py-2.5 rounded-xl bg-pharmako-primary text-white text-xs xl:text-sm font-semibold
                          hover:bg-pharmako-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
             >
-              <Save className="w-3.5 h-3.5" />
+              <Save className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
               {saveMutation.isPending ? "Guardando..." : "Guardar plantilla"}
             </button>
           </div>
@@ -1196,7 +1196,9 @@ export function ClinicalHistoryBuilder() {
             <div
               className={cn(
                 "transition-all duration-300 ease-in-out h-full border-r border-slate-100 flex-shrink-0 bg-white",
-                isLeftCollapsed ? "w-0 overflow-hidden border-r-0" : "w-60",
+                isLeftCollapsed
+                  ? "w-0 overflow-hidden border-r-0"
+                  : "w-60 xl:w-64 2xl:w-72",
               )}
             >
               <ToolboxSidebar
@@ -1241,7 +1243,9 @@ export function ClinicalHistoryBuilder() {
             <div
               className={cn(
                 "transition-all duration-300 ease-in-out h-full border-l border-slate-100 flex-shrink-0 bg-white",
-                isRightCollapsed ? "w-0 overflow-hidden border-l-0" : "w-72",
+                isRightCollapsed
+                  ? "w-0 overflow-hidden border-l-0"
+                  : "w-72 xl:w-80 2xl:w-96",
               )}
             >
               <PropertiesPanel
