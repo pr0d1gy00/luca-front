@@ -3,7 +3,22 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, LayoutList } from "lucide-react";
-import { ClinicalHistoryBuilder } from "@/features/clinical-history-builder";
+import dynamic from "next/dynamic";
+
+const ClinicalHistoryBuilder = dynamic(
+  () =>
+    import("@/features/clinical-history-builder").then(
+      (mod) => mod.ClinicalHistoryBuilder,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-full bg-slate-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700" />
+      </div>
+    ),
+  },
+);
 
 export default function BuilderPage() {
   // Prevent body scroll while builder is open
