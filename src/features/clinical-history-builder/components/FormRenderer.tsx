@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import type {
   CanvasElement,
   TextShortBlock,
@@ -19,54 +19,70 @@ import type {
   GridRowBlock,
   SectionBlock,
   RadioGroupBlock,
-} from '../types';
-import { cn } from '@/lib/utils';
-import { Cie10Selector } from './Cie10Selector';
+  BlockCondition,
+} from "../types";
+import { cn } from "@/lib/utils";
+import { Cie10Selector } from "./Cie10Selector";
 
 // ─── Block-level Zod schemas ────────────────────────────────
 function buildZodSchema(element: CanvasElement): z.ZodType<unknown> {
   const base = element.required
-    ? z.string().min(1, 'Este campo es obligatorio')
+    ? z.string().min(1, "Este campo es obligatorio")
     : z.string().optional();
 
   switch (element.type) {
-    case 'text-short':
+    case "text-short":
       return element.required
-        ? z.string().min(1, 'Este campo es obligatorio').max(element.maxLength ?? 500)
-        : z.string().max(element.maxLength ?? 500).optional();
-    case 'text-paragraph':
+        ? z
+            .string()
+            .min(1, "Este campo es obligatorio")
+            .max(element.maxLength ?? 500)
+        : z
+            .string()
+            .max(element.maxLength ?? 500)
+            .optional();
+    case "text-paragraph":
       return element.required
-        ? z.string().min(1).max(element.maxLength ?? 2000)
-        : z.string().max(element.maxLength ?? 2000).optional();
-    case 'number':
+        ? z
+            .string()
+            .min(1)
+            .max(element.maxLength ?? 2000)
+        : z
+            .string()
+            .max(element.maxLength ?? 2000)
+            .optional();
+    case "number":
       return element.required
-        ? z.number().min(element.min ?? 0).max(element.max ?? Infinity)
+        ? z
+            .number()
+            .min(element.min ?? 0)
+            .max(element.max ?? Infinity)
         : z.number().optional();
-    case 'datetime':
+    case "datetime":
       return element.required
-        ? z.string().datetime({ message: 'Fecha inválida' })
-        : z.string().datetime().optional().or(z.literal(''));
-    case 'dropdown':
+        ? z.string().datetime({ message: "Fecha inválida" })
+        : z.string().datetime().optional().or(z.literal(""));
+    case "dropdown":
       return element.required
-        ? z.string().min(1, 'Selecciona una opción')
+        ? z.string().min(1, "Selecciona una opción")
         : z.string().optional();
-    case 'checkbox-multiple':
+    case "checkbox-multiple":
       return element.required
-        ? z.array(z.string()).min(1, 'Selecciona al menos una opción')
+        ? z.array(z.string()).min(1, "Selecciona al menos una opción")
         : z.array(z.string()).optional();
-    case 'toggle':
+    case "toggle":
       return z.boolean();
-    case 'radio-group':
+    case "radio-group":
       return element.required
-        ? z.string().min(1, 'Selecciona una opción')
+        ? z.string().min(1, "Selecciona una opción")
         : z.string().optional();
-    case 'vital-signs':
+    case "vital-signs":
       return z.record(z.number()).optional();
-    case 'cie10-selector':
+    case "cie10-selector":
       return element.required
-        ? z.string().min(1, 'Selecciona un diagnóstico')
+        ? z.string().min(1, "Selecciona un diagnóstico")
         : z.string().optional();
-    case 'file-upload':
+    case "file-upload":
       return z.array(z.instanceof(File)).optional();
     default:
       return z.any().optional();
@@ -74,19 +90,25 @@ function buildZodSchema(element: CanvasElement): z.ZodType<unknown> {
 }
 
 // ─── Build a combined form schema from canvas elements ───────
-function buildFormSchema(elements: CanvasElement[]): z.ZodObject<Record<string, z.ZodType>> {
+function buildFormSchema(
+  elements: CanvasElement[],
+): z.ZodObject<Record<string, z.ZodType>> {
   const shape: Record<string, z.ZodType> = {};
 
   for (const el of elements) {
     // Top-level fields
-    if (!['grid-row', 'section', 'visual-separator', 'section-title'].includes(el.type)) {
+    if (
+      !["grid-row", "section", "visual-separator", "section-title"].includes(
+        el.type,
+      )
+    ) {
       shape[el.id] = buildZodSchema(el);
     }
 
     // Nested children
-    if ('children' in el && el.children) {
+    if ("children" in el && el.children) {
       for (const child of el.children) {
-        if (child.type === 'grid-row') {
+        if (child.type === "grid-row") {
           // Grid columns: each child inside grid contributes
           for (const colChild of child.children) {
             shape[colChild.id] = buildZodSchema(colChild);
@@ -120,13 +142,13 @@ function TextShortField({
       )}
       <input
         type="text"
-        value={value ?? ''}
+        value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
         placeholder={element.placeholder}
         maxLength={element.maxLength}
         className={cn(
-          'w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900',
-          'placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400',
+          "w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900",
+          "placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400",
         )}
       />
       {element.suffix && (
@@ -147,14 +169,14 @@ function TextParagraphField({
 }) {
   return (
     <textarea
-      value={value ?? ''}
+      value={value ?? ""}
       onChange={(e) => onChange(e.target.value)}
       placeholder={element.placeholder}
       rows={element.rows ?? 3}
       maxLength={element.maxLength}
       className={cn(
-        'w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 resize-none',
-        'placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400',
+        "w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 resize-none",
+        "placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400",
       )}
     />
   );
@@ -173,19 +195,21 @@ function NumberField({
     <div className="flex items-center gap-2">
       <input
         type="number"
-        value={value ?? ''}
+        value={value ?? ""}
         onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
         min={element.min}
         max={element.max}
         step={element.step}
         placeholder={element.placeholder}
         className={cn(
-          'w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900',
-          'focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400',
+          "w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900",
+          "focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400",
         )}
       />
       {element.unit && (
-        <span className="text-sm text-slate-500 font-medium">{element.unit}</span>
+        <span className="text-sm text-slate-500 font-medium">
+          {element.unit}
+        </span>
       )}
     </div>
   );
@@ -200,17 +224,17 @@ function DateTimeField({
   value?: string;
   onChange: (v: string) => void;
 }) {
-  const inputType = element.includeTime ? 'datetime-local' : 'date';
+  const inputType = element.includeTime ? "datetime-local" : "date";
   return (
     <input
       type={inputType}
-      value={value ?? ''}
+      value={value ?? ""}
       onChange={(e) => onChange(e.target.value)}
       min={element.minDate}
       max={element.maxDate}
       className={cn(
-        'w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900',
-        'focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400',
+        "w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900",
+        "focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400",
       )}
     />
   );
@@ -227,14 +251,14 @@ function DropdownField({
 }) {
   return (
     <select
-      value={value ?? ''}
+      value={value ?? ""}
       onChange={(e) => onChange(e.target.value)}
       className={cn(
-        'w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white',
-        'focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400',
+        "w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white",
+        "focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400",
       )}
     >
-      <option value="">{element.placeholder ?? 'Seleccionar...'}</option>
+      <option value="">{element.placeholder ?? "Seleccionar..."}</option>
       {element.options.map((opt) => (
         <option key={opt.value} value={opt.value} disabled={opt.disabled}>
           {opt.label}
@@ -264,19 +288,32 @@ function CheckboxMultipleField({
   return (
     <div className="space-y-2">
       {element.options.map((opt) => (
-        <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+        <label
+          key={opt.value}
+          className="flex items-center gap-2 cursor-pointer"
+        >
           <div
             className={cn(
-              'w-4 h-4 rounded border transition-colors flex items-center justify-center flex-shrink-0',
+              "w-4 h-4 rounded border transition-colors flex items-center justify-center flex-shrink-0",
               value.includes(opt.value)
-                ? 'bg-teal-600 border-teal-600'
-                : 'border-slate-300 hover:border-slate-400',
+                ? "bg-teal-600 border-teal-600"
+                : "border-slate-300 hover:border-slate-400",
             )}
             onClick={() => toggle(opt.value)}
           >
             {value.includes(opt.value) && (
-              <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 12 12" fill="none">
-                <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <svg
+                className="w-2.5 h-2.5 text-white"
+                viewBox="0 0 12 12"
+                fill="none"
+              >
+                <path
+                  d="M2 6l3 3 5-5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             )}
           </div>
@@ -302,19 +339,19 @@ function ToggleField({
         type="button"
         onClick={() => onChange(!value)}
         className={cn(
-          'relative w-11 h-6 rounded-full transition-colors',
-          value ? 'bg-teal-600' : 'bg-slate-200',
+          "relative w-11 h-6 rounded-full transition-colors",
+          value ? "bg-teal-600" : "bg-slate-200",
         )}
       >
         <div
           className={cn(
-            'absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform',
-            value ? 'translate-x-6' : 'translate-x-1',
+            "absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform",
+            value ? "translate-x-6" : "translate-x-1",
           )}
         />
       </button>
       <span className="text-sm text-slate-600">
-        {value ? element.labelOn ?? 'Sí' : element.labelOff ?? 'No'}
+        {value ? (element.labelOn ?? "Sí") : (element.labelOff ?? "No")}
       </span>
     </div>
   );
@@ -332,13 +369,16 @@ function RadioGroupField({
   return (
     <div className="space-y-2">
       {element.options.map((opt) => (
-        <label key={opt.value} className="flex items-center gap-2.5 cursor-pointer">
+        <label
+          key={opt.value}
+          className="flex items-center gap-2.5 cursor-pointer"
+        >
           <div
             className={cn(
-              'w-4 h-4 rounded-full border-2 transition-colors flex items-center justify-center flex-shrink-0',
+              "w-4 h-4 rounded-full border-2 transition-colors flex items-center justify-center flex-shrink-0",
               value === opt.value
-                ? 'border-teal-600 bg-teal-600'
-                : 'border-slate-300 hover:border-slate-400',
+                ? "border-teal-600 bg-teal-600"
+                : "border-slate-300 hover:border-slate-400",
             )}
             onClick={() => onChange(opt.value)}
           >
@@ -376,8 +416,10 @@ function VitalSignsField({
           </label>
           <input
             type="number"
-            value={values[field.key] ?? ''}
-            onChange={(e) => updateField(field.key, parseFloat(e.target.value) || 0)}
+            value={values[field.key] ?? ""}
+            onChange={(e) =>
+              updateField(field.key, parseFloat(e.target.value) || 0)
+            }
             min={field.min}
             max={field.max}
             className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900
@@ -385,9 +427,9 @@ function VitalSignsField({
           />
           {(field.min !== undefined || field.max !== undefined) && (
             <p className="text-[10px] text-slate-400">
-              {field.min !== undefined ? `mín ${field.min}` : ''}
-              {field.min !== undefined && field.max !== undefined ? ' · ' : ''}
-              {field.max !== undefined ? `máx ${field.max}` : ''}
+              {field.min !== undefined ? `mín ${field.min}` : ""}
+              {field.min !== undefined && field.max !== undefined ? " · " : ""}
+              {field.max !== undefined ? `máx ${field.max}` : ""}
             </p>
           )}
         </div>
@@ -424,9 +466,7 @@ function FileUploadField({
 
   return (
     <div className="space-y-2">
-      <label
-        className="flex flex-col items-center justify-center h-24 rounded-xl border-2 border-dashed border-slate-200 cursor-pointer hover:border-teal-400 transition-colors"
-      >
+      <label className="flex flex-col items-center justify-center h-24 rounded-xl border-2 border-dashed border-slate-200 cursor-pointer hover:border-teal-400 transition-colors">
         <span className="text-sm text-slate-400">📎</span>
         <span className="text-xs text-slate-400 mt-1">
           Arrastra archivos o haz clic para seleccionar
@@ -442,10 +482,15 @@ function FileUploadField({
       {files.length > 0 && (
         <div className="space-y-1">
           {files.map((f, i) => (
-            <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 text-xs text-slate-600">
+            <div
+              key={i}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 text-xs text-slate-600"
+            >
               <span>📎</span>
               <span className="flex-1 truncate">{f.name}</span>
-              <span className="text-slate-400">{(f.size / 1024 / 1024).toFixed(1)} MB</span>
+              <span className="text-slate-400">
+                {(f.size / 1024 / 1024).toFixed(1)} MB
+              </span>
             </div>
           ))}
         </div>
@@ -456,11 +501,11 @@ function FileUploadField({
 
 // ─── Width utility ─────────────────────────────────────────
 const WIDTH_CLASSES: Record<string, string> = {
-  full: 'col-span-12',
-  '2/3': 'col-span-8',
-  '1/2': 'col-span-6',
-  '1/3': 'col-span-4',
-  '1/4': 'col-span-3',
+  full: "col-span-12",
+  "2/3": "col-span-8",
+  "1/2": "col-span-6",
+  "1/3": "col-span-4",
+  "1/4": "col-span-3",
 };
 
 function FieldWrapper({
@@ -470,12 +515,14 @@ function FieldWrapper({
   element: CanvasElement;
   children: React.ReactNode;
 }) {
-  const colSpan = WIDTH_CLASSES[element.width ?? 'full'] ?? 'col-span-12';
+  const colSpan = WIDTH_CLASSES[element.width ?? "full"] ?? "col-span-12";
 
   return (
-    <div className={cn('flex flex-col gap-1.5', colSpan)}>
+    <div className={cn("flex flex-col gap-1.5", colSpan)}>
       <label className="flex items-center gap-1">
-        <span className="text-sm font-medium text-slate-700">{element.title}</span>
+        <span className="text-sm font-medium text-slate-700">
+          {element.title}
+        </span>
         {element.required && (
           <span className="text-xs text-teal-600 font-medium">*</span>
         )}
@@ -488,6 +535,82 @@ function FieldWrapper({
   );
 }
 
+function evaluateConditions(
+  conditions: BlockCondition[] | undefined,
+  watch: (id: string) => unknown,
+): boolean {
+  if (!conditions || conditions.length === 0) return true;
+
+  for (const cond of conditions) {
+    const triggerValue = watch(cond.fieldId);
+
+    switch (cond.operator) {
+      case "equals":
+        if (triggerValue !== cond.value) return false;
+        break;
+      case "not-equals":
+        if (triggerValue === cond.value) return false;
+        break;
+      case "greater-than":
+        if (typeof triggerValue !== "number" || triggerValue <= cond.value)
+          return false;
+        break;
+      case "less-than":
+        if (typeof triggerValue !== "number" || triggerValue >= cond.value)
+          return false;
+        break;
+      default:
+        break;
+    }
+  }
+
+  return true;
+}
+
+function SectionFieldWrapper({
+  element,
+  control,
+  watch,
+  setValue,
+}: {
+  element: SectionBlock;
+  control: ReturnType<typeof useForm>["control"];
+  watch: ReturnType<typeof useForm>["watch"];
+  setValue: ReturnType<typeof useForm>["setValue"];
+}) {
+  const [open, setOpen] = useState(element.defaultOpen ?? true);
+  return (
+    <div className="rounded-xl border border-slate-100 bg-white col-span-12">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-slate-800">
+            {element.title}
+          </span>
+          {element.required && <span className="text-xs text-teal-600">*</span>}
+        </div>
+        <span className="text-slate-400 text-sm">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div className="px-4 pb-4 space-y-4">
+          {element.children?.map((child) => (
+            <CanvasElementRenderer
+              key={child.id}
+              element={child}
+              control={control}
+              watch={watch}
+              setValue={setValue}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Canvas element renderer ─────────────────────────────────
 function CanvasElementRenderer({
   element,
@@ -496,16 +619,20 @@ function CanvasElementRenderer({
   setValue,
 }: {
   element: CanvasElement;
-  control: ReturnType<typeof useForm>['control'];
-  watch: ReturnType<typeof useForm>['watch'];
-  setValue: ReturnType<typeof useForm>['setValue'];
+  control: ReturnType<typeof useForm>["control"];
+  watch: ReturnType<typeof useForm>["watch"];
+  setValue: ReturnType<typeof useForm>["setValue"];
 }) {
   if (element.hidden) return null;
+
+  // Evaluar condiciones dinámicas de visualización
+  const isVisible = evaluateConditions(element.conditions, watch);
+  if (!isVisible) return null;
 
   const value = watch(element.id);
 
   switch (element.type) {
-    case 'text-short':
+    case "text-short":
       return (
         <FieldWrapper element={element}>
           <Controller
@@ -522,7 +649,7 @@ function CanvasElementRenderer({
         </FieldWrapper>
       );
 
-    case 'text-paragraph':
+    case "text-paragraph":
       return (
         <FieldWrapper element={element}>
           <Controller
@@ -539,7 +666,7 @@ function CanvasElementRenderer({
         </FieldWrapper>
       );
 
-    case 'number':
+    case "number":
       return (
         <FieldWrapper element={element}>
           <Controller
@@ -556,7 +683,7 @@ function CanvasElementRenderer({
         </FieldWrapper>
       );
 
-    case 'datetime':
+    case "datetime":
       return (
         <FieldWrapper element={element}>
           <Controller
@@ -573,7 +700,7 @@ function CanvasElementRenderer({
         </FieldWrapper>
       );
 
-    case 'dropdown':
+    case "dropdown":
       return (
         <FieldWrapper element={element}>
           <Controller
@@ -590,7 +717,7 @@ function CanvasElementRenderer({
         </FieldWrapper>
       );
 
-    case 'checkbox-multiple':
+    case "checkbox-multiple":
       return (
         <FieldWrapper element={element}>
           <Controller
@@ -607,7 +734,7 @@ function CanvasElementRenderer({
         </FieldWrapper>
       );
 
-    case 'toggle':
+    case "toggle":
       return (
         <FieldWrapper element={element}>
           <Controller
@@ -624,7 +751,7 @@ function CanvasElementRenderer({
         </FieldWrapper>
       );
 
-    case 'radio-group':
+    case "radio-group":
       return (
         <FieldWrapper element={element}>
           <Controller
@@ -641,7 +768,7 @@ function CanvasElementRenderer({
         </FieldWrapper>
       );
 
-    case 'vital-signs':
+    case "vital-signs":
       return (
         <FieldWrapper element={element}>
           <Controller
@@ -658,7 +785,7 @@ function CanvasElementRenderer({
         </FieldWrapper>
       );
 
-    case 'cie10-selector':
+    case "cie10-selector":
       return (
         <FieldWrapper element={element}>
           <Controller
@@ -675,7 +802,7 @@ function CanvasElementRenderer({
         </FieldWrapper>
       );
 
-    case 'file-upload':
+    case "file-upload":
       return (
         <FieldWrapper element={element}>
           <Controller
@@ -692,12 +819,30 @@ function CanvasElementRenderer({
         </FieldWrapper>
       );
 
-    case 'grid-row': {
-      const gridCols: Record<number, string> = { 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4' };
-      const gapSize: Record<string, string> = { none: 'gap-0', sm: 'gap-2', md: 'gap-4', lg: 'gap-6' };
+    case "grid-row": {
+      const gridCols: Record<number, string> = {
+        2: "grid-cols-2",
+        3: "grid-cols-3",
+        4: "grid-cols-4",
+      };
+      const gapSize: Record<string, string> = {
+        none: "gap-0",
+        sm: "gap-2",
+        md: "gap-4",
+        lg: "gap-6",
+      };
       const gridEl = element as GridRowBlock;
       return (
-        <div className={cn('flex flex-col gap-4', gridEl.columns === 2 ? 'sm:grid-cols-2' : gridEl.columns === 3 ? 'sm:grid-cols-2 lg:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-4')}>
+        <div
+          className={cn(
+            "flex flex-col gap-4",
+            gridEl.columns === 2
+              ? "sm:grid-cols-2"
+              : gridEl.columns === 3
+                ? "sm:grid-cols-2 lg:grid-cols-3"
+                : "sm:grid-cols-2 lg:grid-cols-4",
+          )}
+        >
           {gridEl.children.map((child) => (
             <CanvasElementRenderer
               key={child.id}
@@ -711,51 +856,40 @@ function CanvasElementRenderer({
       );
     }
 
-    case 'section': {
-      const secEl = element as SectionBlock;
-      const [open, setOpen] = useState(secEl.defaultOpen ?? true);
+    case "section":
       return (
-        <div className="rounded-xl border border-slate-100 bg-white">
-          <button
-            type="button"
-            onClick={() => setOpen(!open)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-800">{element.title}</span>
-              {element.required && <span className="text-xs text-teal-600">*</span>}
-            </div>
-            <span className="text-slate-400 text-sm">{open ? '▲' : '▼'}</span>
-          </button>
-          {open && (
-            <div className="px-4 pb-4 space-y-4">
-              {secEl.children?.map((child) => (
-                <CanvasElementRenderer
-                  key={child.id}
-                  element={child}
-                  control={control}
-                  watch={watch}
-                  setValue={setValue}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        <SectionFieldWrapper
+          element={element as SectionBlock}
+          control={control}
+          watch={watch}
+          setValue={setValue}
+        />
       );
-    }
 
-    case 'section-title':
+    case "section-title":
       return (
-        <h2 className={cn(
-          'text-slate-800 font-semibold',
-          element.level === 1 ? 'text-xl' : element.level === 2 ? 'text-lg' : 'text-base',
-        )}>
+        <h2
+          className={cn(
+            "text-slate-800 font-semibold",
+            element.level === 1
+              ? "text-xl"
+              : element.level === 2
+                ? "text-lg"
+                : "text-base",
+          )}
+        >
           {element.title}
         </h2>
       );
 
-    case 'visual-separator':
-      return <div className={element.style === 'space' ? 'h-8' : 'h-px bg-slate-100 my-2'} />;
+    case "visual-separator":
+      return (
+        <div
+          className={
+            element.style === "space" ? "h-8" : "h-px bg-slate-100 my-2"
+          }
+        />
+      );
 
     default:
       return null;
@@ -769,7 +903,11 @@ interface FormRendererProps {
   isLoading?: boolean;
 }
 
-export function FormRenderer({ elements, onSubmit, isLoading }: FormRendererProps) {
+export function FormRenderer({
+  elements,
+  onSubmit,
+  isLoading,
+}: FormRendererProps) {
   const schema = buildFormSchema(elements);
   const { control, handleSubmit, watch, setValue } = useForm({
     resolver: zodResolver(schema),
@@ -777,7 +915,10 @@ export function FormRenderer({ elements, onSubmit, isLoading }: FormRendererProp
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit ?? (() => {}))} className="flex flex-col gap-6">
+    <form
+      onSubmit={handleSubmit(onSubmit ?? (() => {}))}
+      className="flex flex-col gap-6"
+    >
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {elements.map((element) => (
           <CanvasElementRenderer
@@ -799,7 +940,7 @@ export function FormRenderer({ elements, onSubmit, isLoading }: FormRendererProp
                        hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed
                        transition-colors"
           >
-            {isLoading ? 'Guardando...' : 'Guardar Historia Clínica'}
+            {isLoading ? "Guardando..." : "Guardar Historia Clínica"}
           </button>
         </div>
       )}
