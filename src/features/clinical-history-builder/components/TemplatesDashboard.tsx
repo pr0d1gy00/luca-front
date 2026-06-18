@@ -133,7 +133,7 @@ export function TemplatesDashboard() {
             <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
               Modelos Clínicos
             </span>
-            <div className="bg-blue-50 rounded-lg p-2 text-blue-700">
+            <div className="bg-pharmako-care-light rounded-lg p-2 text-pharmako-care">
               <Layers className="w-4 h-4" />
             </div>
           </div>
@@ -153,7 +153,7 @@ export function TemplatesDashboard() {
             <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
               Estado de Modelos
             </span>
-            <div className="bg-emerald-50 rounded-lg p-2 text-emerald-600">
+            <div className="bg-pharmako-care-light rounded-lg p-2 text-pharmako-care">
               <CheckCircle className="w-4 h-4" />
             </div>
           </div>
@@ -173,7 +173,7 @@ export function TemplatesDashboard() {
             <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
               Fichas Completadas
             </span>
-            <div className="bg-sky-50 rounded-lg p-2 text-sky-600">
+            <div className="bg-pharmako-care-light rounded-lg p-2 text-pharmako-care">
               <FileText className="w-4 h-4" />
             </div>
           </div>
@@ -193,7 +193,7 @@ export function TemplatesDashboard() {
             <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
               Especialidades Activas
             </span>
-            <div className="bg-purple-50 rounded-lg p-2 text-purple-600">
+            <div className="bg-pharmako-care-light rounded-lg p-2 text-pharmako-care">
               <Activity className="w-4 h-4" />
             </div>
           </div>
@@ -214,7 +214,7 @@ export function TemplatesDashboard() {
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-5 flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="bg-blue-50 rounded-xl p-2.5 text-blue-700 shrink-0">
+              <div className="bg-pharmako-care-light rounded-xl p-2.5 text-pharmako-care shrink-0">
                 <Layers className="w-5 h-5" />
               </div>
               <div>
@@ -363,7 +363,7 @@ export function TemplatesDashboard() {
             <span className="text-xs font-semibold text-slate-500 tracking-wider uppercase">
               Prevalencia CIE-10 Registrada
             </span>
-            <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-semibold text-pharmako-care bg-pharmako-care-light px-2 py-0.5 rounded-full">
               Frecuencia
             </span>
           </div>
