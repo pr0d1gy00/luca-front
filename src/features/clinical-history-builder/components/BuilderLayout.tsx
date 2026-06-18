@@ -453,15 +453,6 @@ function PropertiesPanel({
   onMove,
   activeTab,
   onTabChange,
-  onSave,
-  isSaving,
-  onPreview,
-  onUndo,
-  onRedo,
-  canUndo,
-  canRedo,
-  schema,
-  onImport,
   onSchemaStatusChange,
   statusMutation,
   schemaName,
@@ -480,15 +471,6 @@ function PropertiesPanel({
   onMove: (id: string, dir: "up" | "down") => void;
   activeTab: ActivePanelTab;
   onTabChange: (tab: ActivePanelTab) => void;
-  onSave: () => void;
-  isSaving: boolean;
-  onPreview: () => void;
-  onUndo: () => void;
-  onRedo: () => void;
-  canUndo: boolean;
-  canRedo: boolean;
-  schema: ClinicalHistorySchema;
-  onImport: (elements: CanvasElement[]) => void;
   onSchemaStatusChange: (status: "draft" | "published") => void;
   statusMutation: { isPending: boolean };
   schemaName: string;
@@ -499,64 +481,20 @@ function PropertiesPanel({
 }) {
   return (
     <aside className="w-full bg-white border-l border-slate-100 flex flex-col h-full">
-      {/* Action bar */}
-      <div className="px-3 py-3 border-b border-slate-100 flex items-center gap-1 justify-between">
-        <button
-          onClick={onUndo}
-          disabled={!canUndo}
-          title="Deshacer (Ctrl+Z)"
-          className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        >
-          <Undo2 className="w-4 h-4 text-slate-600" />
-        </button>
-        <button
-          onClick={onRedo}
-          disabled={!canRedo}
-          title="Rehacer (Ctrl+Shift+Z)"
-          className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        >
-          <Redo2 className="w-4 h-4 text-slate-600" />
-        </button>
-
-        <div className="w-px h-4 bg-slate-200 mx-1" />
-
-        <button
-          onClick={onPreview}
-          title="Vista previa"
-          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors"
-        >
-          <Eye className="w-4 h-4" />
-        </button>
-
+      {/* Panel Header */}
+      <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+          Configuración
+        </span>
         {onCollapse && (
           <button
             onClick={onCollapse}
-            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
-            title="Colapsar propiedades"
+            className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+            title="Colapsar panel"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
         )}
-
-        <div className="flex-1" />
-
-        <ImportExportMenu
-          schema={schema}
-          elements={elements}
-          onImport={onImport}
-        />
-
-        <button
-          onClick={onSave}
-          disabled={isSaving}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-pharmako-primary text-white text-xs font-medium
-                     hover:bg-pharmako-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
-        >
-          <Save className="w-3.5 h-3.5" />
-          <span className="hidden xl:inline">
-            {isSaving ? "Guardando..." : "Guardar"}
-          </span>
-        </button>
       </div>
 
       {/* Tabs */}
@@ -1181,156 +1119,105 @@ export function ClinicalHistoryBuilder() {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex h-full bg-slate-50 overflow-hidden relative">
-        {/* Desktop */}
-        <div className="hidden lg:flex flex-1 relative overflow-hidden h-full">
-          {/* Left Sidebar wrapper */}
-          <div
-            className={cn(
-              "transition-all duration-300 ease-in-out h-full border-r border-slate-100 flex-shrink-0 bg-white",
-              isLeftCollapsed ? "w-0 overflow-hidden border-r-0" : "w-60",
-            )}
-          >
-            <ToolboxSidebar
-              activeTab={uiState.activeToolboxTab}
-              onTabChange={(tab) =>
-                setUIState((prev) => ({ ...prev, activeToolboxTab: tab }))
-              }
-              onAddElement={handleAddElement}
-              onCollapse={() => setIsLeftCollapsed(true)}
-            />
+      <div className="flex flex-col h-full bg-slate-50 overflow-hidden relative">
+        {/* Global Header (Desktop Only) */}
+        <header className="hidden lg:flex h-14 bg-white border-b border-slate-100 items-center justify-between px-6 shrink-0 z-10 shadow-sm">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/clinical-history"
+              className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-500 hover:text-slate-700 transition-colors"
+              title="Volver a plantillas"
+            >
+              <ChevronLeft className="w-5 h-5 text-slate-500" />
+            </Link>
+            <div className="h-4 w-px bg-slate-200" />
+            <h1 className="text-sm font-semibold text-slate-700">
+              Constructor de Historia Clínica
+            </h1>
           </div>
 
-          {/* Left Expand Trigger when collapsed */}
-          {isLeftCollapsed && (
+          <div className="flex items-center gap-1.5">
+            {/* Undo / Redo */}
             <button
-              onClick={() => setIsLeftCollapsed(false)}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-30 p-2 bg-white rounded-r-xl border-y border-r border-slate-200 shadow-md hover:bg-slate-50 text-slate-500 hover:text-slate-800 transition-all cursor-pointer"
-              title="Mostrar herramientas"
+              onClick={undo}
+              disabled={!canUndo}
+              title="Deshacer (Ctrl+Z)"
+              className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
-              <ChevronRight className="w-4 h-4" />
+              <Undo2 className="w-4 h-4" />
             </button>
-          )}
+            <button
+              onClick={redo}
+              disabled={!canRedo}
+              title="Rehacer (Ctrl+Shift+Z)"
+              className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <Redo2 className="w-4 h-4" />
+            </button>
 
-          <CanvasArea
-            elements={canvasElements}
-            selectedId={uiState.selectedElementId}
-            onSelect={(id) =>
-              setUIState((prev) => ({ ...prev, selectedElementId: id }))
-            }
-            onDelete={handleDeleteElement}
-            onToggleHidden={handleToggleHidden}
-            onMove={handleMove}
-            isDragOver={uiState.isDragging}
-            schemaName={schemaName}
-            schemaDescription={schemaDescription}
-            onSchemaNameChange={setSchemaName}
-            onSchemaDescriptionChange={setSchemaDescription}
-            onLoadPreset={handleLoadPreset}
-          />
+            <div className="h-4 w-px bg-slate-200 mx-1.5" />
 
-          {/* Right Sidebar wrapper */}
-          <div
-            className={cn(
-              "transition-all duration-300 ease-in-out h-full border-l border-slate-100 flex-shrink-0 bg-white",
-              isRightCollapsed ? "w-0 overflow-hidden border-l-0" : "w-72",
-            )}
-          >
-            <PropertiesPanel
-              selectedElement={selectedElement}
-              onUpdate={handleUpdateElement}
-              onDelete={handleDeleteElement}
-              elements={canvasElements}
-              selectedId={uiState.selectedElementId}
-              onSelect={(id) =>
-                setUIState((prev) => ({ ...prev, selectedElementId: id }))
-              }
-              onToggleHidden={handleToggleHidden}
-              onMove={handleMove}
-              activeTab={uiState.activePanelTab}
-              onTabChange={(tab) =>
-                setUIState((prev) => ({ ...prev, activePanelTab: tab }))
-              }
-              onSave={handleSave}
-              isSaving={saveMutation.isPending}
-              onPreview={() => window.open(previewUrl, "_blank")}
-              onUndo={undo}
-              onRedo={redo}
-              canUndo={canUndo}
-              canRedo={canRedo}
+            {/* Preview & Import/Export */}
+            <button
+              onClick={() => window.open(previewUrl, "_blank")}
+              title="Vista previa"
+              className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-600 transition-colors"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+            <ImportExportMenu
               schema={activeSchema}
+              elements={canvasElements}
               onImport={setCanvasElements}
-              onSchemaStatusChange={handleSchemaStatusChange}
-              statusMutation={statusMutation}
-              schemaName={schemaName}
-              schemaDescription={schemaDescription}
-              onSchemaNameChange={setSchemaName}
-              onSchemaDescriptionChange={setSchemaDescription}
-              onCollapse={() => setIsRightCollapsed(true)}
             />
-          </div>
 
-          {/* Right Expand Trigger when collapsed */}
-          {isRightCollapsed && (
+            <div className="h-4 w-px bg-slate-200 mx-1.5" />
+
+            {/* Save Button */}
             <button
-              onClick={() => setIsRightCollapsed(false)}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-30 p-2 bg-white rounded-l-xl border-y border-l border-slate-200 shadow-md hover:bg-slate-50 text-slate-500 hover:text-slate-800 transition-all cursor-pointer"
-              title="Mostrar propiedades"
+              onClick={handleSave}
+              disabled={saveMutation.isPending}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-pharmako-primary text-white text-xs font-semibold
+                         hover:bg-pharmako-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <Save className="w-3.5 h-3.5" />
+              {saveMutation.isPending ? "Guardando..." : "Guardar plantilla"}
             </button>
-          )}
-        </div>
-
-        {/* Mobile */}
-        <div className="flex lg:hidden flex-1 flex-col h-full overflow-hidden">
-          {/* Mobile Action Bar */}
-          <div className="px-4 py-2 bg-white border-b border-slate-100 flex items-center justify-between gap-2 flex-shrink-0">
-            <div className="flex items-center gap-1">
-              <button
-                onClick={undo}
-                disabled={!canUndo}
-                title="Deshacer (Ctrl+Z)"
-                className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              >
-                <Undo2 className="w-4 h-4 text-slate-600" />
-              </button>
-              <button
-                onClick={redo}
-                disabled={!canRedo}
-                title="Rehacer (Ctrl+Shift+Z)"
-                className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              >
-                <Redo2 className="w-4 h-4 text-slate-600" />
-              </button>
-              <div className="w-px h-4 bg-slate-200 mx-1.5" />
-              <button
-                onClick={() => window.open(previewUrl, "_blank")}
-                title="Vista previa"
-                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors"
-              >
-                <Eye className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <ImportExportMenu
-                schema={activeSchema}
-                elements={canvasElements}
-                onImport={setCanvasElements}
-              />
-              <button
-                onClick={handleSave}
-                disabled={saveMutation.isPending}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pharmako-primary text-white text-xs font-medium
-                           hover:bg-pharmako-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <Save className="w-3.5 h-3.5" />
-                {saveMutation.isPending ? "..." : "Guardar"}
-              </button>
-            </div>
           </div>
+        </header>
 
-          <div className="flex-1 overflow-y-auto">
+        {/* Builder Work Area */}
+        <div className="flex flex-1 overflow-hidden relative">
+          {/* Desktop Work Area */}
+          <div className="hidden lg:flex flex-1 relative overflow-hidden h-full">
+            {/* Left Sidebar wrapper */}
+            <div
+              className={cn(
+                "transition-all duration-300 ease-in-out h-full border-r border-slate-100 flex-shrink-0 bg-white",
+                isLeftCollapsed ? "w-0 overflow-hidden border-r-0" : "w-60",
+              )}
+            >
+              <ToolboxSidebar
+                activeTab={uiState.activeToolboxTab}
+                onTabChange={(tab) =>
+                  setUIState((prev) => ({ ...prev, activeToolboxTab: tab }))
+                }
+                onAddElement={handleAddElement}
+                onCollapse={() => setIsLeftCollapsed(true)}
+              />
+            </div>
+
+            {/* Left Expand Trigger when collapsed */}
+            {isLeftCollapsed && (
+              <button
+                onClick={() => setIsLeftCollapsed(false)}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-30 p-2 bg-white rounded-r-xl border-y border-r border-slate-200 shadow-md hover:bg-slate-50 text-slate-500 hover:text-slate-800 transition-all cursor-pointer"
+                title="Mostrar herramientas"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            )}
+
             <CanvasArea
               elements={canvasElements}
               selectedId={uiState.selectedElementId}
@@ -1347,54 +1234,165 @@ export function ClinicalHistoryBuilder() {
               onSchemaDescriptionChange={setSchemaDescription}
               onLoadPreset={handleLoadPreset}
             />
-          </div>
 
-          <MobileBottomNav
-            onOpenToolbox={() => setIsMobileToolboxOpen(true)}
-            onOpenProperties={() => setIsMobilePropsOpen(true)}
-          />
-
-          <Sheet
-            open={isMobileToolboxOpen}
-            onOpenChange={setIsMobileToolboxOpen}
-          >
-            <SheetContent
-              side="left"
-              className="w-[85vw] sm:max-w-[320px] p-0 bg-white border-r border-slate-100"
+            {/* Right Sidebar wrapper */}
+            <div
+              className={cn(
+                "transition-all duration-300 ease-in-out h-full border-l border-slate-100 flex-shrink-0 bg-white",
+                isRightCollapsed ? "w-0 overflow-hidden border-l-0" : "w-72",
+              )}
             >
-              <MobileToolboxPanel
-                activeTab={uiState.activeToolboxTab}
-                onTabChange={(tab) =>
-                  setUIState((prev) => ({ ...prev, activeToolboxTab: tab }))
-                }
-                onAddElement={handleAddElement}
-              />
-            </SheetContent>
-          </Sheet>
-
-          <Sheet open={isMobilePropsOpen} onOpenChange={setIsMobilePropsOpen}>
-            <SheetContent
-              side="right"
-              className="w-[85vw] sm:max-w-[320px] p-0 bg-white border-l border-slate-100"
-            >
-              <MobilePropertiesPanel
+              <PropertiesPanel
                 selectedElement={selectedElement}
                 onUpdate={handleUpdateElement}
                 onDelete={handleDeleteElement}
+                elements={canvasElements}
+                selectedId={uiState.selectedElementId}
+                onSelect={(id) =>
+                  setUIState((prev) => ({ ...prev, selectedElementId: id }))
+                }
+                onToggleHidden={handleToggleHidden}
+                onMove={handleMove}
                 activeTab={uiState.activePanelTab}
                 onTabChange={(tab) =>
                   setUIState((prev) => ({ ...prev, activePanelTab: tab }))
                 }
+                onSchemaStatusChange={handleSchemaStatusChange}
+                statusMutation={statusMutation}
+                schemaName={schemaName}
+                schemaDescription={schemaDescription}
+                onSchemaNameChange={setSchemaName}
+                onSchemaDescriptionChange={setSchemaDescription}
+                onCollapse={() => setIsRightCollapsed(true)}
               />
-            </SheetContent>
-          </Sheet>
-        </div>
+            </div>
 
-        <DragOverlay dropAnimation={null}>
-          {uiState.isDragging && activeDragType && (
-            <DragOverlayContent elementType={activeDragType} />
-          )}
-        </DragOverlay>
+            {/* Right Expand Trigger when collapsed */}
+            {isRightCollapsed && (
+              <button
+                onClick={() => setIsRightCollapsed(false)}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-30 p-2 bg-white rounded-l-xl border-y border-l border-slate-200 shadow-md hover:bg-slate-50 text-slate-500 hover:text-slate-800 transition-all cursor-pointer"
+                title="Mostrar propiedades"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Mobile */}
+          <div className="flex lg:hidden flex-1 flex-col h-full overflow-hidden">
+            {/* Mobile Action Bar */}
+            <div className="px-4 py-2 bg-white border-b border-slate-100 flex items-center justify-between gap-2 flex-shrink-0">
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={undo}
+                  disabled={!canUndo}
+                  title="Deshacer (Ctrl+Z)"
+                  className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Undo2 className="w-4 h-4 text-slate-600" />
+                </button>
+                <button
+                  onClick={redo}
+                  disabled={!canRedo}
+                  title="Rehacer (Ctrl+Shift+Z)"
+                  className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Redo2 className="w-4 h-4 text-slate-600" />
+                </button>
+                <div className="w-px h-4 bg-slate-200 mx-1.5" />
+                <button
+                  onClick={() => window.open(previewUrl, "_blank")}
+                  title="Vista previa"
+                  className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <ImportExportMenu
+                  schema={activeSchema}
+                  elements={canvasElements}
+                  onImport={setCanvasElements}
+                />
+                <button
+                  onClick={handleSave}
+                  disabled={saveMutation.isPending}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pharmako-primary text-white text-xs font-medium
+                           hover:bg-pharmako-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  {saveMutation.isPending ? "..." : "Guardar"}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              <CanvasArea
+                elements={canvasElements}
+                selectedId={uiState.selectedElementId}
+                onSelect={(id) =>
+                  setUIState((prev) => ({ ...prev, selectedElementId: id }))
+                }
+                onDelete={handleDeleteElement}
+                onToggleHidden={handleToggleHidden}
+                onMove={handleMove}
+                isDragOver={uiState.isDragging}
+                schemaName={schemaName}
+                schemaDescription={schemaDescription}
+                onSchemaNameChange={setSchemaName}
+                onSchemaDescriptionChange={setSchemaDescription}
+                onLoadPreset={handleLoadPreset}
+              />
+            </div>
+
+            <MobileBottomNav
+              onOpenToolbox={() => setIsMobileToolboxOpen(true)}
+              onOpenProperties={() => setIsMobilePropsOpen(true)}
+            />
+
+            <Sheet
+              open={isMobileToolboxOpen}
+              onOpenChange={setIsMobileToolboxOpen}
+            >
+              <SheetContent
+                side="left"
+                className="w-[85vw] sm:max-w-[320px] p-0 bg-white border-r border-slate-100"
+              >
+                <MobileToolboxPanel
+                  activeTab={uiState.activeToolboxTab}
+                  onTabChange={(tab) =>
+                    setUIState((prev) => ({ ...prev, activeToolboxTab: tab }))
+                  }
+                  onAddElement={handleAddElement}
+                />
+              </SheetContent>
+            </Sheet>
+
+            <Sheet open={isMobilePropsOpen} onOpenChange={setIsMobilePropsOpen}>
+              <SheetContent
+                side="right"
+                className="w-[85vw] sm:max-w-[320px] p-0 bg-white border-l border-slate-100"
+              >
+                <MobilePropertiesPanel
+                  selectedElement={selectedElement}
+                  onUpdate={handleUpdateElement}
+                  onDelete={handleDeleteElement}
+                  activeTab={uiState.activePanelTab}
+                  onTabChange={(tab) =>
+                    setUIState((prev) => ({ ...prev, activePanelTab: tab }))
+                  }
+                />
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          <DragOverlay dropAnimation={null}>
+            {uiState.isDragging && activeDragType && (
+              <DragOverlayContent elementType={activeDragType} />
+            )}
+          </DragOverlay>
+        </div>
       </div>
     </DndContext>
   );
