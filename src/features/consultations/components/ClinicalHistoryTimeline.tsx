@@ -88,7 +88,7 @@ export function ClinicalHistoryTimeline({
           <ol className="relative border-l-2 border-slate-200 ml-4 space-y-6">
             {entries.map((entry) => (
               <li key={entry.id} className="relative pl-8">
-                <div className="absolute -left-[9px] top-1.5 size-4 rounded-full bg-blue-700 ring-4 ring-white" />
+                <div className="absolute left-[-9px] top-[50%] size-4 rounded-full bg-blue-700 ring-4 ring-white" />
 
                 <button
                   onClick={() => setSelectedId(entry.id)}
@@ -132,7 +132,10 @@ export function ClinicalHistoryTimeline({
         open={selectedId !== null}
         onOpenChange={() => setSelectedId(null)}
       >
-        <DialogContent className="sm:max-w-[560px] p-0 border-slate-200">
+        <DialogContent
+          className="sm:max-w-[560px] p-0 border-slate-200"
+          showCloseButton={false}
+        >
           <AnimatePresence mode="wait">
             {selectedData && (
               <ConsultationPreview
