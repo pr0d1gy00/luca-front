@@ -1,7 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
+import {
+  X,
+  Columns2,
+  Columns3,
+  FolderOpen,
+  Minus,
+  Heading,
+  Type,
+  AlignLeft,
+  Hash,
+  Calendar,
+  CheckSquare,
+  ChevronDown,
+  CircleDot,
+  ToggleLeft,
+  Heart,
+  Stethoscope,
+  Paperclip,
+} from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -33,31 +51,31 @@ const TOOLBOX_BLOCKS = {
     {
       type: "grid-row",
       label: "Fila de 2 Columnas",
-      icon: "⬛⬛",
+      icon: Columns2,
       description: "Divide el espacio en 2 columnas",
     },
     {
       type: "grid-row",
       label: "Fila de 3 Columnas",
-      icon: "⬛⬛⬛",
+      icon: Columns3,
       description: "Divide el espacio en 3 columnas",
     },
     {
       type: "section",
       label: "Sección / Acordeón",
-      icon: "📂",
+      icon: FolderOpen,
       description: "Grupo collapsible de campos",
     },
     {
       type: "visual-separator",
       label: "Separador Visual",
-      icon: "―",
+      icon: Minus,
       description: "Línea o espacio divisor",
     },
     {
       type: "section-title",
       label: "Título de Sección",
-      icon: "T",
+      icon: Heading,
       description: "Encabezado decorativo",
     },
   ],
@@ -65,43 +83,43 @@ const TOOLBOX_BLOCKS = {
     {
       type: "text-short",
       label: "Texto Corto",
-      icon: "T_",
+      icon: Type,
       description: "Campo de una línea",
     },
     {
       type: "text-paragraph",
       label: "Párrafo",
-      icon: "¶",
+      icon: AlignLeft,
       description: "Área de texto multilínea",
     },
     {
       type: "number",
       label: "Número",
-      icon: "#",
+      icon: Hash,
       description: "Campo numérico con validación",
     },
     {
       type: "datetime",
       label: "Fecha / Hora",
-      icon: "📅",
+      icon: Calendar,
       description: "Selector de fecha y/u hora",
     },
     {
       type: "checkbox-multiple",
       label: "Checkbox Múltiple",
-      icon: "☑",
+      icon: CheckSquare,
       description: "Selección múltiple de opciones",
     },
     {
       type: "dropdown",
       label: "Desplegable",
-      icon: "▼",
+      icon: ChevronDown,
       description: "Selector de una opción",
     },
     {
       type: "toggle",
       label: "Interruptor (Toggle)",
-      icon: "◉",
+      icon: ToggleLeft,
       description: "Encendido / Apagado",
     },
   ],
@@ -109,23 +127,23 @@ const TOOLBOX_BLOCKS = {
     {
       type: "vital-signs",
       label: "Signos Vitales",
-      icon: "❤️",
+      icon: Heart,
       description: "Grupo de signos vitales integrados",
     },
     {
       type: "cie10-selector",
       label: "Diagnóstico CIE-10",
-      icon: "🔍",
+      icon: Stethoscope,
       description: "Selector de diagnóstico CIE-10",
     },
     {
       type: "file-upload",
       label: "Subida de Archivos",
-      icon: "📎",
+      icon: Paperclip,
       description: "Adjunta imágenes o documentos",
     },
   ],
-} as const;
+};
 
 export function MobileToolboxPanel({
   activeTab,
