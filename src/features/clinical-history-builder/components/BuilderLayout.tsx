@@ -796,8 +796,8 @@ function PropertiesPanel({
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-40 text-center">
-              <div className="w-10 h-10 rounded-full bg-pharmako-care-light flex items-center justify-center mb-3">
-                <Settings className="w-4 h-4 text-pharmako-care" />
+              <div className="w-10 h-10 rounded-full bg-pharmako-primary-light flex items-center justify-center mb-3">
+                <Settings className="w-4 h-4 text-pharmako-primary" />
               </div>
               <p className="text-sm text-slate-500">Sin bloque seleccionado</p>
               <p className="text-xs text-slate-400 mt-0.5">
