@@ -1306,7 +1306,7 @@ export function ClinicalHistoryBuilder() {
     }
   }
 
-  const previewUrl = `/features/clinical-history/preview/${schemaId}`;
+  const previewUrl = `/clinical-history/preview/${schemaId}`;
 
   return (
     <DndContext
