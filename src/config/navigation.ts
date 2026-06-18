@@ -1,5 +1,5 @@
 import { MdOutlineDashboard } from "react-icons/md";
-import { PiPillBold, PiUsersBold } from "react-icons/pi";
+import { PiPillBold, PiUsersBold, PiFileTextBold } from "react-icons/pi";
 import React from "react";
 
 export type NavItem = {
@@ -35,6 +35,13 @@ export const navigationConfig: NavItem[] = [
     name: "medications",
     href: "/dashboard/medications",
     icon: PiPillBold,
+    roles: ["doctor"],
+  },
+  {
+    title: "Historias Clínicas",
+    name: "clinical-history",
+    href: "/dashboard/clinical-history",
+    icon: PiFileTextBold,
     roles: ["doctor"],
   },
 ];
