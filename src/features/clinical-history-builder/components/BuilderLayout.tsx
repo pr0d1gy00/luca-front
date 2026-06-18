@@ -500,7 +500,7 @@ function PropertiesPanel({
   return (
     <aside className="w-full bg-white border-l border-slate-100 flex flex-col h-full">
       {/* Action bar */}
-      <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-2">
+      <div className="px-3 py-3 border-b border-slate-100 flex items-center gap-1 justify-between">
         <button
           onClick={onUndo}
           disabled={!canUndo}
@@ -549,11 +549,13 @@ function PropertiesPanel({
         <button
           onClick={onSave}
           disabled={isSaving}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pharmako-primary text-white text-xs font-medium
-                     hover:bg-pharmako-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-pharmako-primary text-white text-xs font-medium
+                     hover:bg-pharmako-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
         >
           <Save className="w-3.5 h-3.5" />
-          {isSaving ? "Guardando..." : "Guardar"}
+          <span className="hidden xl:inline">
+            {isSaving ? "Guardando..." : "Guardar"}
+          </span>
         </button>
       </div>
 
@@ -609,9 +611,9 @@ function PropertiesPanel({
                 <textarea
                   value={schemaDescription ?? ""}
                   onChange={(e) => onSchemaDescriptionChange(e.target.value)}
-                  rows={2}
+                  rows={4}
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
-                             text-slate-900 placeholder-slate-400 resize-none
+                             text-slate-900 placeholder-slate-400 resize-y min-h-[96px]
                              focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
                   placeholder="Descripción (opcional)"
                 />
@@ -642,9 +644,9 @@ function PropertiesPanel({
                 <textarea
                   value={selectedElement.description ?? ""}
                   onChange={(e) => onUpdate({ description: e.target.value })}
-                  rows={2}
+                  rows={4}
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
-                             text-slate-900 placeholder-slate-400 resize-none
+                             text-slate-900 placeholder-slate-400 resize-y min-h-[96px]
                              focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary"
                 />
               </div>

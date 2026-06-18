@@ -277,8 +277,8 @@ export function MobilePropertiesPanel({
               <textarea
                 value={selectedElement.description ?? ""}
                 onChange={(e) => onUpdate({ description: e.target.value })}
-                rows={2}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 resize-none"
+                rows={4}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 resize-y min-h-[96px]"
               />
             </div>
 
