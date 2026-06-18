@@ -3,7 +3,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Lock, EyeOff, Asterisk } from "lucide-react";
-import type { CanvasElement } from "../types";
+import type { CanvasElement, HeaderBlock } from "../types";
 
 interface CanvasBlockProps {
   element: CanvasElement;
@@ -52,6 +52,82 @@ export function CanvasBlock({
   // ─── Block Type Visual ─────────────────────────────
   function renderBlockPreview(el: CanvasElement) {
     switch (el.type) {
+      case "header": {
+        const headerEl = el as HeaderBlock;
+        return (
+          <div
+            className={`p-4 rounded-xl border border-slate-150 ${
+              headerEl.style === "boxed" ? "bg-slate-50" : "bg-white"
+            } ${headerEl.style === "bordered" ? "border-2" : ""}`}
+          >
+            <div
+              className={`flex flex-col sm:flex-row items-center gap-4 ${
+                headerEl.logoPosition === "right"
+                  ? "sm:flex-row-reverse"
+                  : headerEl.logoPosition === "center"
+                    ? "sm:flex-col text-center"
+                    : ""
+              }`}
+            >
+              <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200 overflow-hidden shrink-0">
+                {headerEl.logoUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={headerEl.logoUrl}
+                    alt="Logo"
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <span className="text-xs text-slate-400">[Logo]</span>
+                )}
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-bold text-slate-800">
+                  {headerEl.titleText || "Nombre de la Clínica / Profesional"}
+                </h3>
+                {headerEl.subtitleText && (
+                  <p className="text-xs text-slate-500 font-medium">
+                    {headerEl.subtitleText}
+                  </p>
+                )}
+                {headerEl.contactInfo && (
+                  <p className="text-[10px] text-slate-400 mt-1 whitespace-pre-line">
+                    {headerEl.contactInfo}
+                  </p>
+                )}
+              </div>
+            </div>
+            {headerEl.showPatientData && (
+              <div className="mt-4 pt-3 border-t border-dashed border-slate-200 grid grid-cols-2 gap-2 text-[10px] text-slate-500">
+                {headerEl.patientDataFields?.includes("name") && (
+                  <div>
+                    <strong>Paciente:</strong>{" "}
+                    <span className="text-slate-400">Juan Pérez</span>
+                  </div>
+                )}
+                {headerEl.patientDataFields?.includes("idNumber") && (
+                  <div>
+                    <strong>DNI / ID:</strong>{" "}
+                    <span className="text-slate-400">12.345.678</span>
+                  </div>
+                )}
+                {headerEl.patientDataFields?.includes("age") && (
+                  <div>
+                    <strong>Edad:</strong>{" "}
+                    <span className="text-slate-400">35 años</span>
+                  </div>
+                )}
+                {headerEl.patientDataFields?.includes("date") && (
+                  <div>
+                    <strong>Fecha:</strong>{" "}
+                    <span className="text-slate-400">18/06/2026</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      }
       case "text-short":
         return (
           <div className="h-8 bg-slate-50 rounded-lg border border-slate-100" />

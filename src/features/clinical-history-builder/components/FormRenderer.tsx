@@ -20,16 +20,13 @@ import type {
   SectionBlock,
   RadioGroupBlock,
   BlockCondition,
+  HeaderBlock,
 } from "../types";
 import { cn } from "@/lib/utils";
 import { Cie10Selector } from "./Cie10Selector";
 
 // ─── Block-level Zod schemas ────────────────────────────────
 function buildZodSchema(element: CanvasElement): z.ZodType<unknown> {
-  const base = element.required
-    ? z.string().min(1, "Este campo es obligatorio")
-    : z.string().optional();
-
   switch (element.type) {
     case "text-short":
       return element.required
@@ -123,7 +120,7 @@ function buildFormSchema(
   return z.object(shape);
 }
 
-type FormValues = z.infer<ReturnType<typeof buildFormSchema>>;
+// type FormValues = z.infer<ReturnType<typeof buildFormSchema>>;
 
 // ─── Field Renderers ────────────────────────────────────────
 function TextShortField({
@@ -804,6 +801,94 @@ function CanvasElementRenderer({
         </FieldWrapper>
       );
 
+    case "header": {
+      const headerEl = element as HeaderBlock;
+      return (
+        <div
+          className={cn(
+            "col-span-12 p-6 rounded-xl border border-slate-100",
+            headerEl.style === "boxed" ? "bg-slate-50" : "bg-white",
+            headerEl.style === "bordered" ? "border-2 border-slate-200" : "",
+          )}
+        >
+          <div
+            className={cn(
+              "flex flex-col sm:flex-row items-center gap-6",
+              headerEl.logoPosition === "right"
+                ? "sm:flex-row-reverse"
+                : headerEl.logoPosition === "center"
+                  ? "sm:flex-col text-center"
+                  : "",
+            )}
+          >
+            {headerEl.logoUrl && (
+              <div className="w-20 h-20 rounded-xl bg-white flex items-center justify-center border border-slate-100 overflow-hidden shrink-0 shadow-sm">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={headerEl.logoUrl}
+                  alt="Logo Clínica"
+                  className="w-full h-full object-contain p-1"
+                />
+              </div>
+            )}
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-slate-800 leading-tight">
+                {headerEl.titleText || "Clínica San Lucas"}
+              </h2>
+              {headerEl.subtitleText && (
+                <p className="text-sm font-semibold text-pharmako-care mt-0.5">
+                  {headerEl.subtitleText}
+                </p>
+              )}
+              {headerEl.contactInfo && (
+                <p className="text-xs text-slate-500 mt-2 whitespace-pre-line leading-relaxed">
+                  {headerEl.contactInfo}
+                </p>
+              )}
+            </div>
+          </div>
+          {headerEl.showPatientData && (
+            <div className="mt-6 pt-4 border-t border-dashed border-slate-200 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs text-slate-600">
+              {headerEl.patientDataFields?.includes("name") && (
+                <div className="bg-white p-2.5 rounded-lg border border-slate-50 shadow-sm">
+                  <span className="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    Paciente
+                  </span>
+                  <span className="font-medium text-slate-800">Juan Pérez</span>
+                </div>
+              )}
+              {headerEl.patientDataFields?.includes("idNumber") && (
+                <div className="bg-white p-2.5 rounded-lg border border-slate-50 shadow-sm">
+                  <span className="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    Identificación / DNI
+                  </span>
+                  <span className="font-medium text-slate-800">12.345.678</span>
+                </div>
+              )}
+              {headerEl.patientDataFields?.includes("age") && (
+                <div className="bg-white p-2.5 rounded-lg border border-slate-50 shadow-sm">
+                  <span className="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    Edad
+                  </span>
+                  <span className="font-medium text-slate-800">35 años</span>
+                </div>
+              )}
+              {headerEl.patientDataFields?.includes("date") && (
+                <div className="bg-white p-2.5 rounded-lg border border-slate-50 shadow-sm">
+                  <span className="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    Fecha de Consulta
+                  </span>
+                  <span className="font-medium text-slate-800">
+                    {new Date().toLocaleDateString("es-AR")}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
     case "file-upload":
       return (
         <FieldWrapper element={element}>
@@ -822,11 +907,6 @@ function CanvasElementRenderer({
       );
 
     case "grid-row": {
-      const gridCols: Record<number, string> = {
-        2: "grid-cols-2",
-        3: "grid-cols-3",
-        4: "grid-cols-4",
-      };
       const gapSize: Record<string, string> = {
         none: "gap-0",
         sm: "gap-2",

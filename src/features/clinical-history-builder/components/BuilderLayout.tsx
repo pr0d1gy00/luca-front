@@ -43,6 +43,7 @@ import {
   Heart,
   Stethoscope,
   Paperclip,
+  PanelTop,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -83,6 +84,7 @@ import type {
   ClinicalHistorySchema,
   VitalSignsField,
   SelectorOption,
+  HeaderBlock,
 } from "../types";
 import {
   clinicalHistorySchema as seedSchema,
@@ -91,6 +93,12 @@ import {
 
 const TOOLBOX_BLOCKS = {
   structural: [
+    {
+      type: "header",
+      label: "Cabecera Médica",
+      icon: PanelTop,
+      description: "Logo, título y datos de paciente",
+    },
     {
       type: "grid-row",
       label: "Fila de 2 Columnas",
@@ -744,6 +752,194 @@ function PropertiesPanel({
                   </div>
                 </div>
               )}
+
+              {/* Header settings for header block */}
+              {selectedElement.type === "header" &&
+                (() => {
+                  const headerEl = selectedElement as HeaderBlock;
+                  return (
+                    <div className="border-t border-slate-100 pt-4 mt-4 space-y-4">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        Propiedades de Cabecera
+                      </p>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                          URL del Logotipo
+                        </label>
+                        <input
+                          type="text"
+                          value={headerEl.logoUrl ?? ""}
+                          onChange={(e) =>
+                            onUpdate({ logoUrl: e.target.value })
+                          }
+                          placeholder="https://ejemplo.com/logo.png"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                          Alineación del Logo
+                        </label>
+                        <select
+                          value={headerEl.logoPosition ?? "left"}
+                          onChange={(e) =>
+                            onUpdate({
+                              logoPosition: e.target.value as
+                                | "left"
+                                | "right"
+                                | "center",
+                            })
+                          }
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
+                        >
+                          <option value="left">Izquierda</option>
+                          <option value="center">Centrado</option>
+                          <option value="right">Derecha</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                          Título Principal
+                        </label>
+                        <input
+                          type="text"
+                          value={headerEl.titleText ?? ""}
+                          onChange={(e) =>
+                            onUpdate({ titleText: e.target.value })
+                          }
+                          placeholder="Clínica / Profesional"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                          Subtítulo o Especialidad
+                        </label>
+                        <input
+                          type="text"
+                          value={headerEl.subtitleText ?? ""}
+                          onChange={(e) =>
+                            onUpdate({ subtitleText: e.target.value })
+                          }
+                          placeholder="ej. Pediatría / Cardiología"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                          Datos de Contacto
+                        </label>
+                        <textarea
+                          value={headerEl.contactInfo ?? ""}
+                          onChange={(e) =>
+                            onUpdate({ contactInfo: e.target.value })
+                          }
+                          placeholder="Dirección, Teléfono, Matrícula..."
+                          rows={3}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care resize-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                          Estilo de Contenedor
+                        </label>
+                        <select
+                          value={headerEl.style ?? "simple"}
+                          onChange={(e) =>
+                            onUpdate({
+                              style: e.target.value as
+                                | "simple"
+                                | "boxed"
+                                | "bordered",
+                            })
+                          }
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
+                        >
+                          <option value="simple">Simple (Sin bordes)</option>
+                          <option value="boxed">
+                            Boxed (Fondo gris suave)
+                          </option>
+                          <option value="bordered">
+                            Bordeado (Contenedor con borde)
+                          </option>
+                        </select>
+                      </div>
+                      <div className="flex items-center justify-between py-1">
+                        <label className="text-xs font-medium text-slate-600">
+                          Mostrar datos del paciente
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onUpdate({
+                              showPatientData: !headerEl.showPatientData,
+                            })
+                          }
+                          className={`relative w-10 h-6 rounded-full transition-colors ${
+                            headerEl.showPatientData
+                              ? "bg-pharmako-care"
+                              : "bg-slate-200"
+                          }`}
+                        >
+                          <div
+                            className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform ${
+                              headerEl.showPatientData
+                                ? "translate-x-5"
+                                : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </div>
+                      {headerEl.showPatientData && (
+                        <div className="pl-3 border-l-2 border-slate-100 space-y-2">
+                          <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">
+                            Campos a Visualizar
+                          </label>
+                          {[
+                            { key: "name", label: "Nombre Paciente" },
+                            { key: "idNumber", label: "Identificación / DNI" },
+                            { key: "age", label: "Edad" },
+                            { key: "date", label: "Fecha Consulta" },
+                          ].map((field) => {
+                            const activeFields =
+                              headerEl.patientDataFields ?? [];
+                            const isChecked = activeFields.includes(
+                              field.key as "name" | "idNumber" | "age" | "date",
+                            );
+                            return (
+                              <label
+                                key={field.key}
+                                className="flex items-center gap-2 cursor-pointer text-xs text-slate-600"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    const nextFields = isChecked
+                                      ? activeFields.filter(
+                                          (f) => f !== field.key,
+                                        )
+                                      : [
+                                          ...activeFields,
+                                          field.key as
+                                            | "name"
+                                            | "idNumber"
+                                            | "age"
+                                            | "date",
+                                        ];
+                                    onUpdate({ patientDataFields: nextFields });
+                                  }}
+                                  className="rounded border-slate-300 text-pharmako-care focus:ring-pharmako-care"
+                                />
+                                {field.label}
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
 
               {/* Template publish status */}
               <div className="border-t border-slate-100 pt-4 mt-4 space-y-3">

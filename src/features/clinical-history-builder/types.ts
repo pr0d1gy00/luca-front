@@ -6,8 +6,6 @@
 // ser contenedores (con children) o leaf nodes (campos directos).
 // ============================================================
 
-import type { UUID } from "uuidjs";
-
 // ------------------------------------------------------------
 // SHARED BASE
 // ------------------------------------------------------------
@@ -171,6 +169,18 @@ export interface SectionTitleBlock extends BaseBlock {
   alignment?: "left" | "center" | "right";
 }
 
+export interface HeaderBlock extends BaseBlock {
+  type: "header";
+  logoUrl?: string;
+  logoPosition?: "left" | "right" | "center";
+  titleText: string;
+  subtitleText?: string;
+  contactInfo?: string;
+  showPatientData?: boolean;
+  patientDataFields?: ("name" | "idNumber" | "age" | "date")[];
+  style?: "simple" | "boxed" | "bordered";
+}
+
 // ------------------------------------------------------------
 // SUPPORTED OPTIONS
 // ------------------------------------------------------------
@@ -201,7 +211,8 @@ export type CanvasElement =
   | GridRowBlock
   | SectionBlock
   | VisualSeparatorBlock
-  | SectionTitleBlock;
+  | SectionTitleBlock
+  | HeaderBlock;
 
 // ------------------------------------------------------------
 // CANVAS STATE
