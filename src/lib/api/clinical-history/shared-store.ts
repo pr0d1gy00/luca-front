@@ -3,9 +3,18 @@ import { PRESETS } from "@/features/clinical-history-builder/schemas/clinical-hi
 
 // ─── Shared in-memory store ─────────────────────────────────
 // Singleton Map shared between all API route modules.
-// In production, replace with a database connection (PostgreSQL, etc.)
+// Usamos globalThis para evitar que Next.js Hot Reload limpie el Map en memoria.
 // ──────────────────────────────────────────────────────────────
-const store = new Map<string, ClinicalHistorySchema>();
+
+const globalForStore = globalThis as unknown as {
+  store?: Map<string, ClinicalHistorySchema>;
+};
+
+const store = globalForStore.store ?? new Map<string, ClinicalHistorySchema>();
+
+if (process.env.NODE_ENV !== "production") {
+  globalForStore.store = store;
+}
 
 export function getSchemas() {
   return store;
@@ -183,8 +192,10 @@ const sampleSchema: ClinicalHistorySchema = {
   },
 };
 
-// Initialize store with seed data
-store.set("template-001", sampleSchema);
-Object.values(PRESETS).forEach((schema) => {
-  store.set(schema.id, schema);
-});
+// Initialize store with seed data if empty
+if (store.size === 0) {
+  store.set("template-001", sampleSchema);
+  Object.values(PRESETS).forEach((schema) => {
+    store.set(schema.id, schema);
+  });
+}

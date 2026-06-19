@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, FileText, User, Printer } from "lucide-react";
+import {
+  Eye,
+  FileText,
+  User,
+  Printer,
+  Building2,
+  Calendar,
+  Lock,
+} from "lucide-react";
 import type { ClinicalHistorySchema } from "../types";
 import { FormRenderer } from "./FormRenderer";
 import { cn } from "@/lib/utils";
@@ -104,24 +112,37 @@ export function FormPreview({ schema, isLoading, onSave }: FormPreviewProps) {
         {previewMode === "doctor" && (
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Header info */}
-            <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-              <h1 className="text-xl font-bold text-slate-900">
-                {schema.name}
-              </h1>
-              {schema.description && (
-                <p className="text-sm text-slate-500 mt-1">
-                  {schema.description}
-                </p>
-              )}
-              <div className="mt-2 flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-full bg-slate-100 text-[10px] text-slate-500 font-semibold">
-                  VERSIÓN {schema.version}
+            <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-2xl bg-pharmako-care-light text-pharmako-care shrink-0 shadow-sm">
+                  <FileText className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2.5 py-0.5 rounded-full bg-pharmako-care-light text-[9px] text-pharmako-care font-bold tracking-wider uppercase">
+                      {schema.specialty?.replace("-", " ") || "General"}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-slate-100 text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                      v{schema.version}
+                    </span>
+                  </div>
+                  <h1 className="text-2xl font-bold text-slate-900 leading-tight">
+                    {schema.name}
+                  </h1>
+                  {schema.description && (
+                    <p className="text-sm text-slate-500 mt-1 leading-relaxed">
+                      {schema.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="sm:text-right shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
+                <span className="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                  Tipo de Registro
                 </span>
-                {schema.specialty && (
-                  <span className="px-2 py-0.5 rounded-full bg-pharmako-care-light text-[10px] text-pharmako-care font-semibold">
-                    {schema.specialty.toUpperCase()}
-                  </span>
-                )}
+                <span className="text-sm font-semibold text-slate-700 block mt-0.5">
+                  Plantilla de Historia Clínica
+                </span>
               </div>
             </div>
 
@@ -187,24 +208,44 @@ export function FormPreview({ schema, isLoading, onSave }: FormPreviewProps) {
 
         {/* PATIENT VIEW MODE (Luca Patient Portal styling) */}
         {previewMode === "patient" && (
-          <div className="max-w-3xl mx-auto space-y-6">
+          <div className="max-w-4xl mx-auto space-y-6">
             {/* Patient Header Stamp */}
-            <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl p-6 text-white shadow-md flex items-center justify-between">
-              <div>
-                <span className="px-2 py-0.5 rounded-full bg-white/20 text-[9px] font-bold uppercase tracking-wider">
-                  Mi Portal Luca
-                </span>
-                <h2 className="text-xl font-bold mt-1">Mi Historial Clínico</h2>
-                <p className="text-xs text-white/80 mt-0.5">
-                  Ficha registrada y firmada digitalmente por tu médico
-                </p>
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col gap-4">
+              <div className="flex items-start gap-4">
+                {/* Clean page icon */}
+                <div className="shrink-0 p-2.5 bg-pharmako-care/10 text-slate-400 rounded-xl border border-slate-100 shadow-sm flex items-center justify-center w-12 h-12">
+                  <User className="w-5 h-5 text-pharmako-care" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="px-2 py-0.5 rounded bg-slate-100 text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                      Mi Portal Luca
+                    </span>
+                    {schema.specialty && (
+                      <span className="px-2 py-0.5 rounded bg-pharmako-care-light text-[9px] text-pharmako-care font-bold uppercase tracking-wider">
+                        {schema.specialty.replace("-", " ")}
+                      </span>
+                    )}
+                  </div>
+                  <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
+                    Mi Historial Clínico
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5 font-light leading-relaxed">
+                    Ficha clínica oficial registrada y firmada digitalmente por
+                    tu médico tratante.
+                  </p>
+                </div>
               </div>
-              <div className="text-right hidden sm:block">
-                <span className="text-xs font-semibold block">
-                  {schema.specialty || "Consulta General"}
-                </span>
-                <span className="text-[10px] text-white/70">
+
+              <div className="flex items-center flex-wrap gap-4 text-[10px] text-slate-400 font-medium pt-3 border-t border-slate-100">
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-pharmako-care" />
                   Actualizado hoy
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-pharmako-care" />
+                  Registro Protegido
                 </span>
               </div>
             </div>

@@ -1,6 +1,10 @@
-import { NextResponse } from 'next/server';
-import type { ClinicalHistorySchema } from '@/features/clinical-history-builder/types';
-import { getSchema, setSchema, deleteSchema } from '../../../../lib/api/clinical-history/shared-store';
+import { NextResponse } from "next/server";
+import type { ClinicalHistorySchema } from "@/features/clinical-history-builder/types";
+import {
+  getSchema,
+  setSchema,
+  deleteSchema,
+} from "@/lib/api/clinical-history/shared-store";
 
 // ─── GET: Single schema ─────────────────────────────────────────
 export async function GET(
@@ -10,12 +14,12 @@ export async function GET(
   const { id } = await params;
 
   if (!id) {
-    return NextResponse.json({ error: 'id is required' }, { status: 400 });
+    return NextResponse.json({ error: "id is required" }, { status: 400 });
   }
 
   const schema = getSchema(id);
   if (!schema) {
-    return NextResponse.json({ error: 'Schema not found' }, { status: 404 });
+    return NextResponse.json({ error: "Schema not found" }, { status: 404 });
   }
 
   return NextResponse.json({ schema });
@@ -29,16 +33,16 @@ export async function PATCH(
   const { id } = await params;
 
   if (!id) {
-    return NextResponse.json({ error: 'id is required' }, { status: 400 });
+    return NextResponse.json({ error: "id is required" }, { status: 400 });
   }
 
   const existing = getSchema(id);
   if (!existing) {
-    return NextResponse.json({ error: 'Schema not found' }, { status: 404 });
+    return NextResponse.json({ error: "Schema not found" }, { status: 404 });
   }
 
   try {
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
 
     const updated = {
       ...existing,
@@ -51,7 +55,7 @@ export async function PATCH(
 
     return NextResponse.json({ schema: updated });
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 }
 
@@ -63,11 +67,11 @@ export async function DELETE(
   const { id } = await params;
 
   if (!id) {
-    return NextResponse.json({ error: 'id is required' }, { status: 400 });
+    return NextResponse.json({ error: "id is required" }, { status: 400 });
   }
 
   if (!getSchema(id)) {
-    return NextResponse.json({ error: 'Schema not found' }, { status: 404 });
+    return NextResponse.json({ error: "Schema not found" }, { status: 404 });
   }
 
   deleteSchema(id);
