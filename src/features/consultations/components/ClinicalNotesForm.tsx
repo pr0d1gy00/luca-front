@@ -150,11 +150,11 @@ const DURATION_UNITS = [
 ];
 
 const inputClassName =
-  "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 transition-colors outline-none focus:border-blue-700 focus:ring-2 focus:ring-pharmako-care/20";
+  "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 transition-colors outline-none focus:border-pharmako-care focus:ring-2 focus:ring-pharmako-care/20";
 const textAreaClassName =
-  "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 transition-colors outline-none focus:border-blue-700 focus:ring-2 focus:ring-pharmako-care/20 resize-none min-h-[100px]";
+  "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 transition-colors outline-none focus:border-pharmako-care focus:ring-2 focus:ring-pharmako-care/20 resize-none min-h-[100px]";
 const selectClassName =
-  "w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 transition-colors outline-none focus:border-blue-700 focus:ring-2 focus:ring-pharmako-care/20 cursor-pointer";
+  "w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 transition-colors outline-none focus:border-pharmako-care focus:ring-2 focus:ring-pharmako-care/20 cursor-pointer";
 
 // ---------------------------------------------------------------------------
 // Structured dose form fields (not in schema, just UI helpers)
@@ -364,7 +364,7 @@ export function ClinicalNotesForm({
             {...register("motivoConsulta")}
           />
           {errors.motivoConsulta && (
-            <p className="text-xs text-blue-700 mt-1">
+            <p className="text-xs text-red-500 mt-1">
               {errors.motivoConsulta.message}
             </p>
           )}
@@ -399,7 +399,7 @@ export function ClinicalNotesForm({
             {...register("diagnostico")}
           />
           {errors.diagnostico && (
-            <p className="text-xs text-blue-700 mt-1">
+            <p className="text-xs text-red-500 mt-1">
               {errors.diagnostico.message}
             </p>
           )}
@@ -463,7 +463,7 @@ export function ClinicalNotesForm({
                       ))}
                     </select>
                     {errors.prescriptions?.[index]?.medicationId && (
-                      <p className="text-xs text-blue-700 mt-0.5">
+                      <p className="text-xs text-red-500 mt-0.5">
                         {errors.prescriptions[index]?.medicationId?.message}
                       </p>
                     )}
@@ -603,7 +603,7 @@ export function ClinicalNotesForm({
           variant="outline"
           size="sm"
           onClick={handleAddMed}
-          className="self-start rounded-2xl border-dashed border-slate-300 text-slate-500 hover:border-blue-700 hover:text-pharmako-care"
+          className="self-start rounded-2xl border-dashed border-slate-300 text-slate-500 hover:border-pharmako-care hover:text-pharmako-care"
         >
           <Plus className="size-4" />
           Agregar Medicamento
@@ -611,7 +611,7 @@ export function ClinicalNotesForm({
 
         {errors.prescriptions &&
           typeof errors.prescriptions.message === "string" && (
-            <p className="text-xs text-blue-700">
+            <p className="text-xs text-red-500">
               {errors.prescriptions.message}
             </p>
           )}
