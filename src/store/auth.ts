@@ -32,12 +32,26 @@ export interface AuthState {
   clearAuth: () => void;
 }
 
+// ── Cookie helpers (client-side only) ─────────────────────────
+const AUTH_COOKIE = "auth_token";
+
+function setCookie(name: string, value: string, days = 7) {
+  if (typeof document === "undefined") return;
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+}
+
+function deleteCookie(name: string) {
+  if (typeof document === "undefined") return;
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
+}
+
+// ── Internal helpers ──────────────────────────────────────────
 function resolveIsVerified(
   userType: "patient" | "user",
   user: PatientAccount | UserProfile | PatientProfile,
 ): boolean {
-  if (userType === "patient") return false; // pacientes no requieren KYC
-
+  if (userType === "patient") return false;
   const u = user as UserProfile;
   return u.is_verified ?? u.provider_profile?.is_verified ?? false;
 }
@@ -47,7 +61,6 @@ function resolveRole(
   user: PatientAccount | UserProfile | PatientProfile,
 ): Role {
   if (userType === "patient") return "patient";
-
   const u = user as UserProfile;
   if (u.role === "DOCTOR") return "doctor";
   if (u.role === "PROVIDER") return "pharmacy";
@@ -94,9 +107,12 @@ export const useAuthStore = create<AuthState>()(
           email: user.email ?? "",
           avatar: resolveAvatar(userType, user),
         });
+
+        // Sincronizar cookie para middleware (Next.js server-side)
+        setCookie(AUTH_COOKIE, token);
       },
 
-      clearAuth: () =>
+      clearAuth: () => {
         set({
           token: null,
           userType: null,
@@ -106,7 +122,10 @@ export const useAuthStore = create<AuthState>()(
           name: "",
           email: "",
           avatar: "",
-        }),
+        });
+
+        deleteCookie(AUTH_COOKIE);
+      },
     }),
     {
       name: "luca-auth-storage",
