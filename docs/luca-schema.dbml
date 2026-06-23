@@ -1,0 +1,456 @@
+// ==========================================
+// LUCA Health OS - Complete Database Schema
+// ==========================================
+
+// --- PHASE 1: GEOGRAPHY & AUTH ---
+Table Country {
+  id uuid [primary key]
+  isoCode varchar [unique, note: 'e.g., VE, US']
+  name varchar
+  phoneCode varchar
+}
+
+Table State {
+  id uuid [primary key]
+  countryId uuid [ref: > Country.id]
+  name varchar
+}
+
+Table City {
+  id uuid [primary key]
+  stateId uuid [ref: > State.id]
+  name varchar
+}
+
+Table PatientAccount {
+  id uuid [primary key]
+  phone varchar [unique, note: 'Global identifier (WhatsApp)']
+  email varchar [unique]
+  passwordHash varchar
+  fullName varchar
+  avatarUrl varchar
+  nationalId varchar [unique]
+  username varchar [unique]
+  createdAt timestamp
+}
+
+Table User {
+  id uuid [primary key]
+  email varchar [unique]
+  passwordHash varchar
+  fullName varchar
+  phone varchar
+  role varchar [note: 'DOCTOR, PROVIDER, ADMIN']
+  isActive boolean
+  planType varchar [note: 'FREE, PRO, ENTERPRISE']
+  logoUrl varchar
+  signatureUrl varchar
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table Specialty {
+  id uuid [primary key]
+  name varchar [unique]
+  description text
+}
+
+Table DoctorSpecialty {
+  id uuid [primary key]
+  userId uuid [ref: > User.id]
+  specialtyId uuid [ref: > Specialty.id]
+}
+
+Table Patient {
+  id uuid [primary key]
+  userId uuid [ref: > User.id, note: 'Doctor who owns this record']
+  patientAccountId uuid [ref: > PatientAccount.id]
+  firstName varchar
+  lastName varchar
+  nationalId varchar
+  birthDate timestamp
+  gender varchar
+  email varchar
+  phone varchar
+  address varchar
+  cityId uuid [ref: > City.id]
+  emergencyContactName varchar
+  emergencyContactPhone varchar
+  accessCode varchar [unique]
+  lastLogin timestamp
+  bloodType varchar
+  allergies varchar
+  chronicConditions varchar
+  privateNotes text
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table Clinic {
+  id uuid [primary key]
+  name varchar
+  rif varchar [note: 'Nullable for independent doctors']
+  logoUrl varchar
+  website varchar
+  phone varchar
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table ClinicBranch {
+  id uuid [primary key]
+  clinicId uuid [ref: > Clinic.id]
+  name varchar
+  address varchar
+  cityId uuid [ref: > City.id]
+  latitude decimal(10,8)
+  longitude decimal(11,8)
+  googleMapsUrl varchar
+  observations text
+  phone varchar
+  isMainBranch boolean
+}
+
+Table ClinicBranchMember {
+  id uuid [primary key]
+  clinicBranchId uuid [ref: > ClinicBranch.id]
+  userId uuid [ref: > User.id]
+  role varchar [note: 'OWNER, ADMIN, DOCTOR, RECEPTIONIST']
+  department varchar
+  officeNumber varchar
+  isActive boolean
+}
+
+// --- PHASE 2: CLINICAL ENGINE ---
+Table Appointment {
+  id uuid [primary key]
+  patientId uuid [ref: > Patient.id]
+  doctorId uuid [ref: > User.id]
+  clinicBranchId uuid [ref: > ClinicBranch.id]
+  date date
+  time varchar
+  type varchar
+  status varchar
+  notes text
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table FormTemplate {
+  id uuid [primary key]
+  userId uuid [ref: > User.id]
+  title varchar
+  specialty varchar
+  schemaJson jsonb
+  createdAt timestamp
+}
+
+Table Consultation {
+  id uuid [primary key]
+  userId uuid [ref: > User.id]
+  patientId uuid [ref: > Patient.id]
+  clinicBranchId uuid [ref: > ClinicBranch.id]
+  appointmentId uuid [ref: > Appointment.id]
+  formTemplateId uuid [ref: > FormTemplate.id]
+  date timestamp
+  status varchar
+  reason varchar
+  physicalExam text
+  diagnosis varchar
+  treatmentPlan text
+  dynamicData jsonb
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table VitalSign {
+  id uuid [primary key]
+  patientId uuid [ref: > Patient.id]
+  consultationId uuid [unique, ref: - Consultation.id] // 1:1
+  weight float
+  height float
+  systolicBP int
+  diastolicBP int
+  heartRate int
+  respiratoryRate int
+  temperature float
+  oxygenSat int
+  date timestamp
+}
+
+Table LabRequest {
+  id uuid [primary key]
+  consultationId uuid [unique, ref: - Consultation.id] // 1:1
+  examsList jsonb
+  instructions text
+  isCompleted boolean
+  createdAt timestamp
+}
+
+Table FollowUp {
+  id uuid [primary key]
+  userId uuid [ref: > User.id]
+  patientId uuid [ref: > Patient.id]
+  consultationId uuid [ref: > Consultation.id]
+  scheduledDate timestamp
+  status varchar
+  response text
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table MedicalBackground {
+  id uuid [primary key]
+  patientId uuid [unique, ref: - Patient.id] // 1:1
+  hasDiabetes boolean
+  hasHypertension boolean
+  hasAsthma boolean
+  otherConditions text
+  pastHospitalizations text
+}
+
+Table SurgicalHistory {
+  id uuid [primary key]
+  patientId uuid [ref: > Patient.id]
+  procedure varchar
+  date timestamp
+  hospital varchar
+  notes text
+}
+
+Table FamilyHistory {
+  id uuid [primary key]
+  patientId uuid [ref: > Patient.id]
+  condition varchar
+  relationship varchar
+  note text
+}
+
+Table Lifestyle {
+  id uuid [primary key]
+  patientId uuid [unique, ref: - Patient.id] // 1:1
+  smokingStatus varchar
+  alcoholConsumption varchar
+  activityLevel varchar
+  dietType varchar
+}
+
+Table ObstetricHistory {
+  id uuid [primary key]
+  patientId uuid [unique, ref: - Patient.id] // 1:1
+  lastPeriodDate timestamp
+  pregnancies int
+  births int
+  cesareans int
+  abortions int
+  contraceptiveMethod varchar
+}
+
+Table Vaccination {
+  id uuid [primary key]
+  patientId uuid [ref: > Patient.id]
+  vaccine varchar
+  doseNumber int
+  date timestamp
+}
+
+// --- PHASE 3: PRESCRIPTIONS & MARKETPLACE ---
+Table Medication {
+  id uuid [primary key]
+  userId uuid [ref: > User.id]
+  activePrinciple varchar
+  concentration varchar
+  presentation varchar
+  administrationRoute varchar
+  commercialName varchar
+  requiresPrescription boolean
+  contraindications text
+  isActive boolean
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table Prescription {
+  id uuid [primary key]
+  userId uuid [ref: > User.id]
+  patientId uuid [ref: > Patient.id]
+  consultationId uuid [unique, ref: - Consultation.id] // 1:1
+  clinicBranchId uuid [ref: > ClinicBranch.id]
+  date timestamp
+  expirationDate timestamp
+  notes text
+  publicToken varchar [unique]
+  status varchar
+}
+
+Table PrescriptionItem {
+  id uuid [primary key]
+  prescriptionId uuid [ref: > Prescription.id]
+  medicationId uuid [ref: > Medication.id]
+  dose varchar
+  frequency varchar
+  duration varchar
+  quantity int
+  notes text
+}
+
+Table PrescriptionTemplate {
+  id uuid [primary key]
+  userId uuid [ref: > User.id]
+  title varchar
+}
+
+Table TemplateItem {
+  id uuid [primary key]
+  templateId uuid [ref: > PrescriptionTemplate.id]
+  medicationId uuid [ref: > Medication.id]
+  dose varchar
+  frequency varchar
+  duration varchar
+}
+
+Table MedicalDocument {
+  id uuid [primary key]
+  userId uuid [ref: > User.id]
+  patientId uuid [ref: > Patient.id]
+  clinicBranchId uuid [ref: > ClinicBranch.id]
+  type varchar
+  content text
+  publicToken varchar [unique]
+  createdAt timestamp
+}
+
+Table ProviderProfile {
+  id uuid [primary key]
+  userId uuid [unique, ref: - User.id] // 1:1
+  type varchar
+  commercialName varchar
+  rif varchar
+  address varchar
+  cityId uuid [ref: > City.id]
+  phone varchar
+  isOpen boolean
+  isVerified boolean
+}
+
+Table QuoteRequest {
+  id uuid [primary key]
+  prescriptionId uuid [ref: > Prescription.id]
+  patientId uuid [ref: > Patient.id]
+  cityId uuid [ref: > City.id]
+  status varchar
+  createdAt timestamp
+}
+
+Table QuoteOffer {
+  id uuid [primary key]
+  quoteRequestId uuid [ref: > QuoteRequest.id]
+  providerId uuid [ref: > ProviderProfile.id]
+  price decimal(10,2)
+  currency varchar
+  availability varchar
+  comments text
+  createdAt timestamp
+}
+
+// --- PHASE 4: OPERATIONS & COMPLIANCE ---
+Table Notification {
+  id uuid [primary key]
+  userId uuid [ref: > User.id]
+  type varchar
+  title varchar
+  message varchar
+  isRead boolean
+  link varchar
+  createdAt timestamp
+}
+
+Table LabResult {
+  id uuid [primary key]
+  labRequestId uuid [unique, ref: - LabRequest.id] // 1:1
+  patientId uuid [ref: > Patient.id]
+  fileUrl varchar
+  resultJson jsonb
+  notes text
+  reviewedBy uuid [ref: > User.id]
+  reviewedAt timestamp
+  status varchar
+  performedAt timestamp
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table PharmacyInventory {
+  id uuid [primary key]
+  providerId uuid [ref: > ProviderProfile.id]
+  medicationId uuid [ref: > Medication.id]
+  stock int
+  minStockAlert int
+  batchNumber varchar
+  expirationDate date
+  unitPrice decimal(10,2)
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table Invoice {
+  id uuid [primary key]
+  userId uuid [ref: > User.id]
+  patientId uuid [ref: > Patient.id]
+  clinicBranchId uuid [ref: > ClinicBranch.id]
+  consultationId uuid [ref: > Consultation.id]
+  prescriptionId uuid [ref: > Prescription.id]
+  subtotal decimal(10,2)
+  tax decimal(10,2)
+  discount decimal(10,2)
+  total decimal(10,2)
+  currency varchar
+  status varchar
+  dueDate date
+  notes text
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+Table InvoiceItem {
+  id uuid [primary key]
+  invoiceId uuid [ref: > Invoice.id]
+  description varchar
+  quantity int
+  unitPrice decimal(10,2)
+  total decimal(10,2)
+}
+
+Table Payment {
+  id uuid [primary key]
+  invoiceId uuid [ref: > Invoice.id]
+  amount decimal(10,2)
+  method varchar
+  reference varchar
+  paidAt timestamp
+  notes text
+}
+
+Table AuditLog {
+  id uuid [primary key]
+  userId uuid [ref: > User.id]
+  patientId uuid [ref: > Patient.id]
+  action varchar
+  resource varchar
+  resourceType varchar
+  details jsonb
+  ipAddress varchar
+  userAgent varchar
+  createdAt timestamp
+}
+
+Table VerificationDocument {
+  id uuid [primary key]
+  userId uuid [ref: > User.id]
+  type varchar
+  fileUrl varchar
+  status varchar
+  comments text
+  createdAt timestamp
+  updatedAt timestamp
+}
