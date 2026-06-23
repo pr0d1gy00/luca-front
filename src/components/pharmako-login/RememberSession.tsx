@@ -15,7 +15,7 @@ export function RememberSession() {
       <div
         className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-150 ${
           checked
-            ? "bg-pharmako-primary border-pharmako-primary"
+            ? "bg-pharmako-care border-pharmako-care"
             : "bg-transparent border-pharmako-border"
         }`}
         onClick={() => setChecked(!checked)}

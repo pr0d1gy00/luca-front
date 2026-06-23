@@ -23,7 +23,7 @@ export function LoginButton({
       disabled={disabled || loading}
       whileHover={{ scale: disabled ? 1 : 1.01 }}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
-      className="w-full py-3 sm:py-4 rounded-xl font-semibold text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden bg-pharmako-primary disabled:bg-slate-400"
+      className="w-full py-3 sm:py-4 rounded-xl font-semibold text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden bg-pharmako-care disabled:bg-slate-400"
     >
       <AnimatePresence mode="wait">
         {loading ? (

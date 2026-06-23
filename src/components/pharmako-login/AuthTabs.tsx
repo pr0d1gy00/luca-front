@@ -21,7 +21,7 @@ export function AuthTabs({ active, onSelect }: AuthTabsProps) {
           onClick={() => onSelect(tab.key)}
           className={`relative flex-1 text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors duration-200 ${
             active === tab.key
-              ? "text-pharmako-primary bg-white"
+              ? "text-pharmako-care bg-white"
               : "text-pharmako-text-muted hover:text-pharmako-text-secondary"
           }`}
         >
@@ -29,7 +29,7 @@ export function AuthTabs({ active, onSelect }: AuthTabsProps) {
           {active === tab.key && (
             <motion.div
               layoutId="activeAuthTab"
-              className="absolute bottom-0 -translate-x-1/2 left-1/2 right-1/2 h-0.5 w-1/2 bg-pharmako-primary rounded-full"
+              className="absolute bottom-0 -translate-x-1/2 left-1/2 right-1/2 h-0.5 w-1/2 bg-pharmako-care rounded-full"
               transition={{ type: "spring", stiffness: 380, damping: 30 }}
             />
           )}
