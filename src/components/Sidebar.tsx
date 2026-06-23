@@ -590,9 +590,14 @@ export default function Sidebar({ inDrawer = false }: SidebarProps) {
                 </Badge>
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Settings className="size-4" />
-                <span>Configuración</span>
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/dashboard/profile"
+                  className="flex items-center gap-2 w-full"
+                >
+                  <Settings className="size-4" />
+                  <span>Configuración</span>
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive">
