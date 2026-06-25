@@ -54,10 +54,10 @@ function TreatmentCard({ treatment }: { treatment: Treatment }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col">
       <div className="flex items-center justify-between mb-4">
-        <div className="bg-pharmako-care-light rounded-xl p-3">
+        <div className="rounded-xl p-3">
           <Pill className="w-5 h-5 text-pharmako-care" />
         </div>
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-pharmako-care-light text-pharmako-care ">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-pharmako-care text-white ">
           Activo
         </span>
       </div>

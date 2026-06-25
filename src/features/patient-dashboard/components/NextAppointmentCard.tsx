@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Calendar, MapPin, Video, ArrowRight } from "lucide-react";
+import { Calendar, MapPin, Video, ArrowRight, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fadeUpVariant } from "@/app/lib/animations";
 import { usePatientAppointments } from "../hooks/usePatientAppointments";
@@ -42,7 +42,7 @@ export function NextAppointmentCard() {
       className="bg-white rounded-2xl border border-slate-200 p-6"
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="bg-pharmako-care-light rounded-lg p-2">
+        <div className="rounded-lg p-2">
           <Calendar className="w-4 h-4 text-pharmako-care" />
         </div>
         <h3 className="text-sm font-semibold text-slate-900">Próxima cita</h3>
@@ -68,18 +68,19 @@ export function NextAppointmentCard() {
             className={cn(
               "inline-flex items-center gap-1 text-xs font-medium rounded-full px-2 py-0.5",
               next.location === "presencial"
-                ? "bg-pharmako-care-light text-pharmako-care"
+                ? "text-pharmako-care"
                 : "bg-slate-50 text-slate-500",
             )}
           >
             {next.location === "presencial" ? (
-              <MapPin className="w-3 h-3" />
+              <MapPin className="w-4 h-4" />
             ) : (
-              <Video className="w-3 h-3" />
+              <Video className="w-4 h-4" />
             )}
             {next.location === "presencial" ? "Presencial" : "Virtual"}
           </span>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-pharmako-care-light text-pharmako-care">
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold text-pharmako-care">
+            <Check className="w-4 h-4" />
             Confirmada
           </span>
         </div>

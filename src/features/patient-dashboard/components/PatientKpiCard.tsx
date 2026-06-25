@@ -18,7 +18,7 @@ export function PatientKpiCard({ kpi }: PatientKpiCardProps) {
       )}
     >
       <div className="flex items-start justify-between">
-        <div className="bg-pharmako-care-light rounded-xl p-3">
+        <div className="rounded-xl p-3">
           <Icon className="w-5 h-5 text-pharmako-care" />
         </div>
         {trend && trendLabel && (
