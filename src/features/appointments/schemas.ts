@@ -1,49 +1,52 @@
 import { z } from "zod";
 
-export const appointmentTypeEnum = z.enum(["PRESENCIAL", "ONLINE"]);
+// ─────────────────────────────────────────────────────────────
+// ENUMS — English values (internal), Spanish labels (display)
+// ─────────────────────────────────────────────────────────────
+export const appointmentTypeEnum = z.enum(["IN_PERSON", "ONLINE"]);
 export type AppointmentType = z.infer<typeof appointmentTypeEnum>;
 
 export const appointmentStatusEnum = z.enum([
-  "PENDIENTE",
-  "CONFIRMADA",
-  "EN_SALA",
-  "COMPLETADA",
-  "CANCELADA",
+	"PENDING",
+	"CONFIRMED",
+	"IN_ROOM",
+	"COMPLETED",
+	"CANCELLED",
+	"NO_SHOW",
 ]);
 export type AppointmentStatus = z.infer<typeof appointmentStatusEnum>;
 
+// ─────────────────────────────────────────────────────────────
+// SCHEMA — ISO date strings, not Date objects
+// ─────────────────────────────────────────────────────────────
 export const appointmentSchema = z.object({
-  patientId: z.string().min(1, "El paciente es requerido"),
-  date: z.date({ required_error: "La fecha es requerida" }),
-  time: z.string().min(1, "La hora es requerida"),
-  reason: z.string().min(1, "El motivo es requerido"),
-  type: appointmentTypeEnum,
-  status: appointmentStatusEnum,
+	patientUuid: z.string().min(1),
+	doctorUuid: z.string().min(1),
+	clinicBranchUuid: z.string().optional(),
+	date: z.string(), // ISO date: YYYY-MM-DD
+	time: z.string().min(1), // HH:MM
+	type: appointmentTypeEnum,
+	status: appointmentStatusEnum,
+	reason: z.string().optional(),
+	notes: z.string().optional(),
+	slotTime: z.string().optional(),
 });
 
 export type Appointment = z.infer<typeof appointmentSchema>;
 
+// ─────────────────────────────────────────────────────────────
+// LABELS — Spanish display text
+// ─────────────────────────────────────────────────────────────
 export const appointmentTypeLabels: Record<AppointmentType, string> = {
-  PRESENCIAL: "Presencial",
-  ONLINE: "Online",
+	IN_PERSON: "Presencial",
+	ONLINE: "Online",
 };
 
 export const appointmentStatusLabels: Record<AppointmentStatus, string> = {
-  PENDIENTE: "Pendiente",
-  CONFIRMADA: "Confirmada",
-  EN_SALA: "En Sala",
-  COMPLETADA: "Completada",
-  CANCELADA: "Cancelada",
-};
-
-export type DoctorOption = {
-  id: string;
-  name: string;
-  specialty: string;
-};
-
-export type PatientOption = {
-  id: string;
-  name: string;
-  documentId: string;
+	PENDING: "Pendiente",
+	CONFIRMED: "Confirmada",
+	IN_ROOM: "En Sala",
+	COMPLETED: "Completada",
+	CANCELLED: "Cancelada",
+	NO_SHOW: "No asistida",
 };
