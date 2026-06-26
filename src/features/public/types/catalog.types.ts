@@ -7,6 +7,13 @@ export interface City {
 	name: string;
 }
 
+export interface PaginationMeta {
+	current_page: number;
+	per_page: number;
+	total: number;
+	last_page: number;
+}
+
 export interface Specialty {
 	id: number;
 	name: string;
@@ -43,6 +50,7 @@ export interface Doctor {
 
 export interface DoctorsResponse {
 	data: Doctor[];
+	meta?: PaginationMeta;
 }
 
 // ============================================
@@ -75,6 +83,7 @@ export interface Pharmacy {
 
 export interface PharmaciesResponse {
 	data: Pharmacy[];
+	meta?: PaginationMeta;
 }
 
 // ============================================
@@ -113,4 +122,5 @@ export interface Clinic {
 
 export interface ClinicsResponse {
 	data: Clinic[];
+	meta?: PaginationMeta;
 }

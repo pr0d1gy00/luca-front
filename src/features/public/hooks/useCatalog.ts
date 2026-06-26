@@ -9,6 +9,9 @@ import type { Doctor, Pharmacy, Clinic, City } from "../types/catalog.types";
 interface UseDoctorsOptions {
 	city_id?: number;
 	specialty_id?: number;
+	page?: number;
+	per_page?: number;
+	search?: string;
 }
 
 export function useDoctors(options: UseDoctorsOptions = {}) {
@@ -25,6 +28,9 @@ export function useDoctors(options: UseDoctorsOptions = {}) {
 
 interface UsePharmaciesOptions {
 	city_id?: number;
+	page?: number;
+	per_page?: number;
+	search?: string;
 }
 
 export function usePharmacies(options: UsePharmaciesOptions = {}) {
@@ -41,6 +47,9 @@ export function usePharmacies(options: UsePharmaciesOptions = {}) {
 
 interface UseClinicsOptions {
 	city_id?: number;
+	page?: number;
+	per_page?: number;
+	search?: string;
 }
 
 export function useClinics(options: UseClinicsOptions = {}) {

@@ -19,6 +19,9 @@ export const catalogApi = {
 	getDoctors: async (params?: {
 		city_id?: number;
 		specialty_id?: number;
+		page?: number;
+		per_page?: number;
+		search?: string;
 	}): Promise<DoctorsResponse> => {
 		const response = await axios.get<DoctorsResponse>(
 			`${API_BASE}/public/doctors`,
@@ -32,6 +35,9 @@ export const catalogApi = {
 	 */
 	getPharmacies: async (params?: {
 		city_id?: number;
+		page?: number;
+		per_page?: number;
+		search?: string;
 	}): Promise<PharmaciesResponse> => {
 		const response = await axios.get<PharmaciesResponse>(
 			`${API_BASE}/public/pharmacies`,
@@ -45,6 +51,9 @@ export const catalogApi = {
 	 */
 	getClinics: async (params?: {
 		city_id?: number;
+		page?: number;
+		per_page?: number;
+		search?: string;
 	}): Promise<ClinicsResponse> => {
 		const response = await axios.get<ClinicsResponse>(
 			`${API_BASE}/public/clinics`,
