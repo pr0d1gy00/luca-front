@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
-import { Pill, MapPin, Phone, Store, Search, Clock, ArrowLeft, Building2, ShieldCheck } from "lucide-react";
+import { Pill, MapPin, Phone, Store, Search, Clock, ArrowLeft, Building2, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import Select from "react-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PublicHeader from "@/components/PublicHeader";
-import { usePharmacies, useCities } from "@/features/public/hooks/useCatalog";
+import { usePharmacies, useCities, useDebounce } from "@/features/public";
 import type { City } from "@/features/public/types/catalog.types";
 
 // ─────────────────────────────────────────────────────────────
@@ -105,34 +105,38 @@ const selectStyles = {
 export default function PharmaciesPage() {
 	const [selectedCity, setSelectedCity] = useState<string | undefined>();
 	const [searchQuery, setSearchQuery] = useState("");
-	const [activePharmacyId, setActivePharmacyId] = useState<number | null>(null);
+	const [page, setPage] = useState(1);
+	const [activePharmacyId, setActivePharmacyId] = useState<string | null>(null);
 	const [isDetailOpenOnMobile, setIsDetailOpenOnMobile] = useState(false);
+
+	const debouncedSearch = useDebounce(searchQuery, 300);
+
+	// Reset page when filters change
+	useEffect(() => {
+		setPage(1);
+		setActivePharmacyId(null);
+	}, [selectedCity, debouncedSearch]);
 
 	const { data: pharmaciesData, isLoading } = usePharmacies({
 		city_id: selectedCity ? Number(selectedCity) : undefined,
+		page,
+		per_page: 10,
+		search: debouncedSearch.trim() || undefined,
 	});
 
 	const { data: citiesData } = useCities();
 
 	const cities: City[] = citiesData?.data ?? [];
 
-	const filteredPharmacies = useMemo(() => {
-		if (!pharmaciesData?.data) return [];
-		if (!searchQuery.trim()) return pharmaciesData.data;
-		const query = searchQuery.toLowerCase();
-		return pharmaciesData.data.filter(
-			(p) =>
-				p.commercial_name.toLowerCase().includes(query) ||
-				p.address.toLowerCase().includes(query) ||
-				p.city?.name.toLowerCase().includes(query),
-		);
-	}, [pharmaciesData, searchQuery]);
+	const pharmacies = useMemo(() => {
+		return pharmaciesData?.data ?? [];
+	}, [pharmaciesData]);
 
 	const activePharmacy = useMemo(() => {
-		if (!filteredPharmacies || filteredPharmacies.length === 0) return null;
-		if (activePharmacyId === null) return filteredPharmacies[0];
-		return filteredPharmacies.find((p) => p.id === activePharmacyId) ?? filteredPharmacies[0];
-	}, [filteredPharmacies, activePharmacyId]);
+		if (!pharmacies || pharmacies.length === 0) return null;
+		if (activePharmacyId === null) return pharmacies[0];
+		return pharmacies.find((p) => p.id === activePharmacyId) ?? pharmacies[0];
+	}, [pharmacies, activePharmacyId]);
 
 	const cityOptions = useMemo(() => {
 		return [
@@ -231,7 +235,7 @@ export default function PharmaciesPage() {
 								<p className="text-pharmako-text-secondary text-sm">Cargando catálogo...</p>
 							</div>
 						</div>
-					) : filteredPharmacies.length === 0 ? (
+					) : pharmacies.length === 0 ? (
 						<motion.div
 							initial={{ opacity: 0 }}
 							animate={{ opacity: 1 }}
@@ -256,12 +260,12 @@ export default function PharmaciesPage() {
 							>
 								<div className="flex items-center justify-between px-2 mb-3">
 									<h2 className="text-xs font-semibold text-pharmako-text-muted uppercase tracking-wider">
-										Farmacias registradas ({filteredPharmacies.length})
+										Farmacias registradas ({pharmaciesData?.meta?.total ?? pharmacies.length})
 									</h2>
 								</div>
 
 								<div className="flex flex-col gap-1.5 overflow-y-auto pr-1 w-full max-h-[600px] md:max-h-[calc(100vh-280px)]">
-									{filteredPharmacies.map((pharmacy) => {
+									{pharmacies.map((pharmacy) => {
 										const isSelected = activePharmacy?.id === pharmacy.id;
 										return (
 											<div
@@ -313,6 +317,35 @@ export default function PharmaciesPage() {
 										);
 									})}
 								</div>
+
+								{/* Pagination Controls */}
+								{pharmaciesData?.meta && pharmaciesData.meta.last_page > 1 && (
+									<div className="flex items-center justify-between mt-4 px-2 py-3 border-t border-slate-100 text-sm">
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => setPage((p) => Math.max(p - 1, 1))}
+											disabled={page === 1}
+											className="flex items-center gap-1 h-9 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+										>
+											<ChevronLeft className="w-4 h-4" />
+											<span>Anterior</span>
+										</Button>
+										<span className="text-slate-500 font-medium">
+											Pág. {page} de {pharmaciesData.meta.last_page}
+										</span>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => setPage((p) => Math.min(p + 1, pharmaciesData.meta!.last_page))}
+											disabled={page === pharmaciesData.meta.last_page}
+											className="flex items-center gap-1 h-9 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+										>
+											<span>Siguiente</span>
+											<ChevronRight className="w-4 h-4" />
+										</Button>
+									</div>
+								)}
 							</div>
 
 							{/* Right Column: Pharmacy Detail Pane */}

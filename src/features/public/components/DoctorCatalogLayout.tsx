@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
-import { Stethoscope, MapPin, CheckCircle2, Search, Calendar, Clock, ArrowLeft, ShieldCheck } from "lucide-react";
+import { Stethoscope, MapPin, CheckCircle2, Search, Calendar, Clock, ArrowLeft, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import Select from "react-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useDoctors, useCities } from "@/features/public/hooks/useCatalog";
+import { useDoctors, useCities, useDebounce } from "@/features/public";
 import type { City, Specialty, Doctor } from "@/features/public/types/catalog.types";
 
 interface DoctorCatalogLayoutProps {
@@ -92,13 +92,25 @@ export function DoctorCatalogLayout({
 	const [selectedCity, setSelectedCity] = useState<string | undefined>();
 	const [selectedSpecialty, setSelectedSpecialty] = useState<string | undefined>();
 	const [searchQuery, setSearchQuery] = useState("");
+	const [page, setPage] = useState(1);
 
 	const [activeDoctorId, setActiveDoctorId] = useState<string | null>(null);
 	const [isDetailOpenOnMobile, setIsDetailOpenOnMobile] = useState(false);
 
+	const debouncedSearch = useDebounce(searchQuery, 300);
+
+	// Reset page when filters change
+	useEffect(() => {
+		setPage(1);
+		setActiveDoctorId(null);
+	}, [selectedCity, selectedSpecialty, debouncedSearch]);
+
 	const { data: doctorsData, isLoading: isLoadingDoctors } = useDoctors({
 		city_id: selectedCity ? Number(selectedCity) : undefined,
 		specialty_id: selectedSpecialty ? Number(selectedSpecialty) : undefined,
+		page,
+		per_page: 10,
+		search: debouncedSearch.trim() || undefined,
 	});
 
 	const { data: citiesData } = useCities();
@@ -118,22 +130,15 @@ export function DoctorCatalogLayout({
 		);
 	}, [doctorsData]);
 
-	const filteredDoctors = useMemo(() => {
-		if (!doctorsData?.data) return [];
-		if (!searchQuery.trim()) return doctorsData.data;
-		const query = searchQuery.toLowerCase();
-		return doctorsData.data.filter(
-			(doctor) =>
-				doctor.full_name.toLowerCase().includes(query) ||
-				doctor.specialties.some((s) => s.name.toLowerCase().includes(query)),
-		);
-	}, [doctorsData, searchQuery]);
+	const doctors = useMemo(() => {
+		return doctorsData?.data ?? [];
+	}, [doctorsData]);
 
 	const activeDoctor = useMemo(() => {
-		if (!filteredDoctors || filteredDoctors.length === 0) return null;
-		if (activeDoctorId === null) return filteredDoctors[0];
-		return filteredDoctors.find((d) => d.id === activeDoctorId) ?? filteredDoctors[0];
-	}, [filteredDoctors, activeDoctorId]);
+		if (!doctors || doctors.length === 0) return null;
+		if (activeDoctorId === null) return doctors[0];
+		return doctors.find((d) => d.id === activeDoctorId) ?? doctors[0];
+	}, [doctors, activeDoctorId]);
 
 	const cityOptions = useMemo(() => {
 		return [
@@ -228,7 +233,7 @@ export function DoctorCatalogLayout({
 						<p className="text-pharmako-text-secondary text-sm">Cargando catálogo...</p>
 					</div>
 				</div>
-			) : filteredDoctors.length === 0 ? (
+			) : doctors.length === 0 ? (
 				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
@@ -253,12 +258,12 @@ export function DoctorCatalogLayout({
 					>
 						<div className="flex items-center justify-between px-2 mb-3">
 							<h2 className="text-xs font-semibold text-pharmako-text-muted uppercase tracking-wider">
-								Médicos disponibles ({filteredDoctors.length})
+								Médicos disponibles ({doctorsData?.meta?.total ?? doctors.length})
 							</h2>
 						</div>
 
 						<div className="flex flex-col gap-1.5 overflow-y-auto pr-1 w-full max-h-[600px] md:max-h-[calc(100vh-280px)]">
-							{filteredDoctors.map((doctor) => {
+							{doctors.map((doctor) => {
 								const isSelected = activeDoctor?.id === doctor.id;
 								return (
 									<div
@@ -315,6 +320,35 @@ export function DoctorCatalogLayout({
 								);
 							})}
 						</div>
+
+						{/* Pagination Controls */}
+						{doctorsData?.meta && doctorsData.meta.last_page > 1 && (
+							<div className="flex items-center justify-between mt-4 px-2 py-3 border-t border-slate-100 text-sm">
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setPage((p) => Math.max(p - 1, 1))}
+									disabled={page === 1}
+									className="flex items-center gap-1 h-9 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+								>
+									<ChevronLeft className="w-4 h-4" />
+									<span>Anterior</span>
+								</Button>
+								<span className="text-slate-500 font-medium">
+									Pág. {page} de {doctorsData.meta.last_page}
+								</span>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setPage((p) => Math.min(p + 1, doctorsData.meta!.last_page))}
+									disabled={page === doctorsData.meta.last_page}
+									className="flex items-center gap-1 h-9 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+								>
+									<span>Siguiente</span>
+									<ChevronRight className="w-4 h-4" />
+								</Button>
+							</div>
+						)}
 					</div>
 
 					{/* Right Column: Doctor Detail Pane */}

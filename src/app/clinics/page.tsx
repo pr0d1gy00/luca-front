@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
-import { Building2, MapPin, Globe, Users, Search, Phone, ArrowLeft, ShieldCheck } from "lucide-react";
+import { Building2, MapPin, Globe, Users, Search, Phone, ArrowLeft, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import Select from "react-select";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PublicHeader from "@/components/PublicHeader";
-import { useClinics, useCities } from "@/features/public/hooks/useCatalog";
+import { useClinics, useCities, useDebounce } from "@/features/public";
 import type { City } from "@/features/public/types/catalog.types";
 
 // ─────────────────────────────────────────────────────────────
@@ -96,37 +97,38 @@ const selectStyles = {
 export default function ClinicsPage() {
 	const [selectedCity, setSelectedCity] = useState<string | undefined>();
 	const [searchQuery, setSearchQuery] = useState("");
+	const [page, setPage] = useState(1);
 	const [activeClinicId, setActiveClinicId] = useState<string | null>(null);
 	const [isDetailOpenOnMobile, setIsDetailOpenOnMobile] = useState(false);
 
+	const debouncedSearch = useDebounce(searchQuery, 300);
+
+	// Reset page when filters change
+	useEffect(() => {
+		setPage(1);
+		setActiveClinicId(null);
+	}, [selectedCity, debouncedSearch]);
+
 	const { data: clinicsData, isLoading } = useClinics({
 		city_id: selectedCity ? Number(selectedCity) : undefined,
+		page,
+		per_page: 10,
+		search: debouncedSearch.trim() || undefined,
 	});
 
 	const { data: citiesData } = useCities();
 
 	const cities: City[] = citiesData?.data ?? [];
 
-	const filteredClinics = useMemo(() => {
-		if (!clinicsData?.data) return [];
-		if (!searchQuery.trim()) return clinicsData.data;
-		const query = searchQuery.toLowerCase();
-		return clinicsData.data.filter(
-			(clinic) =>
-				clinic.name.toLowerCase().includes(query) ||
-				clinic.branches.some(
-					(b) =>
-						b.address.toLowerCase().includes(query) ||
-						b.doctors.some((d) => d.full_name.toLowerCase().includes(query)),
-				),
-		);
-	}, [clinicsData, searchQuery]);
+	const clinics = useMemo(() => {
+		return clinicsData?.data ?? [];
+	}, [clinicsData]);
 
 	const activeClinic = useMemo(() => {
-		if (!filteredClinics || filteredClinics.length === 0) return null;
-		if (activeClinicId === null) return filteredClinics[0];
-		return filteredClinics.find((c) => c.id === activeClinicId) ?? filteredClinics[0];
-	}, [filteredClinics, activeClinicId]);
+		if (!clinics || clinics.length === 0) return null;
+		if (activeClinicId === null) return clinics[0];
+		return clinics.find((c) => c.id === activeClinicId) ?? clinics[0];
+	}, [clinics, activeClinicId]);
 
 	const cityOptions = useMemo(() => {
 		return [
@@ -227,7 +229,7 @@ export default function ClinicsPage() {
 								<p className="text-pharmako-text-secondary text-sm">Cargando catálogo...</p>
 							</div>
 						</div>
-					) : filteredClinics.length === 0 ? (
+					) : clinics.length === 0 ? (
 						<motion.div
 							initial={{ opacity: 0 }}
 							animate={{ opacity: 1 }}
@@ -252,12 +254,12 @@ export default function ClinicsPage() {
 							>
 								<div className="flex items-center justify-between px-2 mb-3">
 									<h2 className="text-xs font-semibold text-pharmako-text-muted uppercase tracking-wider">
-										Clínicas registradas ({filteredClinics.length})
+										Clínicas registradas ({clinicsData?.meta?.total ?? clinics.length})
 									</h2>
 								</div>
 
 								<div className="flex flex-col gap-1.5 overflow-y-auto pr-1 w-full max-h-[600px] md:max-h-[calc(100vh-280px)]">
-									{filteredClinics.map((clinic) => {
+									{clinics.map((clinic) => {
 										const isSelected = activeClinic?.id === clinic.id;
 										const mainBranch = clinic.branches.find((b) => b.is_main_branch) ?? clinic.branches[0];
 
@@ -311,6 +313,35 @@ export default function ClinicsPage() {
 										);
 									})}
 								</div>
+
+								{/* Pagination Controls */}
+								{clinicsData?.meta && clinicsData.meta.last_page > 1 && (
+									<div className="flex items-center justify-between mt-4 px-2 py-3 border-t border-slate-100 text-sm">
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => setPage((p) => Math.max(p - 1, 1))}
+											disabled={page === 1}
+											className="flex items-center gap-1 h-9 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+										>
+											<ChevronLeft className="w-4 h-4" />
+											<span>Anterior</span>
+										</Button>
+										<span className="text-slate-500 font-medium">
+											Pág. {page} de {clinicsData.meta.last_page}
+										</span>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => setPage((p) => Math.min(p + 1, clinicsData.meta!.last_page))}
+											disabled={page === clinicsData.meta.last_page}
+											className="flex items-center gap-1 h-9 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+										>
+											<span>Siguiente</span>
+											<ChevronRight className="w-4 h-4" />
+										</Button>
+									</div>
+								)}
 							</div>
 
 							{/* Right Column: Clinic Detail Pane */}
