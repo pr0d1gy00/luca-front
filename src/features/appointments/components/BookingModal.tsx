@@ -484,24 +484,14 @@ export function BookingModal({
 								type="button"
 								onClick={() => setAppointmentType("IN_PERSON")}
 								className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-xl border text-sm font-semibold transition-all ${appointmentType === "IN_PERSON"
-									? "bg-pharmako-care-light border-pharmako-care text-pharmako-care"
+									? "border-pharmako-care text-pharmako-care"
 									: "bg-white border-pharmako-border text-pharmako-text-secondary hover:border-slate-300"
 									}`}
 							>
 								<MapPin className="size-4" />
 								Presencial
 							</button>
-							<button
-								type="button"
-								onClick={() => setAppointmentType("ONLINE")}
-								className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-xl border text-sm font-semibold transition-all ${appointmentType === "ONLINE"
-									? "bg-pharmako-care-light border-pharmako-care text-pharmako-care"
-									: "bg-white border-pharmako-border text-pharmako-text-secondary hover:border-slate-300"
-									}`}
-							>
-								<Video className="size-4" />
-								Online
-							</button>
+
 						</div>
 					</div>
 
