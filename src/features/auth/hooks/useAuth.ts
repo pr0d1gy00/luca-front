@@ -107,8 +107,42 @@ export function useLoginUserMutation() {
   >({
     mutationFn: async (credentials) => {
       const { data } = await apiClient.post<AuthResponse>(
-        "/auth/users/login",
+        "/auth/login-password",
         credentials,
+      );
+      return data;
+    },
+  });
+}
+
+export function useSendOtpMutation() {
+  return useMutation<
+    { status: string; message: string; otpExpirySeconds: number },
+    unknown,
+    {
+      phone?: string;
+      email?: string;
+      role: string;
+      channel: "WHATSAPP" | "EMAIL";
+    }
+  >({
+    mutationFn: async (payload) => {
+      const { data } = await apiClient.post("/auth/send-otp", payload);
+      return data;
+    },
+  });
+}
+
+export function useVerifyOtpMutation() {
+  return useMutation<
+    AuthResponse,
+    unknown,
+    { phone?: string; email?: string; code: string; role?: string }
+  >({
+    mutationFn: async (payload) => {
+      const { data } = await apiClient.post<AuthResponse>(
+        "/auth/verify-otp",
+        payload,
       );
       return data;
     },
