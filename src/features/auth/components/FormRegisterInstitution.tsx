@@ -109,25 +109,25 @@ export default function FormRegisterInstitution({
   const onSubmit = async (data: IFormInput) => {
     try {
       const formData = new FormData();
-      formData.append("full_name", data.legalName);
-      formData.append("commercial_name", data.commercialName);
+      formData.append("fullName", data.legalName);
+      formData.append("commercialName", data.commercialName);
       formData.append("rif", data.taxId);
       formData.append("phone", data.phoneNumber);
       formData.append("email", data.email);
       formData.append("password", data.password);
 
       if (data.cityId) {
-        formData.append("city_id", data.cityId);
+        formData.append("cityId", data.cityId);
       }
 
       // Convertimos a mayúsculas: pharmacy -> PHARMACY, laboratory -> LABORATORY
       // El backend no soporta "clinic" para registro público, por ende solo mostramos farmacias y laboratorios
       const mappedType =
         data.type === "clinic" ? "PHARMACY" : data.type.toUpperCase();
-      formData.append("provider_type", mappedType);
+      formData.append("providerType", mappedType);
 
       // Archivo binario
-      formData.append("business_document", data.businessDocument);
+      formData.append("businessDocument", data.businessDocument);
 
       const res = await registerProvider.mutateAsync(formData);
       const user = res.user as UserProfile;
@@ -147,12 +147,12 @@ export default function FormRegisterInstitution({
         const backendErrors = e.response.data.errors;
         Object.keys(backendErrors).forEach((key) => {
           let formKey: keyof IFormInput = key as keyof IFormInput;
-          if (key === "full_name") formKey = "legalName";
-          if (key === "commercial_name") formKey = "commercialName";
+          if (key === "fullName") formKey = "legalName";
+          if (key === "commercialName") formKey = "commercialName";
           if (key === "rif") formKey = "taxId";
           if (key === "phone") formKey = "phoneNumber";
-          if (key === "business_document") formKey = "businessDocument";
-          if (key === "provider_type") formKey = "type";
+          if (key === "businessDocument") formKey = "businessDocument";
+          if (key === "providerType") formKey = "type";
 
           setError(formKey, {
             type: "server",

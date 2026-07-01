@@ -100,20 +100,20 @@ export default function FormRegisterMedical({
   const onSubmit = async (data: IFormInput) => {
     try {
       const formData = new FormData();
-      formData.append("full_name", data.name);
+      formData.append("fullName", data.name);
       formData.append("email", data.email);
       formData.append("password", data.password);
       if (data.phone) formData.append("phone", data.phone);
-      if (data.cityId) formData.append("city_id", data.cityId);
+      if (data.cityId) formData.append("cityId", data.cityId);
 
       // Formato array indexado de Laravel para campos múltiples
       const selectedSpecs = (data.specialtyIds as string[]) || [];
       selectedSpecs.forEach((id, index) => {
-        formData.append(`specialty_ids[${index}]`, id);
+        formData.append(`specialtyIds[${index}]`, id);
       });
 
       // Archivo binario de la licencia médica
-      formData.append("medical_license", data.medicalLicense);
+      formData.append("medicalLicense", data.medicalLicense);
 
       const res = await registerDoctor.mutateAsync(formData);
       const user = res.user as UserProfile;
@@ -133,9 +133,9 @@ export default function FormRegisterMedical({
         const backendErrors = e.response.data.errors;
         Object.keys(backendErrors).forEach((key) => {
           let formKey: keyof IFormInput = key as keyof IFormInput;
-          if (key === "full_name") formKey = "name";
-          if (key === "medical_license") formKey = "medicalLicense";
-          if (key.startsWith("specialty_ids")) formKey = "specialtyIds";
+          if (key === "fullName") formKey = "name";
+          if (key === "medicalLicense") formKey = "medicalLicense";
+          if (key.startsWith("specialtyIds")) formKey = "specialtyIds";
 
           setError(formKey, {
             type: "server",

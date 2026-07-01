@@ -11,13 +11,13 @@ export function useRegisterPatientMutation() {
     AuthResponse,
     unknown,
     {
-      full_name: string;
+      fullName: string;
       email?: string;
       phone: string;
       password?: string;
-      national_id?: string;
+      nationalId?: string;
       username?: string;
-      city_id?: string;
+      cityId?: string;
     }
   >({
     mutationFn: async (payload) => {

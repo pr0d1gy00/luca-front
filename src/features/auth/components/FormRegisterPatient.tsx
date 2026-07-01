@@ -82,11 +82,11 @@ export default function FormRegisterPatient({
   const onSubmit = async (data: IFormInput) => {
     try {
       const res = await registerPatient.mutateAsync({
-        full_name: data.name,
+        fullName: data.name,
         email: data.email || undefined,
         phone: data.phone,
         password: data.password,
-        city_id: data.cityId || undefined,
+        cityId: data.cityId || undefined,
       });
 
       // Obtener el perfil completo (PatientAccount) con campos adicionales
@@ -110,7 +110,7 @@ export default function FormRegisterPatient({
         const backendErrors = e.response.data.errors;
         Object.keys(backendErrors).forEach((key) => {
           const formKey: keyof IFormInput =
-            key === "full_name" ? "name" : (key as keyof IFormInput);
+            key === "fullName" ? "name" : (key as keyof IFormInput);
           setError(formKey, {
             type: "server",
             message: backendErrors[key][0],
