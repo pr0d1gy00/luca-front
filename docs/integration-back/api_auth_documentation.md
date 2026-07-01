@@ -1,273 +1,178 @@
 # Documentación de API: Autenticación y Registro (Fase 1)
 
-Este documento detalla la estructura, flujo y consumo de los endpoints de Autenticación de **LUCA Health OS**. Está diseñado para el equipo de Frontend (Web / Móvil) con los requerimientos necesarios para conectar los flujos de registro e inicio de sesión.
+Este documento establece los estándares de comunicación y el contrato técnico de los endpoints de Autenticación y Registro de **LUCA Health OS**. Está diseñado para guiar al equipo de Frontend (Web / Mobile) en la integración de estos flujos.
 
 ---
 
-## Consideraciones Generales Arquitectónicas
+## 1. Estándares Generales de Comunicación
 
-1. **Multi-Guard (JWT)**: El sistema posee dos ecosistemas totalmente separados. 
-   - **Ecosistema de Pacientes (`patient_api`)**: Usuarios finales que agendan citas.
-   - **Ecosistema de Usuarios (`user_api`)**: Profesionales (Doctores), Comercios (Proveedores) y Administradores.
-2. **Tokens JWT**: Todas las respuestas exitosas de Login y Register retornarán un token de acceso (`access_token`). Para consumir cualquier ruta protegida, el Frontend debe enviar este token en los Headers HTTP:
-   ```http
-   Authorization: Bearer <tu_access_token>
-   ```
-3. **Manejo de Archivos en Registro**: Dado que los Doctores y Proveedores deben subir documentos en formato binario (PDF/JPG/PNG) para la verificación KYC, sus endpoints de registro **deben** ser consumidos utilizando el `Content-Type: multipart/form-data` en lugar del clásico `application/json`.
-4. **Idempotencia Obligatoria**: Todas las peticiones `POST` (como Login y Register) requieren un mecanismo estricto de Idempotencia para evitar duplicidades de red o dobles envíos. 
-   - El frontend **debe** enviar el Header `Idempotency-Key` conteniendo un identificador único (preferiblemente un UUIDv4) autogenerado desde el lado del cliente por cada intento de formulario (NO cada vez que hay un retry por red, la idea es que si la red falla el mismo retry mande el mismo key).
-   ```http
-   Idempotency-Key: a1b2c3d4-e5f6-...
-   ```
-   - Si no se envía este Header, la API retornará inmediatamente un error `400 Bad Request`.
+### Formato de JSON
+* **Naming Case:** Todos los JSON de respuesta y envío utilizan **`camelCase`** en sus llaves (ej: `accessToken`, `providerType`, `cityId`).
+* **Fechas:** Se transmiten en formato **ISO 8601 en UTC** (`YYYY-MM-DDTHH:mm:ss.sssZ`, ej: `2026-06-30T16:25:00.000Z`).
+
+### Manejo de Sesión (Cookies de Autenticación)
+* El backend inyecta una cookie HTTP-Only segura llamada **`auth_token`** tras un inicio de sesión o registro exitoso.
+* **Seguridad:** `HttpOnly; Secure; SameSite=Strict; Path=/`.
+* El frontend no necesita almacenar el token en `localStorage`. El navegador lo incluirá de manera automática en todas las peticiones subsecuentes al backend.
+
+### Idempotencia
+* Los endpoints mutantes (`POST` de registro, creación de cotizaciones, etc.) admiten el header `Idempotency-Key` conteniendo un UUIDv4 generado en el cliente. Esto previene re-envíos duplicados ante micro-cortes de red.
 
 ---
 
-## 1. Ecosistema de Pacientes
+## 2. Estándar de Errores (RFC 7807)
+
+Todos los errores del servidor (`4xx` y `5xx`) retornan un JSON unificado bajo la especificación **RFC 7807 (Problem Details for HTTP APIs)**.
+
+### Estructura de Error de Validación (HTTP 422)
+```json
+{
+  "type": "https://api.pharmako.com/errors/validation",
+  "title": "Error de Validación",
+  "status": 422,
+  "detail": "Uno o más campos enviados no cumplen con las reglas requeridas.",
+  "instance": "/api/v1/auth/users/register/doctor",
+  "invalidParams": [
+    {
+      "name": "email",
+      "reason": "El correo ingresado ya se encuentra registrado."
+    }
+  ]
+}
+```
+
+---
+
+## 3. Resolución Híbrida de Geolocalización (UUID a BIGINT)
+
+Para mantener la base de datos veloz y normalizada utilizando claves numéricas (`BIGINT`) pero exponiendo identificadores seguros al exterior, el sistema utiliza un mecanismo híbrido:
+1. El cliente **debe enviar un UUID** válido de la ciudad en el campo `cityId`.
+2. El backend intercepta este UUID, valida su existencia contra la columna `uuid` en la tabla `cities`, y resuelve internamente el ID incremental `BIGINT` para asociarlo de manera eficiente a las tablas de negocio.
+
+---
+
+## 4. Registro de Cuentas (Endpoints)
 
 ### A. Registro de Paciente
-* **Endpoint:** `POST /api/v1/auth/patients/register`
+* **Ruta:** `POST /api/v1/auth/patients/register`
 * **Content-Type:** `application/json`
 
-**Body Request:**
+**Parámetros del Body:**
 ```json
 {
-  "full_name": "Juan Pérez",
-  "email": "juan.perez@email.com",            // Opcional, pero debe ser único si se envía
-  "phone": "+584141234567",                   // Requerido y único
-  "password": "PasswordSeguro123",            // Opcional (preparado para OTP en un futuro)
-  "national_id": "V-12345678",                // Opcional y único
-  "username": "juanperez",                    // Opcional y único
-  "city_id": "56d77a39-67ed-..."              // UUID de la ciudad, opcional
-}
-```
-
-### B. Inicio de Sesión de Paciente
-* **Endpoint:** `POST /api/v1/auth/patients/login`
-* **Content-Type:** `application/json`
-
-**Body Request:**
-```json
-{
+  "fullName": "Juan Pérez",
   "email": "juan.perez@email.com",
-  "password": "PasswordSeguro123"
+  "phone": "+584121234567",
+  "password": "PasswordSeguro123",
+  "cityId": "a5e88d12-1402-4756-829d-47201bfa54d2" // UUID de la ciudad
 }
 ```
 
-### C. Obtener Perfil Activo (Me)
-* **Endpoint:** `GET /api/v1/auth/patients/me`
-* **Headers:** `Authorization: Bearer <token>`
-* **Respuesta Esperada:** Un objeto JSON con los datos del paciente (sin contraseña).
-
----
-
-## 2. Ecosistema de Profesionales (Doctores y Proveedores)
-
-### A. Registro de Doctor Médico
-* **Endpoint:** `POST /api/v1/auth/users/register/doctor`
-* **Content-Type:** `multipart/form-data` (¡Importante!)
-
-**Form-Data Payload:**
-| Key | Type | Constraints | Descripción |
-|---|---|---|---|
-| `full_name` | String | Requerido | Nombre completo del profesional. |
-| `email` | String | Requerido, Único | Correo de acceso y contacto. |
-| `password` | String | Requerido, Min: 8 | Contraseña de acceso. |
-| `phone` | String | Opcional | Número de teléfono de contacto. |
-| `city_id` | UUID | Opcional | UUID de la tabla de Ciudades en BD. |
-| `specialty_uuids[0]` | UUID | Requerido, Array | El Frontend debe mandar un Array de UUIDs de especialidades. |
-| `medical_license` | File | Requerido | Archivo binario (pdf, jpg, png, max: 10MB). |
-
-### B. Registro de Proveedor (Farmacia / Laboratorio)
-* **Endpoint:** `POST /api/v1/auth/users/register/provider`
+### B. Registro de Doctor Médico
+* **Ruta:** `POST /api/v1/auth/users/register/doctor`
 * **Content-Type:** `multipart/form-data`
 
-**Form-Data Payload:**
-| Key | Type | Constraints | Descripción |
-|---|---|---|---|
-| `full_name` | String | Requerido | Nombre del dueño o representante legal. |
-| `email` | String | Requerido, Único | Correo administrativo de acceso. |
-| `password` | String | Requerido, Min: 8 | Contraseña de acceso. |
-| `commercial_name` | String | Requerido | Nombre comercial de la empresa. |
-| `provider_type` | String | Requerido | Debe ser estrictamente `PHARMACY` o `LABORATORY`. |
-| `rif` | String | Requerido, Único | Registro de Identificación Fiscal. |
-| `city_id` | UUID | Opcional | UUID de la tabla de Ciudades en BD. |
-| `phone` | String | Opcional | Teléfono de contacto comercial principal. |
-| `business_document` | File | Requerido | Archivo del RIF o Registro Mercantil (pdf/jpg/png). |
+**Parámetros Form-Data:**
+* `fullName` (String, Requerido)
+* `email` (String, Requerido)
+* `password` (String, Requerido, Min: 8)
+* `phone` (String, Opcional)
+* `cityId` (UUID, Requerido) - UUID de la ciudad.
+* `specialtyUuids` (Array de UUIDs, Requerido) - Ej: `specialtyUuids[0] = "uuid-de-especialidad"`.
+* `medicalLicense` (File, Requerido) - Documento PDF/Imagen (máx 10MB) que verifique su licencia médica para el proceso KYC.
 
-### C. Inicio de Sesión General (Usuarios)
-Este endpoint unifica el inicio de sesión para Doctores, Proveedores y Administradores.
-* **Endpoint:** `POST /api/v1/auth/users/login`
-* **Content-Type:** `application/json`
+### C. Registro de Proveedor (Farmacia / Laboratorio)
+* **Ruta:** `POST /api/v1/auth/users/register/provider`
+* **Content-Type:** `multipart/form-data`
 
-**Body Request:**
-```json
-{
-  "email": "doctor@email.com",
-  "password": "PasswordSeguro123"
-}
-```
-
-### D. Obtener Perfil Activo y Validar Roles
-* **Endpoint:** `GET /api/v1/auth/users/me`
-* **Headers:** `Authorization: Bearer <token>`
-* **Uso en el Frontend:** Utiliza el valor de `role` en la respuesta JSON (`DOCTOR`, `PROVIDER`, `ADMIN`) para enrutar condicionalmente al usuario a su respectivo Dashboard.
+**Parámetros Form-Data:**
+* `fullName` (String, Requerido) - Nombre del representante legal.
+* `email` (String, Requerido)
+* `password` (String, Requerido, Min: 8)
+* `commercialName` (String, Requerido) - Nombre de la farmacia o laboratorio.
+* `providerType` (String, Requerido) - Debe ser exactamente `PHARMACY` o `LABORATORY`.
+* `rif` (String, Requerido) - Registro de Identificación Fiscal.
+* `cityId` (UUID, Requerido) - UUID de la ciudad.
+* `phone` (String, Opcional)
+* `businessDocument` (File, Requerido) - Documento PDF/Imagen (máx 10MB) del RIF o Registro Mercantil para el proceso KYC.
 
 ---
 
-## 3. Respuestas Estándar del Servidor
+## 5. El Flujo de Clínicas / Instituciones Médicas (B2B)
 
-### A. Éxito en Autenticación (200 OK)
-Indistintamente de si es login o registro de paciente o usuario, el payload de éxito retornará el Token Bearer junto con información del usuario.
+> [!IMPORTANT]
+> **Las Clínicas NO tienen auto-registro público vía API.**
+> 
+> A diferencia de los Doctores independientes o los Proveedores comerciales (Farmacias/Laboratorios), las Clínicas son tratadas como entidades corporativas B2B. Su incorporación en la plataforma es administrativa:
+> - **Se registran mediante semillas (Seeders):** En ambientes locales/testings mediante `ClinicSeeder.php`.
+> - **Se configuran por soporte administrativo:** En ambiente de producción, su creación y habilitación se realiza a través del Panel de Control de Administración Central de LUCA.
+> - **Invitación a Doctores:** Una vez creada la clínica por administración, se asocian sus sucursales (`clinic_branches`) y se asignan o invitan doctores a las mismas.
 
-**Respuesta Login - Usuario (Doctor/Proveedor/Admin):**
-```json
-{
-    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc... (JWT gigante)",
-    "token_type": "bearer",
-    "expires_in": 3600,
-    "user": {
-        "uuid": "abc-123-def-456",
+---
+
+## 6. Endpoints de Autenticación y Flujo OTP
+
+### A. Solicitar Código OTP
+* **Ruta:** `POST /api/v1/auth/send-otp`
+* **Body (WhatsApp):**
+  ```json
+  {
+    "phone": "+584121234567",
+    "role": "DOCTOR",
+    "channel": "WHATSAPP"
+  }
+  ```
+* **Body (Email):**
+  ```json
+  {
+    "email": "doctor@email.com",
+    "role": "DOCTOR",
+    "channel": "EMAIL"
+  }
+  ```
+  *(Nota: `role` accepts `DOCTOR`, `PROVIDER`, `ADMIN`, `PATIENT`)*
+
+### B. Verificar OTP e Iniciar Sesión
+* **Ruta:** `POST /api/v1/auth/verify-otp`
+* **Body (WhatsApp):**
+  ```json
+  {
+    "phone": "+584121234567",
+    "code": "123456"
+  }
+  ```
+* **Respuesta Exitosa (200 OK):**
+  * *Headers:* Genera la cookie segura `auth_token` con el JWT de sesión.
+  * *Body:*
+    ```json
+    {
+      "user": {
+        "id": "353e7120-73e8-471b-8910-e2da89daf025",
+        "fullName": "Dr. Carlos Mendoza",
         "email": "doctor@email.com",
-        "full_name": "Dr. Carlos Mendoza",
-        "role": "DOCTOR",
-        "is_active": true,
-        "status": "ACTIVE",
-        "is_verified": false,
-        "pending_documents": 1
+        "phone": "+584121234567",
+        "role": "DOCTOR"
+      }
     }
-}
-```
+    ```
 
-**Respuesta Login - Paciente:**
-```json
-{
-    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc... (JWT gigante)",
-    "token_type": "bearer",
-    "expires_in": 3600,
-    "user": {
-        "uuid": "abc-123-def-456",
-        "email": "juan.perez@email.com",
-        "full_name": "Juan Pérez",
-        "is_active": true,
-        "status": "ACTIVE"
-    }
-}
-```
+### C. Login Tradicional (Contraseña)
+* **Ruta:** `POST /api/v1/auth/login-password`
+* **Body:**
+  ```json
+  {
+    "email": "doctor@email.com",
+    "password": "miSuperClave123!"
+  }
+  ```
+* **Respuesta Exitosa (200 OK):**
+  * *Headers:* Genera la cookie segura `auth_token` con el JWT de sesión.
+  * *Body:* (Mismo formato que verify-otp)
 
-### B. Errores de Validación (422 Unprocessable Entity)
-Cuando el frontend envía datos erróneos, carentes o duplicados (ej: Email ya registrado), Laravel responderá con 422.
-```json
-{
-    "message": "The given data was invalid.",
-    "errors": {
-        "email": [
-            "The email has already been taken."
-        ]
-    }
-}
-```
+### D. Obtener Usuario Actual
+* **Ruta:** `GET /api/v1/auth/me`
+* **Respuesta Exitosa (200 OK):** Retorna la información detallada del perfil basándose en la cookie `auth_token` activa.
 
-### C. Restricción por Verificación Pendiente (KYC)
-El backend procesa la aprobación de documentos manual. Si el Frontend intenta consumir una ruta clínica protegida por el Middleware `EnsureKycIsApproved` y el usuario aún está en revisión, obtendrá un HTTP 403.
-```json
-{
-    "message": "Su documentación se encuentra en revisión. Acceso restringido."
-}
-```
-
-### D. Cuenta Bloqueada (401 Unauthorized)
-Si el administrador bloquea a un usuario (`isActive = false` o `status = 'BANNED'`), cualquier petición subsecuente al API le revocará forzadamente su token arrojando:
-```json
-{
-    "message": "Cuenta bloqueada.",
-    "status": "BANNED"
-}
-```
-
-### E. Estados de Cuenta (Account Status)
-El sistema maneja estados de cuenta para doctores, farmacias y pacientes:
-
-| Status | Descripción | Comportamiento |
-|--------|-------------|----------------|
-| `ACTIVE` | Cuenta activa normal | Acceso total sin restricciones |
-| `WARNED` | Primera advertencia | Acceso total + header `X-Account-Status: WARNED` |
-| `SUSPENDED` | Cuenta suspendida | Acceso total + header `X-Account-Status: SUSPENDED` |
-| `BANNED` | Cuenta bloqueada | Token invalidado, acceso denegado (401) |
-
-**Uso del Header X-Account-Status:**
-Cuando el status es `WARNED` o `SUSPENDED`, el frontend debe mostrar una alerta al usuario pero permitirle continuar usando la aplicación. El header viene en la respuesta HTTP:
-```http
-X-Account-Status: WARNED
-```
-
-**Casos de uso:**
-- `WARNED`: Paciente que faltó a citas sin cancelar, doctor con quejas menores
-- `SUSPENDED`: Paciente reincidente que falta a citas, proveedor con problemas de verificación
-- `BANNED`: Comportamiento fraudulento, abuso del sistema, o decisión administrativa definitiva
-
----
-
-## 4. Contratos de Respuesta (TypeScript)
-
-### A. Login - Usuario (Doctor/Proveedor/Admin)
-
-```typescript
-// Response
-{
-  access_token: string;
-  token_type: "bearer";
-  expires_in: number;
-  user: UserProfile;
-}
-
-// UserProfile
-interface UserProfile {
-  uuid: string;
-  email: string;
-  full_name: string;
-  role: "DOCTOR" | "PROVIDER" | "ADMIN";
-  is_active: boolean;
-  status: "ACTIVE" | "WARNED" | "SUSPENDED" | "BANNED";
-  is_verified: boolean;
-  pending_documents: number;
-}
-```
-
-### B. Login - Paciente
-
-```typescript
-// Response
-{
-  access_token: string;
-  token_type: "bearer";
-  expires_in: number;
-  user: PatientProfile;
-}
-
-// PatientProfile
-interface PatientProfile {
-  uuid: string;
-  email: string;
-  full_name: string;
-  is_active: boolean;
-  status: "ACTIVE" | "WARNED" | "SUSPENDED" | "BANNED";
-}
-```
-
-### C. Enums Relacionados
-
-```typescript
-// AccountStatus - Estados de cuenta para todos los usuarios
-type AccountStatus = "ACTIVE" | "WARNED" | "SUSPENDED" | "BANNED";
-
-// UserRole - Roles de usuario (solo para user_api)
-type UserRole = "DOCTOR" | "PROVIDER" | "ADMIN";
-```
-
----
-
-## 5. Endpoints Adicionales Compartidos
-Ambos ecosistemas (Patients y Users) comparten las rutas de cierre de sesión y actualización de Token bajo sus respectivos prefijos `v1/auth/patients/` o `v1/auth/users/`.
-* `POST /logout`: Invalida el token actual en el servidor.
-* `POST /refresh`: Genera y retorna un nuevo JWT extendiendo la vida útil de la sesión sin pedir credenciales.
+### E. Cerrar Sesión (Logout)
+* **Ruta:** `POST /api/v1/auth/logout`
+* **Respuesta Exitosa (200 OK):** Expira y limpia la cookie `auth_token` del cliente.
