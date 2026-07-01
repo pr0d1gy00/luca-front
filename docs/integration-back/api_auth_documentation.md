@@ -73,28 +73,28 @@ Para mantener la base de datos veloz y normalizada utilizando claves numéricas 
 * **Content-Type:** `multipart/form-data`
 
 **Parámetros Form-Data:**
-* `fullName` (String, Requerido)
+* `full_name` (String, Requerido)
 * `email` (String, Requerido)
 * `password` (String, Requerido, Min: 8)
 * `phone` (String, Opcional)
-* `cityId` (UUID, Requerido) - UUID de la ciudad.
-* `specialtyUuids` (Array de UUIDs, Requerido) - Ej: `specialtyUuids[0] = "uuid-de-especialidad"`.
-* `medicalLicense` (File, Requerido) - Documento PDF/Imagen (máx 10MB) que verifique su licencia médica para el proceso KYC.
+* `city_id` (UUID, Requerido) - UUID de la ciudad.
+* `specialty_ids` (Array de UUIDs, Requerido) - Ej: `specialty_ids[0] = "uuid-de-especialidad"`.
+* `medical_license` (File, Requerido) - Documento PDF/Imagen (máx 10MB) que verifique su licencia médica para el proceso KYC.
 
 ### C. Registro de Proveedor (Farmacia / Laboratorio)
 * **Ruta:** `POST /api/v1/auth/users/register/provider`
 * **Content-Type:** `multipart/form-data`
 
 **Parámetros Form-Data:**
-* `fullName` (String, Requerido) - Nombre del representante legal.
+* `full_name` (String, Requerido) - Nombre del representante legal.
 * `email` (String, Requerido)
 * `password` (String, Requerido, Min: 8)
-* `commercialName` (String, Requerido) - Nombre de la farmacia o laboratorio.
-* `providerType` (String, Requerido) - Debe ser exactamente `PHARMACY` o `LABORATORY`.
+* `commercial_name` (String, Requerido) - Nombre de la farmacia o laboratorio.
+* `provider_type` (String, Requerido) - Debe ser exactamente `PHARMACY` o `LABORATORY`.
 * `rif` (String, Requerido) - Registro de Identificación Fiscal.
-* `cityId` (UUID, Requerido) - UUID de la ciudad.
+* `city_id` (UUID, Requerido) - UUID de la ciudad.
 * `phone` (String, Opcional)
-* `businessDocument` (File, Requerido) - Documento PDF/Imagen (máx 10MB) del RIF o Registro Mercantil para el proceso KYC.
+* `business_document` (File, Requerido) - Documento PDF/Imagen (máx 10MB) del RIF o Registro Mercantil para el proceso KYC.
 
 ---
 
@@ -130,7 +130,7 @@ Para mantener la base de datos veloz y normalizada utilizando claves numéricas 
     "channel": "EMAIL"
   }
   ```
-  *(Nota: `role` accepts `DOCTOR`, `PROVIDER`, `ADMIN`, `PATIENT`)*
+  *(Nota: `role` acepta `DOCTOR`, `PROVIDER`, `ADMIN`, `PATIENT`)*
 
 ### B. Verificar OTP e Iniciar Sesión
 * **Ruta:** `POST /api/v1/auth/verify-otp`
@@ -146,6 +146,12 @@ Para mantener la base de datos veloz y normalizada utilizando claves numéricas 
   * *Body:*
     ```json
     {
+      "accessToken": "ey...",
+      "access_token": "ey...",
+      "tokenType": "bearer",
+      "token_type": "bearer",
+      "expiresIn": 3600,
+      "expires_in": 3600,
       "user": {
         "id": "353e7120-73e8-471b-8910-e2da89daf025",
         "fullName": "Dr. Carlos Mendoza",
