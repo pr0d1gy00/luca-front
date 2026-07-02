@@ -1,12 +1,12 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type {
   PatientAccount,
   PatientProfile,
   UserProfile,
 } from "@/features/auth/types";
 
-export type Role = "patient" | "doctor" | "clinic" | "pharmacy";
+export type Role = "patient" | "doctor" | "clinic" | "pharmacy" | null;
 
 export interface AuthState {
   // Legacy/Compatibility
@@ -85,7 +85,7 @@ function resolveAvatar(
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      role: "doctor",
+      role: null,
       name: "",
       email: "",
       avatar: "",
@@ -97,6 +97,12 @@ export const useAuthStore = create<AuthState>()(
       setRole: (role) => set({ role }),
 
       setAuth: (token, userType, user, isVerified) => {
+        console.log(
+          "[setAuth] Called with userType:",
+          userType,
+          "isVerified:",
+          isVerified,
+        );
         const actualUser =
           user && typeof user === "object" && "user" in user
             ? ((user as Record<string, unknown>).user as
@@ -106,6 +112,24 @@ export const useAuthStore = create<AuthState>()(
             : user;
 
         const verified = isVerified ?? resolveIsVerified(userType, actualUser);
+        console.log(
+          "[setAuth] actualUser role:",
+          (actualUser as { role?: string }).role,
+        );
+        console.log(
+          "[setAuth] Full state before set:",
+          JSON.stringify({
+            token: token ? "present" : "MISSING",
+            userType,
+            isVerified: verified,
+            user: actualUser
+              ? {
+                  fullName: (actualUser as { fullName?: string }).fullName,
+                  role: (actualUser as { role?: string }).role,
+                }
+              : null,
+          }),
+        );
 
         set({
           token,
@@ -123,12 +147,14 @@ export const useAuthStore = create<AuthState>()(
       },
 
       clearAuth: () => {
+        // Seteamos role a null ANTES de borrar la cookie y navegar,
+        // así el DashboardPage no flashea el componente por defecto.
         set({
           token: null,
           userType: null,
           user: null,
           isVerified: false,
-          role: "doctor",
+          role: null,
           name: "",
           email: "",
           avatar: "",
@@ -139,6 +165,20 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "luca-auth-storage",
+      // SessionStorage es más seguro que localStorage: se limpia al cerrar pestaña
+      storage: createJSONStorage(() => sessionStorage),
+      // No persistir el token real en storage, solo datos de usuario
+      // El token real va en la cookie HttpOnly del backend
+      partialize: (state) => ({
+        role: state.role,
+        name: state.name,
+        email: state.email,
+        avatar: state.avatar,
+        userType: state.userType,
+        isVerified: state.isVerified,
+        // Solo persistir user sin el token
+        user: state.user,
+      }),
     },
   ),
 );
