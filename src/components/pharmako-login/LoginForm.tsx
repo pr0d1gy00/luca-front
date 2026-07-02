@@ -331,7 +331,7 @@ export function LoginForm() {
       </div>
 
       {/* Selector de Modo */}
-      <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200/50">
+      <div className="flex p-1 rounded-xl border border-slate-200/50">
         <button
           type="button"
           onClick={() => {
@@ -340,12 +340,13 @@ export function LoginForm() {
           }}
           className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer ${
             loginMode === "password"
-              ? "bg-white text-pharmako-care shadow-sm"
+              ? " text-pharmako-care"
               : "text-slate-500 hover:text-slate-800"
           }`}
         >
           Contraseña
         </button>
+        <div className="w-10 h-10 border-l border-slate-200/50"></div>
         <button
           type="button"
           onClick={() => {
@@ -356,7 +357,7 @@ export function LoginForm() {
           }}
           className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer ${
             loginMode === "otp"
-              ? "bg-white text-pharmako-care shadow-sm"
+              ? " text-pharmako-care"
               : "text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -422,7 +423,7 @@ export function LoginForm() {
                   <label className="text-sm font-medium text-pharmako-text-secondary">
                     Recibir código por
                   </label>
-                  <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-200/60">
+                  <div className="flex  p-1 rounded-xl border border-slate-200/60">
                     <button
                       type="button"
                       onClick={() => {
@@ -431,13 +432,16 @@ export function LoginForm() {
                       }}
                       className={`flex-1 py-2 flex items-center justify-center gap-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
                         channel === "WHATSAPP"
-                          ? "bg-white text-emerald-600 shadow-sm border border-slate-200/40"
+                          ? " text-emerald-600"
                           : "text-slate-500 hover:text-slate-800"
                       }`}
                     >
-                      <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                      <Phone
+                        className={`${channel === "WHATSAPP" ? "text-emerald-500" : "text-slate-500"} w-3.5 h-3.5`}
+                      />
                       WhatsApp
                     </button>
+                    <div className="w-10 h-10 border-l border-slate-200/50"></div>
                     <button
                       type="button"
                       onClick={() => {
@@ -446,11 +450,13 @@ export function LoginForm() {
                       }}
                       className={`flex-1 py-2 flex items-center justify-center gap-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
                         channel === "EMAIL"
-                          ? "bg-white text-sky-600 shadow-sm border border-slate-200/40"
+                          ? " text-sky-600"
                           : "text-slate-500 hover:text-slate-800"
                       }`}
                     >
-                      <Mail className="w-3.5 h-3.5 text-sky-500" />
+                      <Mail
+                        className={`${channel === "EMAIL" ? "text-sky-500" : "text-slate-500"} w-3.5 h-3.5`}
+                      />
                       Email
                     </button>
                   </div>
