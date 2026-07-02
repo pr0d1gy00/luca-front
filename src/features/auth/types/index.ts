@@ -115,6 +115,8 @@ export interface AuthResponse {
   expires_in?: number;
   expiresIn?: number;
   user: UserProfile | PatientProfile;
+  /** Devuelto por verify-otp: 'patient' | 'user' — detectado por el backend */
+  userType?: "patient" | "user";
 }
 
 // ── Internal store types (derivados) ──────────────────────────

@@ -4,15 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  User,
-  Stethoscope,
-  Hospital,
-  Shield,
-  Phone,
-  Mail,
-  ArrowLeft,
-} from "lucide-react";
+import { Phone, Mail, ArrowLeft } from "lucide-react";
 import { PharmakoInput } from "./PharmakoInput";
 import { LoginButton } from "./LoginButton";
 import { RememberSession } from "./RememberSession";
@@ -28,13 +20,6 @@ import type { UserProfile, PatientAccount } from "@/features/auth/types";
 
 type LoginMode = "password" | "otp";
 type OtpStep = "request" | "verify";
-
-const ROLES = [
-  { key: "PATIENT", label: "Paciente", icon: User },
-  { key: "DOCTOR", label: "Médico", icon: Stethoscope },
-  { key: "PROVIDER", label: "Comercio", icon: Hospital },
-  { key: "ADMIN", label: "Admin", icon: Shield },
-];
 
 export function LoginForm() {
   const router = useRouter();
@@ -53,7 +38,6 @@ export function LoginForm() {
   }>({});
 
   // Credenciales OTP
-  const [role, setRole] = useState("PATIENT");
   const [channel, setChannel] = useState<"WHATSAPP" | "EMAIL">("WHATSAPP");
   const [identifier, setIdentifier] = useState("");
   const [otpStep, setOtpStep] = useState<OtpStep>("request");
@@ -189,10 +173,8 @@ export function LoginForm() {
       const payload: {
         phone?: string;
         email?: string;
-        role: string;
         channel: "WHATSAPP" | "EMAIL";
       } = {
-        role,
         channel,
       };
       if (channel === "WHATSAPP") {
@@ -209,12 +191,25 @@ export function LoginForm() {
     } catch (err: unknown) {
       const error = err as {
         response?: {
-          data?: { detail?: string; message?: string };
+          status?: number;
+          data?: {
+            detail?: string;
+            message?: string;
+            invalidParams?: Array<{ name?: string; reason?: string }>;
+            errors?: Record<string, string[]>;
+          };
         };
       };
+      const data = error?.response?.data;
+      // Prioridad: invalidParams[0].reason > errors[field][0] > detail > message
       const msg =
-        error.response?.data?.detail ||
-        error.response?.data?.message ||
+        data?.invalidParams?.[0]?.reason ||
+        (() => {
+          const firstErrorKey = Object.keys(data?.errors ?? {})[0];
+          return data?.errors?.[firstErrorKey]?.[0];
+        })() ||
+        data?.detail ||
+        data?.message ||
         "Error al enviar el código de verificación.";
       toast.error(msg);
     } finally {
@@ -234,10 +229,8 @@ export function LoginForm() {
         phone?: string;
         email?: string;
         code: string;
-        role?: string;
       } = {
         code,
-        role,
       };
       if (channel === "WHATSAPP") {
         payload.phone = identifier;
@@ -248,8 +241,10 @@ export function LoginForm() {
       const res = await verifyOtp.mutateAsync(payload);
       const profile = res.user;
       const otpToken = res.access_token || res.accessToken || "";
+      // El backend devuelve userType: 'patient' | 'user' según la cuenta real
+      const detectedUserType = res.userType ?? "user";
 
-      if (role === "PATIENT") {
+      if (detectedUserType === "patient") {
         // Obtener el perfil completo (PatientAccount)
         const { data: patientFull } = await apiClient.get<PatientAccount>(
           "/auth/patients/me",
@@ -283,12 +278,24 @@ export function LoginForm() {
     } catch (err: unknown) {
       const error = err as {
         response?: {
-          data?: { detail?: string; message?: string };
+          status?: number;
+          data?: {
+            detail?: string;
+            message?: string;
+            invalidParams?: Array<{ name?: string; reason?: string }>;
+            errors?: Record<string, string[]>;
+          };
         };
       };
+      const data = error?.response?.data;
       const msg =
-        error.response?.data?.detail ||
-        error.response?.data?.message ||
+        data?.invalidParams?.[0]?.reason ||
+        (() => {
+          const firstErrorKey = Object.keys(data?.errors ?? {})[0];
+          return data?.errors?.[firstErrorKey]?.[0];
+        })() ||
+        data?.detail ||
+        data?.message ||
         "Código inválido o expirado.";
       toast.error(msg);
     } finally {
@@ -410,30 +417,6 @@ export function LoginForm() {
           >
             {otpStep === "request" ? (
               <div className="space-y-4">
-                {/* Selector de Perfil/Rol */}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-pharmako-text-secondary">
-                    Selecciona tu perfil
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {ROLES.map(({ key, label, icon: Icon }) => (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => setRole(key)}
-                        className={`flex items-center gap-2 p-3 rounded-xl border font-semibold text-xs transition-all duration-150 cursor-pointer ${
-                          role === key
-                            ? "bg-pharmako-care/10 border-pharmako-care text-pharmako-care"
-                            : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
-                        }`}
-                      >
-                        <Icon className="w-4 h-4" />
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Selector de Canal */}
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-pharmako-text-secondary">
