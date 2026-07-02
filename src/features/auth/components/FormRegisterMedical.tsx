@@ -114,11 +114,12 @@ export default function FormRegisterMedical({
 
       // Archivo binario de la licencia médica
       formData.append("medicalLicense", data.medicalLicense);
-
+      console.log("formData", formData);
       const res = await registerDoctor.mutateAsync(formData);
       const user = res.user as UserProfile;
+      const token = res.access_token || res.accessToken || "";
 
-      setAuth(res.access_token, "user", user);
+      setAuth(token, "user", user);
 
       toast.success("¡Médico registrado exitosamente!");
       router.push("/dashboard/pending-verification");
@@ -152,10 +153,14 @@ export default function FormRegisterMedical({
     }
   };
 
-  const selectedSpecialties = (specField.value as string[]) || [];
+  const selectedSpecialties =
+    typeof specField.value === "string"
+      ? [specField.value]
+      : (specField.value as string[]) || [];
 
   return (
     <motion.form
+      encType="multipart/form-data"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
@@ -204,12 +209,12 @@ export default function FormRegisterMedical({
         ) : (
           <div className="flex flex-wrap gap-2">
             {specialties?.map((spec) => {
-              const active = selectedSpecialties.includes(spec.id);
+              const active = selectedSpecialties.includes(String(spec.id));
               return (
                 <button
                   type="button"
                   key={spec.id}
-                  onClick={() => handleToggleSpecialty(spec.id)}
+                  onClick={() => handleToggleSpecialty(String(spec.id))}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
                     active
                       ? "bg-teal-600 text-white border-teal-600"
@@ -271,10 +276,7 @@ export default function FormRegisterMedical({
       </div>
 
       <div className="pt-2">
-        <LoginButton
-          onClick={() => handleSubmit(onSubmit)()}
-          loading={registerDoctor.isPending}
-        >
+        <LoginButton type="submit" loading={registerDoctor.isPending}>
           Crear cuenta de {typeProfile}
         </LoginButton>
       </div>

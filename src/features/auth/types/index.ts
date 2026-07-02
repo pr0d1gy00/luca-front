@@ -21,7 +21,7 @@ export interface City {
 }
 
 export interface Specialty {
-  id: string;
+  id: number;
   name: string;
   description: string | null;
 }
@@ -49,12 +49,15 @@ export type PatientStatusApi = "ACTIVE" | "WARNED" | "SUSPENDED" | "BANNED";
  * NO tiene `is_verified`: los pacientes no pasan verificación KYC manual.
  */
 export interface PatientProfile {
-  uuid: string;
+  id?: string;
+  uuid?: string;
   email: string | null;
-  fullName?: string;
-  full_name: string;
-  is_active: boolean;
-  status: PatientStatusApi;
+  fullName: string;
+  full_name?: string;
+  is_active?: boolean;
+  isActive?: boolean;
+  status?: PatientStatusApi;
+  phone?: string | null;
 }
 
 /**
@@ -62,30 +65,37 @@ export interface PatientProfile {
  * SÍ tiene `is_verified`: doctores y proveedores requieren aprobación KYC manual.
  */
 export interface UserProfile {
+  id?: string;
   uuid: string;
   email: string;
-  fullName?: string;
-  full_name: string;
+  fullName: string;
+  full_name?: string;
   role: UserRoleApi;
-  is_active: boolean;
+  is_active?: boolean;
+  isActive?: boolean;
   status: AccountStatus;
   isVerified?: boolean;
-  is_verified: boolean;
-  pending_documents: number;
+  is_verified?: boolean;
+  pending_documents?: number;
+  pendingDocuments?: number;
   plan_type?: PlanType;
+  planType?: PlanType;
   phone?: string | null;
   logoUrl?: string | null;
   logo_url?: string | null;
   signatureUrl?: string | null;
   signature_url?: string | null;
   city_id?: string | null;
+  cityId?: string | null;
   provider_profile?: {
     id: string;
-    user_id: string;
+    user_id?: string;
     type: ProviderType;
-    commercial_name: string;
+    commercial_name?: string;
+    commercialName?: string;
     rif: string;
-    is_verified: boolean;
+    is_verified?: boolean;
+    isVerified?: boolean;
     address?: string | null;
     cityId?: string | null;
     phone?: string | null;
@@ -98,9 +108,12 @@ export interface UserProfile {
 
 /** Respuesta directa de login y register endpoints */
 export interface AuthResponse {
-  access_token: string;
+  access_token?: string;
+  accessToken?: string;
   token_type: "bearer";
-  expires_in: number;
+  tokenType?: "bearer";
+  expires_in?: number;
+  expiresIn?: number;
   user: UserProfile | PatientProfile;
 }
 
@@ -113,10 +126,13 @@ export interface AuthResponse {
 export interface PatientAccount extends PatientProfile {
   id: number;
   phone: string;
-  national_id: string | null;
-  username: string | null;
-  city_id: string | null;
+  nationalId?: string | null;
+  national_id?: string | null;
+  username?: string | null;
+  cityId?: string | null;
+  city_id?: string | null;
   avatarUrl?: string | null;
-  avatar_url: string | null;
-  created_at: string;
+  avatar_url?: string | null;
+  createdAt?: string;
+  created_at?: string;
 }
