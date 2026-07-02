@@ -97,17 +97,25 @@ export const useAuthStore = create<AuthState>()(
       setRole: (role) => set({ role }),
 
       setAuth: (token, userType, user, isVerified) => {
-        const verified = isVerified ?? resolveIsVerified(userType, user);
+        const actualUser =
+          user && typeof user === "object" && "user" in user
+            ? ((user as Record<string, unknown>).user as
+                | PatientAccount
+                | UserProfile
+                | PatientProfile)
+            : user;
+
+        const verified = isVerified ?? resolveIsVerified(userType, actualUser);
 
         set({
           token,
           userType,
-          user,
+          user: actualUser,
           isVerified: verified,
-          role: resolveRole(userType, user),
-          name: user.fullName || user.full_name || "Usuario",
-          email: user.email ?? "",
-          avatar: resolveAvatar(userType, user),
+          role: resolveRole(userType, actualUser),
+          name: actualUser.fullName || actualUser.full_name || "Usuario",
+          email: actualUser.email ?? "",
+          avatar: resolveAvatar(userType, actualUser),
         });
 
         // Sincronizar cookie para middleware (Next.js server-side)
