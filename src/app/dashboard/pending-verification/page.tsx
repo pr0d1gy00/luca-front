@@ -35,11 +35,18 @@ export default function PendingVerificationPage() {
       const isVerified =
         userType === "patient"
           ? true
-          : ((data as { is_verified?: boolean }).is_verified ?? false);
+          : ((data as { isVerified?: boolean }).isVerified ??
+            (data as { is_verified?: boolean }).is_verified ??
+            false);
 
       setAuth(token, userType, data, isVerified);
-      toast.success("¡Tu cuenta ha sido aprobada! Redirigiendo…");
-      router.push("/dashboard");
+
+      if (isVerified) {
+        toast.success("¡Tu cuenta ha sido aprobada! Redirigiendo…");
+        router.push("/dashboard");
+      } else {
+        toast.info("Tu documentación sigue en revisión.");
+      }
     } catch (err: unknown) {
       const axiosError = err as { response?: { status?: number } };
       if (axiosError.response?.status === 403) {
@@ -186,7 +193,7 @@ export default function PendingVerificationPage() {
                          disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <LogOut
-                className={`size-4 shrink-0 ${loadingLogout ? "animate-spin" : ""}`}
+                className={`size-4 shrink-0 ${loadingLogout ? "disabled" : ""}`}
               />
               {loadingLogout ? "Cerrando sesión…" : "Cerrar Sesión"}
             </button>

@@ -73,7 +73,7 @@ export default function FormRegisterPatient({
       confirmPassword: "",
     },
   });
-
+  console.log(control);
   const { field: cityField, fieldState: cityFieldState } = useController({
     control,
     name: "cityId",
@@ -90,12 +90,13 @@ export default function FormRegisterPatient({
       });
 
       // Obtener el perfil completo (PatientAccount) con campos adicionales
+      const token = res.access_token || res.accessToken || "";
       const { data: patientFull } = await apiClient.get<PatientAccount>(
         "/auth/patients/me",
-        { headers: { Authorization: `Bearer ${res.access_token}` } },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      setAuth(res.access_token, "patient", patientFull, true);
+      setAuth(token, "patient", patientFull, true);
 
       toast.success("¡Cuenta creada exitosamente!");
       router.push("/dashboard");
@@ -170,6 +171,7 @@ export default function FormRegisterPatient({
 
       <div className="pt-2">
         <LoginButton
+          type="button"
           onClick={() => handleSubmit(onSubmit)()}
           loading={registerPatient.isPending}
         >

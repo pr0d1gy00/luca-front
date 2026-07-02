@@ -23,7 +23,7 @@ function decodeJwt(token: string) {
 }
 
 /**
- * Proxy / Guardián de rutas.
+ * Middleware / Guardián de rutas.
  *
  * - Sin cookie → login.
  * - Con cookie → /me (users primero, luego patients si 401).

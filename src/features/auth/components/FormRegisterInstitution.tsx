@@ -131,8 +131,9 @@ export default function FormRegisterInstitution({
 
       const res = await registerProvider.mutateAsync(formData);
       const user = res.user as UserProfile;
+      const token = res.access_token || res.accessToken || "";
 
-      setAuth(res.access_token, "user", user);
+      setAuth(token, "user", user);
 
       toast.success("¡Institución registrada exitosamente!");
       router.push("/dashboard/pending-verification");
@@ -171,6 +172,7 @@ export default function FormRegisterInstitution({
 
   return (
     <motion.form
+      encType="multipart/form-data"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
@@ -267,10 +269,7 @@ export default function FormRegisterInstitution({
       </div>
 
       <div className="pt-2">
-        <LoginButton
-          onClick={() => handleSubmit(onSubmit)()}
-          loading={registerProvider.isPending}
-        >
+        <LoginButton type="submit" loading={registerProvider.isPending}>
           Crear cuenta de {typeProfile}
         </LoginButton>
       </div>
