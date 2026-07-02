@@ -76,7 +76,7 @@ export default function PendingVerificationPage() {
     }
   };
 
-  const userName = user?.full_name ?? "Usuario";
+  const userName = user?.fullName ?? user?.full_name ?? "Usuario";
 
   return (
     <div className="min-h-dvh w-full flex flex-col lg:flex-row bg-white">

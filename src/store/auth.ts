@@ -51,9 +51,11 @@ function resolveIsVerified(
   userType: "patient" | "user",
   user: PatientAccount | UserProfile | PatientProfile,
 ): boolean {
-  if (userType === "patient") return false;
+  if (userType === "patient") return true;
   const u = user as UserProfile;
-  return u.is_verified ?? u.provider_profile?.is_verified ?? false;
+  return (
+    u.is_verified ?? u.isVerified ?? u.provider_profile?.is_verified ?? false
+  );
 }
 
 function resolveRole(
@@ -74,10 +76,10 @@ function resolveAvatar(
 ): string {
   if (userType === "patient") {
     const p = user as PatientAccount;
-    return p.avatar_url ?? "";
+    return p.avatar_url ?? p.avatarUrl ?? "";
   }
   const u = user as UserProfile;
-  return u.logo_url ?? "";
+  return u.logo_url ?? u.logoUrl ?? "";
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -103,7 +105,7 @@ export const useAuthStore = create<AuthState>()(
           user,
           isVerified: verified,
           role: resolveRole(userType, user),
-          name: user.full_name,
+          name: user.fullName || user.full_name || "Usuario",
           email: user.email ?? "",
           avatar: resolveAvatar(userType, user),
         });

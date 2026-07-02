@@ -9,7 +9,7 @@ import {
 } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ChevronLeft,
@@ -254,7 +254,8 @@ interface SidebarProps {
 
 export default function Sidebar({ inDrawer = false }: SidebarProps) {
   const pathname = usePathname();
-  const { role, name, email, avatar } = useAuthStore();
+  const router = useRouter();
+  const { role, name, email, avatar, clearAuth } = useAuthStore();
 
   // ── Sidebar state ──────────────────────────────────────────
   const subscribe = useCallback((callback: () => void) => {
@@ -600,7 +601,13 @@ export default function Sidebar({ inDrawer = false }: SidebarProps) {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive">
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => {
+                  clearAuth();
+                  router.push("/");
+                }}
+              >
                 <LogOut className="size-4" />
                 <span>Cerrar sesión</span>
               </DropdownMenuItem>

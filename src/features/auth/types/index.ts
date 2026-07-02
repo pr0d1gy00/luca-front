@@ -51,6 +51,7 @@ export type PatientStatusApi = "ACTIVE" | "WARNED" | "SUSPENDED" | "BANNED";
 export interface PatientProfile {
   uuid: string;
   email: string | null;
+  fullName?: string;
   full_name: string;
   is_active: boolean;
   status: PatientStatusApi;
@@ -63,15 +64,19 @@ export interface PatientProfile {
 export interface UserProfile {
   uuid: string;
   email: string;
+  fullName?: string;
   full_name: string;
   role: UserRoleApi;
   is_active: boolean;
   status: AccountStatus;
+  isVerified?: boolean;
   is_verified: boolean;
   pending_documents: number;
   plan_type?: PlanType;
   phone?: string | null;
+  logoUrl?: string | null;
   logo_url?: string | null;
+  signatureUrl?: string | null;
   signature_url?: string | null;
   city_id?: string | null;
   provider_profile?: {
@@ -111,6 +116,7 @@ export interface PatientAccount extends PatientProfile {
   national_id: string | null;
   username: string | null;
   city_id: string | null;
+  avatarUrl?: string | null;
   avatar_url: string | null;
   created_at: string;
 }

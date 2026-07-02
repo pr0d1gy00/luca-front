@@ -98,7 +98,7 @@ export function LoginForm() {
       const user = resUser.user as UserProfile;
 
       // Si la cuenta no está verificada (KYC pending), ir a pending page
-      const isVerified = user.is_verified ?? false;
+      const isVerified = user.is_verified ?? user.isVerified ?? false;
       setAuth(resUser.access_token, "user", user, isVerified);
 
       if (!isVerified) {
@@ -110,7 +110,9 @@ export function LoginForm() {
         return;
       }
 
-      toast.success(`¡Bienvenido, ${user.full_name}!`);
+      toast.success(
+        `¡Bienvenido, ${user.fullName || user.full_name || "Usuario"}!`,
+      );
       router.push("/dashboard");
     } catch (errUser: unknown) {
       const e = errUser as {
@@ -134,7 +136,11 @@ export function LoginForm() {
           );
 
           setAuth(resPatient.access_token, "patient", patientFull, true);
-          toast.success(`¡Bienvenido, ${patientFull.full_name}!`);
+          toast.success(
+            `¡Bienvenido, ${
+              patientFull.fullName || patientFull.full_name || "Usuario"
+            }!`,
+          );
           router.push("/dashboard");
         } catch {
           toast.error("Correo electrónico o contraseña incorrectos.");
@@ -230,10 +236,14 @@ export function LoginForm() {
           { headers: { Authorization: `Bearer ${res.access_token}` } },
         );
         setAuth(res.access_token, "patient", patientFull, true);
-        toast.success(`¡Bienvenido, ${patientFull.full_name}!`);
+        toast.success(
+          `¡Bienvenido, ${
+            patientFull.fullName || patientFull.full_name || "Usuario"
+          }!`,
+        );
       } else {
         const user = profile as UserProfile;
-        const isVerified = user.is_verified ?? false;
+        const isVerified = user.is_verified ?? user.isVerified ?? false;
         setAuth(res.access_token, "user", user, isVerified);
 
         if (!isVerified) {
@@ -244,7 +254,9 @@ export function LoginForm() {
           setLoading(false);
           return;
         }
-        toast.success(`¡Bienvenido, ${user.full_name}!`);
+        toast.success(
+          `¡Bienvenido, ${user.fullName || user.full_name || "Usuario"}!`,
+        );
       }
       router.push("/dashboard");
     } catch (err: unknown) {

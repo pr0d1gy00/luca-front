@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { SettingsIcon, LogOutIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -30,7 +31,8 @@ const ROLE_LABELS: Record<Role, string> = {
 // ---------------------------------------------------------------------------
 
 export function UserProfile() {
-  const { name, email, avatar, role } = useAuthStore();
+  const router = useRouter();
+  const { name, email, avatar, role, clearAuth } = useAuthStore();
   const roleLabel = ROLE_LABELS[role] ?? "Médico";
   const initials = name ? name[0].toUpperCase() : "U";
 
@@ -85,7 +87,14 @@ export function UserProfile() {
         <DropdownMenuSeparator />
 
         {/* Logout (destructive) */}
-        <DropdownMenuItem role="menuitem" variant="destructive">
+        <DropdownMenuItem
+          role="menuitem"
+          variant="destructive"
+          onClick={() => {
+            clearAuth();
+            router.push("/");
+          }}
+        >
           <LogOutIcon className="size-4" />
           <span>Cerrar sesión</span>
         </DropdownMenuItem>
