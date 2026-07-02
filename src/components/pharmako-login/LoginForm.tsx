@@ -99,9 +99,11 @@ export function LoginForm() {
 
       // Si la cuenta no está verificada (KYC pending), ir a pending page
       const isVerified = user.is_verified ?? user.isVerified ?? false;
-      setAuth(resUser.access_token, "user", user, isVerified);
+      const requiresKyc = user.role === "DOCTOR" || user.role === "PROVIDER";
+      const userToken = resUser.access_token || resUser.accessToken || "";
+      setAuth(userToken, "user", user, isVerified);
 
-      if (!isVerified) {
+      if (!isVerified && requiresKyc) {
         toast.info(
           "Tu cuenta está en revisión. Te avisaremos por correo cuando esté aprobada.",
         );
@@ -124,28 +126,45 @@ export function LoginForm() {
       // Si falla como usuario por credenciales incorrectas (401), intentamos como Paciente
       if (e.response?.status === 401) {
         try {
+          console.log("[LoginForm] Attempting patient login for:", email);
           const resPatient = await loginPatient.mutateAsync({
             email,
             password,
           });
+          console.log("[LoginForm] Patient login response:", resPatient);
 
           // Obtener el perfil completo (PatientAccount) con campos adicionales
-          const { data: patientFull } = await apiClient.get<PatientAccount>(
-            "/auth/patients/me",
-            { headers: { Authorization: `Bearer ${resPatient.access_token}` } },
+          const patientToken =
+            resPatient.access_token || resPatient.accessToken || "";
+          console.log(
+            "[LoginForm] Patient token:",
+            patientToken ? "present" : "MISSING",
           );
 
-          setAuth(resPatient.access_token, "patient", patientFull, true);
+          const { data: patientFull } = await apiClient.get<PatientAccount>(
+            "/auth/patients/me",
+            { headers: { Authorization: `Bearer ${patientToken}` } },
+          );
+          console.log("[LoginForm] /me response:", patientFull);
+
+          setAuth(patientToken, "patient", patientFull, true);
+          console.log(
+            "[LoginForm] Store state BEFORE redirect:",
+            JSON.stringify(useAuthStore.getState()),
+          );
           toast.success(
             `¡Bienvenido, ${
               patientFull.fullName || patientFull.full_name || "Usuario"
             }!`,
           );
+          // Use router.push for client-side navigation (preserves React state)
           router.push("/dashboard");
-        } catch {
+        } catch (err) {
+          console.error("[LoginForm] Patient login failed:", err);
           toast.error("Correo electrónico o contraseña incorrectos.");
         }
       } else {
+        console.error("[LoginForm] User login non-401 error:", e.response);
         toast.error(
           e.response?.data?.detail ??
             e.response?.data?.message ??
@@ -185,7 +204,7 @@ export function LoginForm() {
       const res = await sendOtp.mutateAsync(payload);
       toast.success(res.message || "Código enviado con éxito.");
       setOtpStep("verify");
-      setTimeLeft(res.otpExpirySeconds || 180);
+      setTimeLeft(res.otpExpirySeconds || 600);
       setCode("");
     } catch (err: unknown) {
       const error = err as {
@@ -228,14 +247,15 @@ export function LoginForm() {
 
       const res = await verifyOtp.mutateAsync(payload);
       const profile = res.user;
+      const otpToken = res.access_token || res.accessToken || "";
 
       if (role === "PATIENT") {
         // Obtener el perfil completo (PatientAccount)
         const { data: patientFull } = await apiClient.get<PatientAccount>(
           "/auth/patients/me",
-          { headers: { Authorization: `Bearer ${res.access_token}` } },
+          { headers: { Authorization: `Bearer ${otpToken}` } },
         );
-        setAuth(res.access_token, "patient", patientFull, true);
+        setAuth(otpToken, "patient", patientFull, true);
         toast.success(
           `¡Bienvenido, ${
             patientFull.fullName || patientFull.full_name || "Usuario"
@@ -244,9 +264,10 @@ export function LoginForm() {
       } else {
         const user = profile as UserProfile;
         const isVerified = user.is_verified ?? user.isVerified ?? false;
-        setAuth(res.access_token, "user", user, isVerified);
+        const requiresKyc = user.role === "DOCTOR" || user.role === "PROVIDER";
+        setAuth(otpToken, "user", user, isVerified);
 
-        if (!isVerified) {
+        if (!isVerified && requiresKyc) {
           toast.info(
             "Tu cuenta está en revisión. Te avisaremos cuando esté aprobada.",
           );
