@@ -81,6 +81,11 @@ export interface UserProfile {
     commercial_name: string;
     rif: string;
     is_verified: boolean;
+    address?: string | null;
+    cityId?: string | null;
+    phone?: string | null;
+    googleMapsUrl?: string | null;
+    observations?: string | null;
   };
 }
 
