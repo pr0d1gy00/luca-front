@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 interface LoginButtonProps {
   loading: boolean;
   disabled?: boolean;
+  type?: "submit" | "button" | "reset";
   onClick?: () => void;
   children?: React.ReactNode;
   loadingText?: string;
@@ -13,12 +14,14 @@ interface LoginButtonProps {
 export function LoginButton({
   loading,
   disabled,
+  type = "submit",
   onClick,
   children = "Entrar a Pharmako",
   loadingText = "Iniciando sesión...",
 }: LoginButtonProps) {
   return (
     <motion.button
+      type={type}
       onClick={onClick}
       disabled={disabled || loading}
       whileHover={{ scale: disabled ? 1 : 1.01 }}
