@@ -1,19 +1,19 @@
 import {
-	db,
-	getLastSyncTimestamp,
-	setLastSyncTimestamp,
+  db,
+  getLastSyncTimestamp,
+  setLastSyncTimestamp,
 } from "../database/schema";
 import { syncApi } from "../api/syncApi";
 import { queueService } from "./queueService";
 import {
-	clientToServer,
-	serverToClient,
-	getCurrentTimestamp,
+  clientToServer,
+  serverToClient,
+  getCurrentTimestamp,
 } from "../utils/uuid";
 import type {
-	SyncRequest,
-	SyncResponse,
-	EntityType,
+  SyncRequest,
+  SyncResponse,
+  EntityType,
 } from "../types/sync.types";
 import { SYNC_ENTITY_ORDER } from "../types/sync.types";
 
@@ -22,203 +22,214 @@ import { SYNC_ENTITY_ORDER } from "../types/sync.types";
  * Core business logic for offline-first synchronization
  */
 export const syncService = {
-	/**
-	 * Build push payload from queued changes
-	 */
-	buildPushPayload: async (): Promise<SyncRequest["push"]> => {
-		const queuedChanges = await queueService.getAll();
+  /**
+   * Build push payload from queued changes
+   */
+  buildPushPayload: async (): Promise<SyncRequest["push"]> => {
+    const queuedChanges = await queueService.getAll();
 
-		// Group by entity
-		const grouped: Partial<Record<EntityType, unknown[]>> = {};
-		for (const change of queuedChanges) {
-			if (!grouped[change.entity]) {
-				grouped[change.entity] = [];
-			}
+    // Group by entity
+    const grouped: Partial<Record<EntityType, unknown[]>> = {};
+    for (const change of queuedChanges) {
+      if (!grouped[change.entity]) {
+        grouped[change.entity] = [];
+      }
 
-			const serverData = clientToServer(change.data as Record<string, unknown>);
-			grouped[change.entity]!.push({
-				...(serverData as Record<string, unknown>),
-				updated_at: change.timestamp,
-			});
-		}
+      const serverData = clientToServer(change.data as Record<string, unknown>);
+      grouped[change.entity]!.push({
+        ...(serverData as Record<string, unknown>),
+        updated_at: change.timestamp,
+      });
+    }
 
-		// Order by topological dependencies
-		const orderedPush: SyncRequest["push"] = {};
-		for (const entity of SYNC_ENTITY_ORDER) {
-			const entityData = grouped[entity];
-			if (entityData && entityData.length > 0) {
-				orderedPush[entity] = entityData as SyncRequest["push"][EntityType];
-			}
-		}
+    // Order by topological dependencies
+    const orderedPush: SyncRequest["push"] = {};
+    for (const entity of SYNC_ENTITY_ORDER) {
+      const entityData = grouped[entity];
+      if (entityData && entityData.length > 0) {
+        orderedPush[entity] = entityData as SyncRequest["push"][EntityType];
+      }
+    }
 
-		return orderedPush;
-	},
+    return orderedPush;
+  },
 
-	/**
-	 * Process push results from server
-	 */
-	processPushResults: async (response: SyncResponse): Promise<void> => {
-		const pushResults = response.push_results ?? {};
+  /**
+   * Process push results from server
+   */
+  processPushResults: async (response: SyncResponse): Promise<void> => {
+    const pushResults = response.push_results ?? {};
 
-		for (const [entity, result] of Object.entries(pushResults)) {
-			const entityResult = result as {
-				success: string[];
-				errors: Array<{ uuid: string; field: string; message: string }>;
-			};
+    for (const [entity, result] of Object.entries(pushResults)) {
+      const entityResult = result as {
+        success: string[];
+        errors: Array<{ uuid: string; field: string; message: string }>;
+      };
 
-			// Process successes
-			for (const uuid of entityResult.success ?? []) {
-				const queued = await queueService.findByEntityUUID(
-					entity as EntityType,
-					uuid,
-				);
+      // Process successes
+      for (const uuid of entityResult.success ?? []) {
+        const queued = await queueService.findByEntityUUID(
+          entity as EntityType,
+          uuid,
+        );
 
-				if (queued) {
-					await queueService.dequeue(queued.id);
+        if (queued) {
+          await queueService.dequeue(queued.id);
 
-					// Update sync status in local entity table
-					const table = db.table(entity);
-					if (await table.get(uuid)) {
-						await table.update(uuid, { _syncStatus: "synced" });
-					}
-				}
-			}
+          // Update sync status in local entity table if it exists in the schema
+          const tableExists = db.tables.some((t) => t.name === entity);
+          if (tableExists) {
+            const table = db.table(entity);
+            if (await table.get(uuid)) {
+              await table.update(uuid, { _syncStatus: "synced" });
+            }
+          }
+        }
+      }
 
-			// Process errors
-			for (const error of entityResult.errors ?? []) {
-				// Store error for user review
-				await db.syncErrors.add({
-					uuid: error.uuid,
-					entity: entity as EntityType,
-					field: error.field,
-					message: error.message,
-					retryCount: 0,
-					createdAt: getCurrentTimestamp(),
-				});
+      // Process errors
+      for (const error of entityResult.errors ?? []) {
+        // Store error for user review
+        await db.syncErrors.add({
+          uuid: error.uuid,
+          entity: entity as EntityType,
+          field: error.field,
+          message: error.message,
+          retryCount: 0,
+          createdAt: getCurrentTimestamp(),
+        });
 
-				// Increment retry count
-				const queued = await queueService.findByEntityUUID(
-					entity as EntityType,
-					error.uuid,
-				);
-				if (queued) {
-					await queueService.incrementRetry(queued.id);
-				}
-			}
-		}
-	},
+        // Increment retry count
+        const queued = await queueService.findByEntityUUID(
+          entity as EntityType,
+          error.uuid,
+        );
+        if (queued) {
+          await queueService.incrementRetry(queued.id);
+        }
+      }
+    }
+  },
 
-	/**
-	 * Process pull data with Last-Write-Wins merge
-	 */
-	processPull: async (pull: SyncResponse["pull"]): Promise<void> => {
-		const pullData = pull ?? {};
+  /**
+   * Process pull data with Last-Write-Wins merge
+   */
+  processPull: async (pull: SyncResponse["pull"]): Promise<void> => {
+    const pullData = pull ?? {};
 
-		for (const [entity, records] of Object.entries(pullData)) {
-			if (!records || records.length === 0) continue;
+    for (const [entity, records] of Object.entries(pullData)) {
+      if (!records || records.length === 0) continue;
 
-			const table = db.table(entity);
+      const tableExists = db.tables.some((t) => t.name === entity);
+      if (!tableExists) {
+        console.warn(
+          `[SyncService] Table ${entity} does not exist in local Dexie database. Skipping.`,
+        );
+        continue;
+      }
 
-			for (const serverRecord of records) {
-				const serverRecordObj = serverRecord as unknown as Record<
-					string,
-					unknown
-				>;
-				const clientRecord = serverToClient(serverRecordObj);
-				const clientTyped = clientRecord as Record<string, unknown>;
+      const table = db.table(entity);
 
-				// Check soft delete
-				const isDeleted =
-					"deletedAt" in clientTyped && clientTyped.deletedAt !== null;
-				const uuid = clientTyped.uuid as string;
+      for (const serverRecord of records) {
+        const serverRecordObj = serverRecord as unknown as Record<
+          string,
+          unknown
+        >;
+        const clientRecord = serverToClient(serverRecordObj);
+        const clientTyped = clientRecord as Record<string, unknown>;
 
-				if (isDeleted) {
-					await table.delete(uuid);
-				} else {
-					const localRecord = await table.get(uuid);
+        // Check soft delete
+        const isDeleted =
+          "deletedAt" in clientTyped && clientTyped.deletedAt !== null;
+        const uuid = clientTyped.uuid as string;
 
-					if (!localRecord) {
-						// New record from server
-						await table.add({
-							...(clientTyped as object),
-							_syncStatus: "synced",
-						});
-					} else {
-						// Last-Write-Wins
-						const localUpdatedAt =
-							(localRecord as { updatedAt?: string }).updatedAt ?? "";
-						const serverUpdatedAt =
-							(clientTyped as { updatedAt?: string }).updatedAt ?? "";
+        if (isDeleted) {
+          await table.delete(uuid);
+        } else {
+          const localRecord = await table.get(uuid);
 
-						if (serverUpdatedAt > localUpdatedAt) {
-							await table.update(uuid, {
-								...(clientTyped as object),
-								_syncStatus: "synced",
-							});
-						}
-					}
-				}
-			}
-		}
-	},
+          if (!localRecord) {
+            // New record from server
+            await table.add({
+              ...(clientTyped as object),
+              _syncStatus: "synced",
+            });
+          } else {
+            // Last-Write-Wins
+            const localUpdatedAt =
+              (localRecord as { updatedAt?: string }).updatedAt ?? "";
+            const serverUpdatedAt =
+              (clientTyped as { updatedAt?: string }).updatedAt ?? "";
 
-	/**
-	 * Perform full sync cycle
-	 */
-	sync: async (): Promise<SyncResponse> => {
-		// 1. Build push payload from queue
-		const pushPayload = await syncService.buildPushPayload();
-		const lastSyncTimestamp = await getLastSyncTimestamp();
+            if (serverUpdatedAt > localUpdatedAt) {
+              await table.update(uuid, {
+                ...(clientTyped as object),
+                _syncStatus: "synced",
+              });
+            }
+          }
+        }
+      }
+    }
+  },
 
-		const request: SyncRequest = {
-			last_sync_timestamp: lastSyncTimestamp,
-			push: pushPayload,
-		};
+  /**
+   * Perform full sync cycle
+   */
+  sync: async (): Promise<SyncResponse> => {
+    // 1. Build push payload from queue
+    const pushPayload = await syncService.buildPushPayload();
+    const lastSyncTimestamp = await getLastSyncTimestamp();
 
-		// 2. Call API
-		const response = await syncApi.sync(request);
+    const request: SyncRequest = {
+      last_sync_timestamp: lastSyncTimestamp,
+      push: pushPayload,
+    };
 
-		// 3. Process results
-		await syncService.processPushResults(response);
-		await syncService.processPull(response.pull);
+    // 2. Call API
+    const response = await syncApi.sync(request);
 
-		// 4. Update sync timestamp
-		await setLastSyncTimestamp(response.sync_timestamp);
+    // 3. Process results
+    await syncService.processPushResults(response);
+    await syncService.processPull(response.pull);
 
-		return response;
-	},
+    // 4. Update sync timestamp
+    await setLastSyncTimestamp(response.sync_timestamp);
 
-	/**
-	 * Continue sync with pagination (has_more = true)
-	 */
-	continueSync: async (lastTimestamp: string): Promise<SyncResponse> => {
-		const pushPayload = await syncService.buildPushPayload();
+    return response;
+  },
 
-		const request: SyncRequest = {
-			last_sync_timestamp: lastTimestamp,
-			push: pushPayload,
-		};
+  /**
+   * Continue sync with pagination (has_more = true)
+   */
+  continueSync: async (lastTimestamp: string): Promise<SyncResponse> => {
+    const pushPayload = await syncService.buildPushPayload();
 
-		const response = await syncApi.sync(request);
+    const request: SyncRequest = {
+      last_sync_timestamp: lastTimestamp,
+      push: pushPayload,
+    };
 
-		await syncService.processPushResults(response);
-		await syncService.processPull(response.pull);
-		await setLastSyncTimestamp(response.sync_timestamp);
+    const response = await syncApi.sync(request);
 
-		return response;
-	},
+    await syncService.processPushResults(response);
+    await syncService.processPull(response.pull);
+    await setLastSyncTimestamp(response.sync_timestamp);
 
-	/**
-	 * Get pending changes count
-	 */
-	getPendingCount: async (): Promise<number> => {
-		return queueService.count();
-	},
+    return response;
+  },
 
-	/**
-	 * Get last sync timestamp
-	 */
-	getLastSyncTimestamp: async (): Promise<string | null> => {
-		return getLastSyncTimestamp();
-	},
+  /**
+   * Get pending changes count
+   */
+  getPendingCount: async (): Promise<number> => {
+    return queueService.count();
+  },
+
+  /**
+   * Get last sync timestamp
+   */
+  getLastSyncTimestamp: async (): Promise<string | null> => {
+    return getLastSyncTimestamp();
+  },
 };
