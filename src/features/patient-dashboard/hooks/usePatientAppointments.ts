@@ -1,26 +1,27 @@
+"use client";
+
 import type { Appointment } from "../types";
+import { usePatientDashboardQuery } from "./usePatientDashboardQuery";
 
 export function usePatientAppointments(): Appointment[] {
+  const { data } = usePatientDashboardQuery();
+
+  if (!data?.next_appointment) {
+    return [];
+  }
+
+  const nextAppt = data.next_appointment;
+
   return [
     {
-      id: "apt-1",
-      doctorName: "Dr. García",
-      specialty: "Medicina General",
-      type: "Control general",
-      date: new Date("2026-06-10"),
-      time: "10:30",
-      location: "presencial",
-      status: "confirmed",
-    },
-    {
-      id: "apt-2",
-      doctorName: "Dra. Martínez",
-      specialty: "Dermatología",
-      type: "Revisión",
-      date: new Date("2026-06-18"),
-      time: "15:00",
-      location: "virtual",
-      status: "confirmed",
+      id: "next-appt",
+      doctorName: nextAppt.doctor_name,
+      specialty: nextAppt.doctor_specialty,
+      type: "Cita médica",
+      date: new Date(nextAppt.date_raw),
+      time: nextAppt.time,
+      location: nextAppt.type === "Telemedicina" ? "virtual" : "presencial",
+      status: nextAppt.status === "Confirmada" ? "confirmed" : "pending",
     },
   ];
 }

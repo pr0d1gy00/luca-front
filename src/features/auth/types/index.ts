@@ -126,7 +126,7 @@ export interface AuthResponse {
  * Incluye campos adicionales de la DB que el API no retorna en el login response.
  */
 export interface PatientAccount extends PatientProfile {
-  id: number;
+  id: string;
   phone: string;
   nationalId?: string | null;
   national_id?: string | null;

@@ -1,26 +1,23 @@
+"use client";
+
 import type { Treatment } from "../types";
+import { usePatientDashboardQuery } from "./usePatientDashboardQuery";
 
 export function usePatientTreatments(): Treatment[] {
-  return [
-    {
-      id: "trt-1",
-      medication: "Amoxicilina 500mg",
-      dosage: "1 cápsula cada 8 horas",
-      frequency: "Cada 8 horas",
-      duration: "7 días",
-      progress: 71, // 5/7
-      status: "active",
-      nextDose: "20:00",
-    },
-    {
-      id: "trt-2",
-      medication: "Ibuprofeno 400mg",
-      dosage: "1 comprimido cada 12 horas",
-      frequency: "Cada 12 horas",
-      duration: "5 días",
-      progress: 40, // 2/5
-      status: "active",
-      nextDose: "22:00",
-    },
-  ];
+  const { data } = usePatientDashboardQuery();
+
+  if (!data?.active_treatments) {
+    return [];
+  }
+
+  return data.active_treatments.map((t, idx) => ({
+    id: `trt-${idx}`,
+    medication: t.name,
+    dosage: t.instructions,
+    frequency: t.instructions,
+    duration: "Tratamiento",
+    progress: t.progress,
+    status: "active",
+    nextDose: t.next_dose,
+  }));
 }

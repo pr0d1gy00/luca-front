@@ -1,18 +1,19 @@
-import { useAuthStore } from "@/store/auth";
+"use client";
+
+import { usePatientDashboardQuery } from "./usePatientDashboardQuery";
 
 export function usePatientGreeting() {
-  const name = useAuthStore((s) => s.name);
-
-  const today = new Date();
-  const formattedDate = new Intl.DateTimeFormat("es-ES", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(today);
+  const { data } = usePatientDashboardQuery();
 
   return {
-    name: name || "Paciente",
-    date: formattedDate,
+    name: data?.patient_name ?? "Paciente",
+    date:
+      data?.current_date ??
+      new Date().toLocaleDateString("es-ES", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }),
   };
 }

@@ -1132,7 +1132,7 @@ export function ProfileView() {
             setProfileData({
               id: "",
               uuid: "",
-              full_name: parsed.full_name,
+              fullName: parsed.full_name,
               email: parsed.email,
               phone: parsed.phone,
               city_id: parsed.city_id,
