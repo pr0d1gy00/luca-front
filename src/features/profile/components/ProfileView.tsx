@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "motion/react";
@@ -22,6 +22,7 @@ import {
   Droplet,
   FileText,
 } from "lucide-react";
+import Select from "react-select";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth";
 import apiClient from "@/lib/api/client";
@@ -66,6 +67,80 @@ const userSchema = z.object({
 type PatientForm = z.infer<typeof patientSchema>;
 type UserForm = z.infer<typeof userSchema>;
 
+// ── Opciones para React-Select ─────────────────────────────
+
+const genderOptions = [
+  { value: "MALE", label: "Masculino" },
+  { value: "FEMALE", label: "Femenino" },
+  { value: "OTHER", label: "Otro" },
+];
+
+const bloodTypeOptions = [
+  { value: "O+", label: "O Positivo (O+)" },
+  { value: "O-", label: "O Negativo (O-)" },
+  { value: "A+", label: "A Positivo (A+)" },
+  { value: "A-", label: "A Negativo (A-)" },
+  { value: "B+", label: "B Positivo (B+)" },
+  { value: "B-", label: "B Negativo (B-)" },
+  { value: "AB+", label: "AB Positivo (AB+)" },
+  { value: "AB-", label: "AB Negativo (AB-)" },
+];
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const selectStyles = {
+  control: (base: any, state: any) => ({
+    ...base,
+    minHeight: "42px",
+    borderRadius: "12px",
+    borderColor: state.isFocused ? "#0057FF" : "#E2E8F0",
+    boxShadow: state.isFocused ? "0 0 0 2px rgba(0, 87, 255, 0.15)" : "none",
+    backgroundColor: "#FFFFFF",
+    fontSize: "14px",
+    fontFamily: "var(--font-sans)",
+    color: "#0F172A",
+    transition: "all 0.2s",
+    "&:hover": {
+      borderColor: state.isFocused ? "#0057FF" : "#cbd5e1",
+    },
+  }),
+  valueContainer: (base: any) => ({
+    ...base,
+    padding: "0 12px",
+  }),
+  singleValue: (base: any) => ({
+    ...base,
+    color: "#0F172A",
+  }),
+  placeholder: (base: any) => ({
+    ...base,
+    color: "#64748B",
+  }),
+  menu: (base: any) => ({
+    ...base,
+    borderRadius: "12px",
+    border: "1px solid #F0F1F3",
+    boxShadow:
+      "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+    zIndex: 50,
+    backgroundColor: "#FFFFFF",
+  }),
+  option: (base: any, state: any) => ({
+    ...base,
+    backgroundColor: state.isSelected
+      ? "#EEF5FF"
+      : state.isFocused
+        ? "#FAF9F7"
+        : "transparent",
+    color: state.isSelected ? "#0057FF" : "#0F172A",
+    fontSize: "14px",
+    cursor: "pointer",
+    "&:active": {
+      backgroundColor: "#EEF5FF",
+    },
+  }),
+};
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
 // ── Skeletons ───────────────────────────────────────────────
 
 function ProfileSkeleton() {
@@ -98,10 +173,10 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft overflow-hidden">
-      <div className="px-6 py-4 border-b border-pharmako-border-soft flex items-center gap-3">
-        <div className="p-1.5 rounded-lg">
-          <Icon className="h-6 w-6 text-pharmako-care" />
+    <div className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-pharmako-border-soft flex items-center gap-3 bg-slate-50/50">
+        <div className="p-1.5 bg-pharmako-primary-light rounded-lg">
+          <Icon className="h-4 w-4 text-pharmako-care" />
         </div>
         <h3 className="text-sm font-bold text-pharmako-text-primary uppercase tracking-wide">
           {title}
@@ -192,37 +267,6 @@ function FTextarea({
   );
 }
 
-function FSelect({
-  error,
-  children,
-  className,
-  ...props
-}: React.SelectHTMLAttributes<HTMLSelectElement> & { error?: string }) {
-  return (
-    <div>
-      <select
-        {...props}
-        className={[
-          "w-full px-4 py-2.5 rounded-xl border bg-white text-sm text-pharmako-text-primary",
-          "focus:outline-none focus:ring-2 focus:ring-pharmako-primary-light focus:border-pharmako-primary",
-          "transition-colors duration-200 border-pharmako-border",
-          error
-            ? "border-pharmako-danger focus:ring-pharmako-danger-light focus:border-pharmako-danger"
-            : "",
-          className,
-        ]
-          .filter(Boolean)
-          .join(" ")}
-      >
-        {children}
-      </select>
-      {error && (
-        <p className="text-xs text-pharmako-danger mt-1 font-medium">{error}</p>
-      )}
-    </div>
-  );
-}
-
 function InfoRow({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="flex items-center justify-between py-2.5 border-b border-pharmako-border-soft last:border-0">
@@ -269,6 +313,7 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
     register,
     handleSubmit,
     setValue,
+    control,
     formState: { errors: formErrors, isDirty },
   } = useForm<PatientForm>({
     resolver: zodResolver(patientSchema),
@@ -290,12 +335,6 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
       emergency_contact_phone: initial.emergencyContactPhone ?? "",
     },
   });
-
-  useEffect(() => {
-    if (cities && (initial.cityId || initial.city_id)) {
-      setValue("city_id", initial.cityId ?? initial.city_id ?? "");
-    }
-  }, [cities, initial.cityId, initial.city_id, setValue]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -348,11 +387,14 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
     }
   };
 
+  const cityOptions =
+    cities?.map((c) => ({ value: c.id, label: c.name })) || [];
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Sección Superior: Avatar y Nombre */}
       <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-pharmako-border-soft">
-        <div className="relative group w-24 h-24 rounded-full overflow-hidden border-2 border-pharmako-border bg-slate-50 flex items-center justify-center">
+        <div className="relative group w-24 h-24 rounded-full overflow-hidden border-2 border-pharmako-border bg-slate-50 shadow-sm flex items-center justify-center">
           {avatarPreview ? (
             <img
               src={avatarPreview}
@@ -422,15 +464,28 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
               </Field>
 
               <Field label="Género" icon={User}>
-                <FSelect
-                  {...register("gender")}
-                  error={formErrors.gender?.message ?? errors.gender}
-                >
-                  <option value="">Seleccionar</option>
-                  <option value="MALE">Masculino</option>
-                  <option value="FEMALE">Femenino</option>
-                  <option value="OTHER">Otro</option>
-                </FSelect>
+                <Controller
+                  control={control}
+                  name="gender"
+                  render={({ field }) => (
+                    <Select
+                      options={genderOptions}
+                      placeholder="Seleccionar"
+                      noOptionsMessage={() => "Sin opciones"}
+                      styles={selectStyles}
+                      value={
+                        genderOptions.find((o) => o.value === field.value) ||
+                        null
+                      }
+                      onChange={(val) => field.onChange(val?.value ?? "")}
+                    />
+                  )}
+                />
+                {formErrors.gender?.message && (
+                  <p className="text-xs text-pharmako-danger mt-1 font-medium">
+                    {formErrors.gender.message}
+                  </p>
+                )}
               </Field>
             </div>
 
@@ -444,17 +499,27 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
               </Field>
 
               <Field label="Ciudad" icon={MapPin}>
-                <FSelect
-                  {...register("city_id")}
-                  error={formErrors.city_id?.message ?? errors.city_id}
-                >
-                  <option value="">Seleccionar</option>
-                  {cities?.map((city) => (
-                    <option key={city.id} value={city.id}>
-                      {city.name}
-                    </option>
-                  ))}
-                </FSelect>
+                <Controller
+                  control={control}
+                  name="city_id"
+                  render={({ field }) => (
+                    <Select
+                      options={cityOptions}
+                      placeholder="Seleccionar ciudad"
+                      noOptionsMessage={() => "No hay ciudades"}
+                      styles={selectStyles}
+                      value={
+                        cityOptions.find((c) => c.value === field.value) || null
+                      }
+                      onChange={(val) => field.onChange(val?.value ?? "")}
+                    />
+                  )}
+                />
+                {(formErrors.city_id?.message ?? errors.city_id) && (
+                  <p className="text-xs text-pharmako-danger mt-1 font-medium">
+                    {formErrors.city_id?.message ?? errors.city_id}
+                  </p>
+                )}
               </Field>
             </div>
           </div>
@@ -482,7 +547,7 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
             </Field>
 
             <Field label="Dirección de Habitación" icon={MapPin}>
-              <FTextarea
+              <FInput
                 {...register("address")}
                 placeholder="Calle, urbanización, edificio..."
                 error={formErrors.address?.message ?? errors.address}
@@ -495,20 +560,28 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
         <Card title="Expediente Clínico" icon={Activity}>
           <div className="space-y-4">
             <Field label="Tipo de Sangre" icon={Droplet}>
-              <FSelect
-                {...register("blood_type")}
-                error={formErrors.blood_type?.message ?? errors.blood_type}
-              >
-                <option value="">Seleccionar</option>
-                <option value="O+">O Positivo (O+)</option>
-                <option value="O-">O Negativo (O-)</option>
-                <option value="A+">A Positivo (A+)</option>
-                <option value="A-">A Negativo (A-)</option>
-                <option value="B+">B Positivo (B+)</option>
-                <option value="B-">B Negativo (B-)</option>
-                <option value="AB+">AB Positivo (AB+)</option>
-                <option value="AB-">AB Negativo (AB-)</option>
-              </FSelect>
+              <Controller
+                control={control}
+                name="blood_type"
+                render={({ field }) => (
+                  <Select
+                    options={bloodTypeOptions}
+                    placeholder="Seleccionar"
+                    noOptionsMessage={() => "Sin opciones"}
+                    styles={selectStyles}
+                    value={
+                      bloodTypeOptions.find((o) => o.value === field.value) ||
+                      null
+                    }
+                    onChange={(val) => field.onChange(val?.value ?? "")}
+                  />
+                )}
+              />
+              {formErrors.blood_type?.message && (
+                <p className="text-xs text-pharmako-danger mt-1 font-medium">
+                  {formErrors.blood_type.message}
+                </p>
+              )}
             </Field>
 
             <Field label="Alergias Conocidas" icon={Heart}>
@@ -623,6 +696,7 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
     register,
     handleSubmit,
     setValue,
+    control,
     formState: { errors: formErrors, isDirty },
   } = useForm<UserForm>({
     resolver: zodResolver(userSchema),
@@ -635,12 +709,6 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
       signature_url: initial.signature_url ?? "",
     },
   });
-
-  useEffect(() => {
-    if (cities && (initial.cityId || initial.city_id)) {
-      setValue("city_id", initial.cityId ?? initial.city_id ?? "");
-    }
-  }, [cities, initial.cityId, initial.city_id, setValue]);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -707,6 +775,9 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
       setLoading(false);
     }
   };
+
+  const cityOptions =
+    cities?.map((c) => ({ value: c.id, label: c.name })) || [];
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -782,17 +853,27 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
             </Field>
 
             <Field label="Ciudad" icon={MapPin}>
-              <FSelect
-                {...register("city_id")}
-                error={formErrors.city_id?.message ?? errors.city_id}
-              >
-                <option value="">Seleccionar ciudad</option>
-                {cities?.map((city) => (
-                  <option key={city.id} value={city.id}>
-                    {city.name}
-                  </option>
-                ))}
-              </FSelect>
+              <Controller
+                control={control}
+                name="city_id"
+                render={({ field }) => (
+                  <Select
+                    options={cityOptions}
+                    placeholder="Seleccionar ciudad"
+                    noOptionsMessage={() => "No hay ciudades"}
+                    styles={selectStyles}
+                    value={
+                      cityOptions.find((c) => c.value === field.value) || null
+                    }
+                    onChange={(val) => field.onChange(val?.value ?? "")}
+                  />
+                )}
+              />
+              {(formErrors.city_id?.message ?? errors.city_id) && (
+                <p className="text-xs text-pharmako-danger mt-1 font-medium">
+                  {formErrors.city_id?.message ?? errors.city_id}
+                </p>
+              )}
             </Field>
           </div>
         </Card>
@@ -954,7 +1035,7 @@ export function ProfileView() {
       </div>
 
       {/* Tarjeta de Formulario Principal */}
-      <div className="bg-pharmako-surface rounded-xl p-8">
+      <div className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft p-8 shadow-sm">
         {isPatient ? (
           <PatientFormInner initial={patient} />
         ) : (
