@@ -8,8 +8,7 @@ const apiClient = axios.create({
     "Content-Type": "application/json",
     Accept: "application/json",
   },
-  // NOTA: withCredentials no funciona porque el backend usa CORS wildcard (*)
-  // El token se pasa via Authorization header (injectado por el interceptor)
+  withCredentials: true,
 });
 
 let isRefreshing = false;

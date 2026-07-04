@@ -192,10 +192,9 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
       const { data } = await apiClient.patch<PatientAccount>(
         "/auth/patients/me",
         payload,
-        { headers: { Authorization: `Bearer ${token}` } },
       );
-      if (token && userType) {
-        setAuth(token, userType, data, true);
+      if (userType) {
+        setAuth(token ?? "", userType, data, true);
       }
       toast.success("¡Perfil actualizado!");
     } catch (err: unknown) {
@@ -343,10 +342,9 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
       const { data } = await apiClient.patch<UserProfile>(
         "/auth/users/me",
         payload,
-        { headers: { Authorization: `Bearer ${token}` } },
       );
-      if (token && userType) {
-        setAuth(token, userType, data, data.is_verified);
+      if (userType) {
+        setAuth(token ?? "", userType, data, data.is_verified);
       }
       toast.success("¡Perfil actualizado!");
     } catch (err: unknown) {
@@ -481,20 +479,18 @@ export function ProfileView() {
   const hasFetched = useRef(false);
 
   useEffect(() => {
-    if (!token || hasFetched.current) return;
+    if (!userType || hasFetched.current) return;
     hasFetched.current = true;
 
     const endpoint = isPatient ? "/auth/patients/me" : "/auth/users/me";
     setLoading(true);
 
     apiClient
-      .get<PatientAccount | UserProfile>(endpoint, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .get<PatientAccount | UserProfile>(endpoint)
       .then(({ data }) => setProfileData(data))
       .catch(() => toast.error("No se pudo cargar el perfil."))
       .finally(() => setLoading(false));
-  }, [token, isPatient]);
+  }, [userType, isPatient]);
 
   if (loading || !profileData) {
     return <ProfileSkeleton />;
