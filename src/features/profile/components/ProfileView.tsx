@@ -173,10 +173,10 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft ">
-      <div className="px-6 py-4 border-b border-pharmako-border-soft flex items-center gap-3">
-        <div className="p-1.5 rounded-lg">
-          <Icon className="h-6 w-6 text-pharmako-care" />
+    <div className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-pharmako-border-soft flex items-center gap-3 bg-slate-50/50">
+        <div className="p-1.5 bg-pharmako-primary-light rounded-lg">
+          <Icon className="h-4 w-4 text-pharmako-care" />
         </div>
         <h3 className="text-sm font-bold text-pharmako-text-primary uppercase tracking-wide">
           {title}
@@ -305,7 +305,7 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [avatarPreview, setAvatarPreview] = useState<string | null>(
-    initial.avatar_url ?? null,
+    initial.avatarUrl ?? initial.avatar_url ?? null,
   );
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -318,21 +318,24 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
   } = useForm<PatientForm>({
     resolver: zodResolver(patientSchema),
     defaultValues: {
-      full_name: initial.fullName,
+      full_name: initial.fullName ?? initial.full_name,
       email: initial.email ?? "",
       phone: initial.phone ?? "",
       username: initial.username ?? "",
-      national_id: initial.nationalId ?? "",
-      city_id: initial.cityId ?? "",
-      avatar_url: initial.avatarUrl ?? "",
+      national_id: initial.nationalId ?? initial.national_id ?? "",
+      city_id: initial.cityId ?? initial.city_id ?? "",
+      avatar_url: initial.avatarUrl ?? initial.avatar_url ?? "",
       address: initial.address ?? "",
-      birth_date: initial.birthDate ?? "",
+      birth_date: initial.birthDate ?? initial.birth_date ?? "",
       gender: initial.gender ?? "",
-      blood_type: initial.bloodType ?? "",
+      blood_type: initial.bloodType ?? initial.blood_type ?? "",
       allergies: initial.allergies ?? "",
-      chronic_conditions: initial.chronicConditions ?? "",
-      emergency_contact_name: initial.emergencyContactName ?? "",
-      emergency_contact_phone: initial.emergencyContactPhone ?? "",
+      chronic_conditions:
+        initial.chronicConditions ?? initial.chronic_conditions ?? "",
+      emergency_contact_name:
+        initial.emergencyContactName ?? initial.emergency_contact_name ?? "",
+      emergency_contact_phone:
+        initial.emergencyContactPhone ?? initial.emergency_contact_phone ?? "",
     },
   });
 
@@ -356,11 +359,64 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
   const onSubmit = async (payload: PatientForm) => {
     setLoading(true);
     setErrors({});
+    const isOnline = navigator.onLine;
+
+    if (!isOnline) {
+      // Guardado Offline
+      localStorage.setItem(
+        "pending_patient_profile_update",
+        JSON.stringify(payload),
+      );
+
+      const updatedUser: PatientAccount = {
+        ...initial,
+        fullName: payload.full_name,
+        full_name: payload.full_name,
+        email: payload.email,
+        phone: payload.phone,
+        username: payload.username ?? initial.username,
+        nationalId:
+          payload.national_id ?? initial.nationalId ?? initial.national_id,
+        cityId: payload.city_id ?? initial.cityId ?? initial.city_id,
+        avatarUrl:
+          payload.avatar_url ?? initial.avatarUrl ?? initial.avatar_url,
+        address: payload.address ?? initial.address,
+        birthDate:
+          payload.birth_date ?? initial.birthDate ?? initial.birth_date,
+        gender: payload.gender ?? initial.gender,
+        bloodType:
+          payload.blood_type ?? initial.bloodType ?? initial.blood_type,
+        allergies: payload.allergies ?? initial.allergies,
+        chronicConditions:
+          payload.chronic_conditions ??
+          initial.chronicConditions ??
+          initial.chronic_conditions,
+        emergencyContactName:
+          payload.emergency_contact_name ??
+          initial.emergencyContactName ??
+          initial.emergency_contact_name,
+        emergencyContactPhone:
+          payload.emergency_contact_phone ??
+          initial.emergencyContactPhone ??
+          initial.emergency_contact_phone,
+      };
+
+      if (userType) {
+        setAuth(token ?? "", userType, updatedUser, true);
+      }
+      toast.success(
+        "¡Tu perfil de paciente ha sido guardado localmente! Se sincronizará cuando recuperes la conexión.",
+      );
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data } = await apiClient.patch<{
         status: string;
         user: PatientAccount;
       }>("/auth/patients/me", payload);
+      localStorage.removeItem("pending_patient_profile_update");
       if (userType) {
         setAuth(token ?? "", userType, data.user, true);
       }
@@ -394,7 +450,7 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Sección Superior: Avatar y Nombre */}
       <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-pharmako-border-soft">
-        <div className="relative group w-24 h-24 rounded-full border-2 border-pharmako-border bg-slate-50 shadow-sm flex items-center justify-center">
+        <div className="relative group w-24 h-24 rounded-full overflow-hidden border-2 border-pharmako-border bg-slate-50 shadow-sm flex items-center justify-center">
           {avatarPreview ? (
             <img
               src={avatarPreview}
@@ -422,7 +478,7 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
         </div>
         <div className="text-center sm:text-left space-y-1">
           <h2 className="text-lg font-bold text-pharmako-text-primary">
-            {initial.full_name}
+            {initial.full_name ?? initial.fullName}
           </h2>
           <p className="text-xs text-pharmako-text-secondary font-medium">
             Expediente de Paciente Global
@@ -747,11 +803,41 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
   const onSubmit = async (payload: UserForm) => {
     setLoading(true);
     setErrors({});
+    const isOnline = navigator.onLine;
+
+    if (!isOnline) {
+      // Guardado Offline
+      localStorage.setItem(
+        "pending_user_profile_update",
+        JSON.stringify(payload),
+      );
+
+      const updatedUser: UserProfile = {
+        ...initial,
+        full_name: payload.full_name,
+        email: payload.email,
+        phone: payload.phone ?? initial.phone,
+        city_id: payload.city_id ?? initial.city_id,
+        logo_url: payload.logo_url ?? initial.logo_url,
+        signature_url: payload.signature_url ?? initial.signature_url,
+      };
+
+      if (userType) {
+        setAuth(token ?? "", userType, updatedUser, updatedUser.is_verified);
+      }
+      toast.success(
+        "¡Tu perfil profesional ha sido guardado localmente! Se sincronizará cuando recuperes la conexión.",
+      );
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data } = await apiClient.patch<{
         status: string;
         user: UserProfile;
       }>("/auth/users/me", payload);
+      localStorage.removeItem("pending_user_profile_update");
       if (userType) {
         setAuth(token ?? "", userType, data.user, data.user.is_verified);
       }
@@ -986,23 +1072,139 @@ export function ProfileView() {
 
   const [profileData, setProfileData] = useState<
     PatientAccount | UserProfile | null
-  >(null);
-  const [loading, setLoading] = useState(false);
+  >(() => {
+    if (typeof window === "undefined") return null;
+
+    const pendingPatient = localStorage.getItem(
+      "pending_patient_profile_update",
+    );
+    const pendingUser = localStorage.getItem("pending_user_profile_update");
+
+    if (pendingPatient) {
+      try {
+        const parsed = JSON.parse(pendingPatient);
+        return {
+          id: "",
+          uuid: "",
+          full_name: parsed.full_name,
+          fullName: parsed.full_name,
+          email: parsed.email,
+          phone: parsed.phone,
+          username: parsed.username,
+          nationalId: parsed.national_id,
+          cityId: parsed.city_id,
+          avatarUrl: parsed.avatar_url,
+          address: parsed.address,
+          birthDate: parsed.birth_date,
+          gender: parsed.gender,
+          bloodType: parsed.blood_type,
+          allergies: parsed.allergies,
+          chronicConditions: parsed.chronic_conditions,
+          emergencyContactName: parsed.emergency_contact_name,
+          emergencyContactPhone: parsed.emergency_contact_phone,
+          is_active: true,
+          status: "ACTIVE",
+          created_at: "",
+          updated_at: "",
+        } as PatientAccount;
+      } catch {
+        // Ignored
+      }
+    }
+
+    if (pendingUser) {
+      try {
+        const parsed = JSON.parse(pendingUser);
+        return {
+          id: "",
+          uuid: "",
+          full_name: parsed.full_name,
+          email: parsed.email,
+          phone: parsed.phone,
+          city_id: parsed.city_id,
+          logo_url: parsed.logo_url,
+          signature_url: parsed.signature_url,
+          is_active: true,
+          status: "ACTIVE",
+          role: "DOCTOR",
+          is_verified: true,
+          created_at: "",
+          updated_at: "",
+        } as UserProfile;
+      } catch {
+        // Ignored
+      }
+    }
+
+    return null;
+  });
+  const [loading, setLoading] = useState(() => {
+    if (typeof window !== "undefined") {
+      const pendingPatient = localStorage.getItem(
+        "pending_patient_profile_update",
+      );
+      const pendingUser = localStorage.getItem("pending_user_profile_update");
+      if ((pendingPatient || pendingUser) && !navigator.onLine) {
+        return false;
+      }
+    }
+    return true;
+  });
   const hasFetched = useRef(false);
 
   useEffect(() => {
     if (!userType || hasFetched.current) return;
     hasFetched.current = true;
 
+    const pendingKey = isPatient
+      ? "pending_patient_profile_update"
+      : "pending_user_profile_update";
+    const pendingData = localStorage.getItem(pendingKey);
+
+    if (pendingData && typeof window !== "undefined" && !navigator.onLine) {
+      return;
+    }
+
     const endpoint = isPatient ? "/auth/patients/me" : "/auth/users/me";
-    setLoading(true);
 
     apiClient
       .get<{ user: PatientAccount | UserProfile }>(endpoint)
       .then(({ data }) => {
-        setProfileData(data.user);
+        const currentPending = localStorage.getItem(pendingKey);
+        if (currentPending) {
+          try {
+            const parsed = JSON.parse(currentPending);
+            if (isPatient) {
+              setProfileData({
+                ...data.user,
+                ...parsed,
+                fullName: parsed.full_name,
+                nationalId: parsed.national_id,
+                cityId: parsed.city_id,
+                avatarUrl: parsed.avatar_url,
+                birthDate: parsed.birth_date,
+                bloodType: parsed.blood_type,
+                chronicConditions: parsed.chronic_conditions,
+                emergencyContactName: parsed.emergency_contact_name,
+                emergencyContactPhone: parsed.emergency_contact_phone,
+              } as PatientAccount);
+            } else {
+              setProfileData({
+                ...data.user,
+                ...parsed,
+              } as UserProfile);
+            }
+          } catch {
+            setProfileData(data.user);
+          }
+        } else {
+          setProfileData(data.user);
+        }
       })
-      .catch(() => toast.error("No se pudo cargar el perfil del usuario."))
+      .catch(() => {
+        if (pendingData) return;
+        toast.error("No se pudo cargar el perfil del usuario.");
+      })
       .finally(() => setLoading(false));
   }, [userType, isPatient]);
 
@@ -1035,7 +1237,7 @@ export function ProfileView() {
       </div>
 
       {/* Tarjeta de Formulario Principal */}
-      <div className="bg-pharmako-surface rounded-xl">
+      <div className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft p-8 shadow-sm">
         {isPatient ? (
           <PatientFormInner initial={patient} />
         ) : (
