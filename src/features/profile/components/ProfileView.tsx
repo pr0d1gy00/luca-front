@@ -20,7 +20,6 @@ import {
   Activity,
   Heart,
   Droplet,
-  Upload,
   FileText,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -313,12 +312,12 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
     setLoading(true);
     setErrors({});
     try {
-      const { data } = await apiClient.patch<PatientAccount>(
-        "/auth/patients/me",
-        payload,
-      );
+      const { data } = await apiClient.patch<{
+        status: string;
+        user: PatientAccount;
+      }>("/auth/patients/me", payload);
       if (userType) {
-        setAuth(token ?? "", userType, data, true);
+        setAuth(token ?? "", userType, data.user, true);
       }
       toast.success(
         "¡Tu perfil de paciente ha sido actualizado correctamente!",
@@ -669,12 +668,12 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
     setLoading(true);
     setErrors({});
     try {
-      const { data } = await apiClient.patch<UserProfile>(
-        "/auth/users/me",
-        payload,
-      );
+      const { data } = await apiClient.patch<{
+        status: string;
+        user: UserProfile;
+      }>("/auth/users/me", payload);
       if (userType) {
-        setAuth(token ?? "", userType, data, data.is_verified);
+        setAuth(token ?? "", userType, data.user, data.user.is_verified);
       }
       toast.success("¡Perfil actualizado con éxito!");
     } catch (err: unknown) {
@@ -889,7 +888,7 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
 // ── ProfileView Principal ───────────────────────────────────
 
 export function ProfileView() {
-  const { token, userType } = useAuthStore();
+  const { userType } = useAuthStore();
   const isPatient = userType === "patient";
 
   const [profileData, setProfileData] = useState<
@@ -906,8 +905,10 @@ export function ProfileView() {
     setLoading(true);
 
     apiClient
-      .get<PatientAccount | UserProfile>(endpoint)
-      .then(({ data }) => setProfileData(data))
+      .get<{ user: PatientAccount | UserProfile }>(endpoint)
+      .then(({ data }) => {
+        setProfileData(data.user);
+      })
       .catch(() => toast.error("No se pudo cargar el perfil del usuario."))
       .finally(() => setLoading(false));
   }, [userType, isPatient]);
