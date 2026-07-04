@@ -170,13 +170,13 @@ export const useAuthStore = create<AuthState>()(
       // No persistir el token real en storage, solo datos de usuario
       // El token real va en la cookie HttpOnly del backend
       partialize: (state) => ({
+        token: state.token,
         role: state.role,
         name: state.name,
         email: state.email,
         avatar: state.avatar,
         userType: state.userType,
         isVerified: state.isVerified,
-        // Solo persistir user sin el token
         user: state.user,
       }),
     },
