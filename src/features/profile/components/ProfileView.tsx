@@ -98,10 +98,10 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-pharmako-border-soft flex items-center gap-3 bg-slate-50/50">
-        <div className="p-1.5 bg-pharmako-primary-light rounded-lg">
-          <Icon className="h-4 w-4 text-pharmako-care" />
+    <div className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft overflow-hidden">
+      <div className="px-6 py-4 border-b border-pharmako-border-soft flex items-center gap-3">
+        <div className="p-1.5 rounded-lg">
+          <Icon className="h-6 w-6 text-pharmako-care" />
         </div>
         <h3 className="text-sm font-bold text-pharmako-text-primary uppercase tracking-wide">
           {title}
@@ -273,23 +273,29 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
   } = useForm<PatientForm>({
     resolver: zodResolver(patientSchema),
     defaultValues: {
-      full_name: initial.full_name,
+      full_name: initial.fullName,
       email: initial.email ?? "",
       phone: initial.phone ?? "",
       username: initial.username ?? "",
-      national_id: initial.national_id ?? "",
-      city_id: initial.city_id ?? "",
-      avatar_url: initial.avatar_url ?? "",
+      national_id: initial.nationalId ?? "",
+      city_id: initial.cityId ?? "",
+      avatar_url: initial.avatarUrl ?? "",
       address: initial.address ?? "",
-      birth_date: initial.birth_date ?? "",
+      birth_date: initial.birthDate ?? "",
       gender: initial.gender ?? "",
-      blood_type: initial.blood_type ?? "",
+      blood_type: initial.bloodType ?? "",
       allergies: initial.allergies ?? "",
-      chronic_conditions: initial.chronic_conditions ?? "",
-      emergency_contact_name: initial.emergency_contact_name ?? "",
-      emergency_contact_phone: initial.emergency_contact_phone ?? "",
+      chronic_conditions: initial.chronicConditions ?? "",
+      emergency_contact_name: initial.emergencyContactName ?? "",
+      emergency_contact_phone: initial.emergencyContactPhone ?? "",
     },
   });
+
+  useEffect(() => {
+    if (cities && (initial.cityId || initial.city_id)) {
+      setValue("city_id", initial.cityId ?? initial.city_id ?? "");
+    }
+  }, [cities, initial.cityId, initial.city_id, setValue]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -346,7 +352,7 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Sección Superior: Avatar y Nombre */}
       <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-pharmako-border-soft">
-        <div className="relative group w-24 h-24 rounded-full overflow-hidden border-2 border-pharmako-border bg-slate-50 shadow-sm flex items-center justify-center">
+        <div className="relative group w-24 h-24 rounded-full overflow-hidden border-2 border-pharmako-border bg-slate-50 flex items-center justify-center">
           {avatarPreview ? (
             <img
               src={avatarPreview}
@@ -476,7 +482,7 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
             </Field>
 
             <Field label="Dirección de Habitación" icon={MapPin}>
-              <FInput
+              <FTextarea
                 {...register("address")}
                 placeholder="Calle, urbanización, edificio..."
                 error={formErrors.address?.message ?? errors.address}
@@ -629,6 +635,12 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
       signature_url: initial.signature_url ?? "",
     },
   });
+
+  useEffect(() => {
+    if (cities && (initial.cityId || initial.city_id)) {
+      setValue("city_id", initial.cityId ?? initial.city_id ?? "");
+    }
+  }, [cities, initial.cityId, initial.city_id, setValue]);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -942,7 +954,7 @@ export function ProfileView() {
       </div>
 
       {/* Tarjeta de Formulario Principal */}
-      <div className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft p-8 shadow-sm">
+      <div className="bg-pharmako-surface rounded-xl p-8">
         {isPatient ? (
           <PatientFormInner initial={patient} />
         ) : (
