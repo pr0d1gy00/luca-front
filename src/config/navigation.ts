@@ -1,5 +1,11 @@
 import { MdOutlineDashboard } from "react-icons/md";
-import { PiPillBold, PiUsersBold, PiFileTextBold, PiCalendarBold } from "react-icons/pi";
+import {
+  PiPillBold,
+  PiUsersBold,
+  PiFileTextBold,
+  PiCalendarBold,
+  PiClockBold,
+} from "react-icons/pi";
 import React from "react";
 
 export type NavItem = {
@@ -28,6 +34,13 @@ export const navigationConfig: NavItem[] = [
     name: "booking",
     href: "/dashboard/booking",
     icon: PiCalendarBold,
+    roles: ["patient"],
+  },
+  {
+    title: "Mis Citas",
+    name: "appointments",
+    href: "/dashboard/appointments",
+    icon: PiClockBold,
     roles: ["patient"],
   },
   {
