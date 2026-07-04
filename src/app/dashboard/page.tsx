@@ -9,19 +9,23 @@ import { ClinicDashboard } from "@/features/clinic-dashboard";
 
 export default function DashboardPage() {
   const { role, userType, isVerified } = useAuthStore();
-  // Inicializar con el estado real de hidratación en el primer render
-  // Si ya hidrató (recarga con sessionStorage), hydrated arranca en true directamente
-  const [hydrated, setHydrated] = useState(() =>
-    useAuthStore.persist.hasHydrated(),
-  );
+  const [hydrated, setHydrated] = useState(() => {
+    if (typeof window === "undefined") return false;
+    if (useAuthStore.persist) {
+      return useAuthStore.persist.hasHydrated();
+    }
+    return true;
+  });
 
-  // Solo suscribirse si aún no hidrató; el callback es asíncrono → no viola el lint
   useEffect(() => {
     if (hydrated) return;
-    const unsub = useAuthStore.persist.onFinishHydration(() => {
-      setHydrated(true);
-    });
-    return unsub;
+
+    if (useAuthStore.persist) {
+      const unsub = useAuthStore.persist.onFinishHydration(() => {
+        setHydrated(true);
+      });
+      return unsub;
+    }
   }, [hydrated]);
 
   console.log("[DashboardPage] Rendering!", {
