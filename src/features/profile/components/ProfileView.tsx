@@ -456,7 +456,7 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Sección Superior: Avatar y Nombre */}
       <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-pharmako-border-soft">
-        <div className="relative group w-24 h-24 rounded-full overflow-hidden border-2 border-pharmako-border bg-slate-50 shadow-sm flex items-center justify-center">
+        <div className="relative group w-24 h-24 rounded-full overflow-hidden border-1 border-pharmako-border flex items-center justify-center">
           {avatarPreview ? (
             <img
               src={avatarPreview}
