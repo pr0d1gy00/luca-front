@@ -28,6 +28,7 @@ import { useAuthStore } from "@/store/auth";
 import apiClient from "@/lib/api/client";
 import type { PatientAccount, UserProfile } from "@/features/auth/types";
 import { useGetCities } from "@/features/auth/hooks/useGetCities";
+import { db } from "@/features/offline/database/schema";
 
 // ── Schemas de Validación ──────────────────────────────────
 
@@ -362,11 +363,16 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
     const isOnline = navigator.onLine;
 
     if (!isOnline) {
-      // Guardado Offline
-      localStorage.setItem(
-        "pending_patient_profile_update",
-        JSON.stringify(payload),
-      );
+      // Guardado Offline en Dexie IndexedDB
+      db.pendingProfileUpdates
+        .put({
+          id: "patient",
+          payload: JSON.stringify(payload),
+          updatedAt: new Date().toISOString(),
+        })
+        .catch((err) =>
+          console.error("[PatientProfile] Dexie save error:", err),
+        );
 
       const updatedUser: PatientAccount = {
         ...initial,
@@ -405,7 +411,7 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
         setAuth(token ?? "", userType, updatedUser, true);
       }
       toast.success(
-        "¡Tu perfil de paciente ha sido guardado localmente! Se sincronizará cuando recuperes la conexión.",
+        "¡Tu perfil de paciente ha sido guardado localmente en IndexedDB! Se sincronizará cuando recuperes la conexión.",
       );
       setLoading(false);
       return;
@@ -416,7 +422,7 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
         status: string;
         user: PatientAccount;
       }>("/auth/patients/me", payload);
-      localStorage.removeItem("pending_patient_profile_update");
+      await db.pendingProfileUpdates.delete("patient");
       if (userType) {
         setAuth(token ?? "", userType, data.user, true);
       }
@@ -806,11 +812,14 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
     const isOnline = navigator.onLine;
 
     if (!isOnline) {
-      // Guardado Offline
-      localStorage.setItem(
-        "pending_user_profile_update",
-        JSON.stringify(payload),
-      );
+      // Guardado Offline en Dexie IndexedDB
+      db.pendingProfileUpdates
+        .put({
+          id: "user",
+          payload: JSON.stringify(payload),
+          updatedAt: new Date().toISOString(),
+        })
+        .catch((err) => console.error("[UserProfile] Dexie save error:", err));
 
       const updatedUser: UserProfile = {
         ...initial,
@@ -826,7 +835,7 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
         setAuth(token ?? "", userType, updatedUser, updatedUser.is_verified);
       }
       toast.success(
-        "¡Tu perfil profesional ha sido guardado localmente! Se sincronizará cuando recuperes la conexión.",
+        "¡Tu perfil profesional ha sido guardado localmente en IndexedDB! Se sincronizará cuando recuperes la conexión.",
       );
       setLoading(false);
       return;
@@ -837,7 +846,7 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
         status: string;
         user: UserProfile;
       }>("/auth/users/me", payload);
-      localStorage.removeItem("pending_user_profile_update");
+      await db.pendingProfileUpdates.delete("user");
       if (userType) {
         setAuth(token ?? "", userType, data.user, data.user.is_verified);
       }
@@ -1072,82 +1081,10 @@ export function ProfileView() {
 
   const [profileData, setProfileData] = useState<
     PatientAccount | UserProfile | null
-  >(() => {
-    if (typeof window === "undefined") return null;
-
-    const pendingPatient = localStorage.getItem(
-      "pending_patient_profile_update",
-    );
-    const pendingUser = localStorage.getItem("pending_user_profile_update");
-
-    if (pendingPatient) {
-      try {
-        const parsed = JSON.parse(pendingPatient);
-        return {
-          id: "",
-          uuid: "",
-          full_name: parsed.full_name,
-          fullName: parsed.full_name,
-          email: parsed.email,
-          phone: parsed.phone,
-          username: parsed.username,
-          nationalId: parsed.national_id,
-          cityId: parsed.city_id,
-          avatarUrl: parsed.avatar_url,
-          address: parsed.address,
-          birthDate: parsed.birth_date,
-          gender: parsed.gender,
-          bloodType: parsed.blood_type,
-          allergies: parsed.allergies,
-          chronicConditions: parsed.chronic_conditions,
-          emergencyContactName: parsed.emergency_contact_name,
-          emergencyContactPhone: parsed.emergency_contact_phone,
-          is_active: true,
-          status: "ACTIVE",
-          created_at: "",
-          updated_at: "",
-        } as PatientAccount;
-      } catch {
-        // Ignored
-      }
-    }
-
-    if (pendingUser) {
-      try {
-        const parsed = JSON.parse(pendingUser);
-        return {
-          id: "",
-          uuid: "",
-          full_name: parsed.full_name,
-          email: parsed.email,
-          phone: parsed.phone,
-          city_id: parsed.city_id,
-          logo_url: parsed.logo_url,
-          signature_url: parsed.signature_url,
-          is_active: true,
-          status: "ACTIVE",
-          role: "DOCTOR",
-          is_verified: true,
-          created_at: "",
-          updated_at: "",
-        } as UserProfile;
-      } catch {
-        // Ignored
-      }
-    }
-
-    return null;
-  });
+  >(null);
   const [loading, setLoading] = useState(() => {
-    if (typeof window !== "undefined") {
-      const pendingPatient = localStorage.getItem(
-        "pending_patient_profile_update",
-      );
-      const pendingUser = localStorage.getItem("pending_user_profile_update");
-      if ((pendingPatient || pendingUser) && !navigator.onLine) {
-        return false;
-      }
-    }
+    // Si no estamos en el navegador, iniciamos en true
+    if (typeof window === "undefined") return true;
     return true;
   });
   const hasFetched = useRef(false);
@@ -1156,56 +1093,110 @@ export function ProfileView() {
     if (!userType || hasFetched.current) return;
     hasFetched.current = true;
 
-    const pendingKey = isPatient
-      ? "pending_patient_profile_update"
-      : "pending_user_profile_update";
-    const pendingData = localStorage.getItem(pendingKey);
-
-    if (pendingData && typeof window !== "undefined" && !navigator.onLine) {
-      return;
-    }
-
     const endpoint = isPatient ? "/auth/patients/me" : "/auth/users/me";
+    const profileId = isPatient ? "patient" : "user";
 
-    apiClient
-      .get<{ user: PatientAccount | UserProfile }>(endpoint)
-      .then(({ data }) => {
-        const currentPending = localStorage.getItem(pendingKey);
-        if (currentPending) {
-          try {
-            const parsed = JSON.parse(currentPending);
-            if (isPatient) {
-              setProfileData({
-                ...data.user,
-                ...parsed,
-                fullName: parsed.full_name,
-                nationalId: parsed.national_id,
-                cityId: parsed.city_id,
-                avatarUrl: parsed.avatar_url,
-                birthDate: parsed.birth_date,
-                bloodType: parsed.blood_type,
-                chronicConditions: parsed.chronic_conditions,
-                emergencyContactName: parsed.emergency_contact_name,
-                emergencyContactPhone: parsed.emergency_contact_phone,
-              } as PatientAccount);
-            } else {
-              setProfileData({
-                ...data.user,
-                ...parsed,
-              } as UserProfile);
-            }
-          } catch {
-            setProfileData(data.user);
+    const loadProfile = async () => {
+      try {
+        // 1. Buscamos primero si hay un perfil editado offline en IndexedDB
+        const pending = await db.pendingProfileUpdates.get(profileId);
+
+        if (pending) {
+          const parsed = JSON.parse(pending.payload);
+          if (isPatient) {
+            setProfileData({
+              id: "",
+              uuid: "",
+              full_name: parsed.full_name,
+              fullName: parsed.full_name,
+              email: parsed.email,
+              phone: parsed.phone,
+              username: parsed.username,
+              nationalId: parsed.national_id,
+              cityId: parsed.city_id,
+              avatarUrl: parsed.avatar_url,
+              address: parsed.address,
+              birthDate: parsed.birth_date,
+              gender: parsed.gender,
+              bloodType: parsed.blood_type,
+              allergies: parsed.allergies,
+              chronicConditions: parsed.chronic_conditions,
+              emergencyContactName: parsed.emergency_contact_name,
+              emergencyContactPhone: parsed.emergency_contact_phone,
+              is_active: true,
+              status: "ACTIVE",
+              created_at: "",
+              updated_at: "",
+            } as PatientAccount);
+          } else {
+            setProfileData({
+              id: "",
+              uuid: "",
+              full_name: parsed.full_name,
+              email: parsed.email,
+              phone: parsed.phone,
+              city_id: parsed.city_id,
+              logo_url: parsed.logo_url,
+              signature_url: parsed.signature_url,
+              is_active: true,
+              status: "ACTIVE",
+              role: "DOCTOR",
+              is_verified: true,
+              created_at: "",
+              updated_at: "",
+            } as UserProfile);
+          }
+
+          // Si estamos offline, no llamamos a la API y quitamos el loading overlay
+          if (!navigator.onLine) {
+            setLoading(false);
+            return;
+          }
+        }
+
+        // 2. Si estamos online, consultamos los datos frescos del servidor
+        const { data } = await apiClient.get<{
+          user: PatientAccount | UserProfile;
+        }>(endpoint);
+
+        // Mezclamos la respuesta del backend con el cambio local pendiente si existe
+        if (pending) {
+          const parsed = JSON.parse(pending.payload);
+          if (isPatient) {
+            setProfileData({
+              ...data.user,
+              ...parsed,
+              fullName: parsed.full_name,
+              nationalId: parsed.national_id,
+              cityId: parsed.city_id,
+              avatarUrl: parsed.avatar_url,
+              birthDate: parsed.birth_date,
+              bloodType: parsed.blood_type,
+              chronicConditions: parsed.chronic_conditions,
+              emergencyContactName: parsed.emergency_contact_name,
+              emergencyContactPhone: parsed.emergency_contact_phone,
+            } as PatientAccount);
+          } else {
+            setProfileData({
+              ...data.user,
+              ...parsed,
+            } as UserProfile);
           }
         } else {
           setProfileData(data.user);
         }
-      })
-      .catch(() => {
-        if (pendingData) return;
-        toast.error("No se pudo cargar el perfil del usuario.");
-      })
-      .finally(() => setLoading(false));
+      } catch (err) {
+        // Si falló pero al menos tenemos datos locales renderizados, no molestamos con alertas
+        const hasLocal = await db.pendingProfileUpdates.get(profileId);
+        if (!hasLocal) {
+          toast.error("No se pudo cargar el perfil del usuario.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfile();
   }, [userType, isPatient]);
 
   if (loading || !profileData) {

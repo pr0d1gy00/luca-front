@@ -19,45 +19,43 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
   const { userType, token, setAuth } = useAuthStore();
 
   useEffect(() => {
-    // Open the database — triggers version 1 migrations
+    // Open the database — triggers version 1 and 2 migrations
     db.open().catch((err) => {
       console.error("[OfflineProvider] IndexedDB open failed:", err);
     });
   }, []);
 
-  // Background sync loop for offline-edited profiles
+  // Background sync loop for offline-edited profiles (using Dexie IndexedDB)
   useEffect(() => {
     if (!isOnline) return;
 
     const syncPendingProfiles = async () => {
       try {
         // 1. Sincronización de perfil de paciente
-        const pendingPatient = localStorage.getItem(
-          "pending_patient_profile_update",
-        );
+        const pendingPatient = await db.pendingProfileUpdates.get("patient");
         if (pendingPatient && userType === "patient") {
-          const payload = JSON.parse(pendingPatient);
+          const payload = JSON.parse(pendingPatient.payload);
           const { data } = await apiClient.patch<{
             status: string;
             user: PatientAccount;
           }>("/auth/patients/me", payload);
           setAuth(token ?? "", "patient", data.user, true);
-          localStorage.removeItem("pending_patient_profile_update");
+          await db.pendingProfileUpdates.delete("patient");
           toast.success(
             "¡Tus cambios de perfil se sincronizaron con el servidor!",
           );
         }
 
         // 2. Sincronización de perfil de usuario profesional (Doctor/Farmacia/Clínica)
-        const pendingUser = localStorage.getItem("pending_user_profile_update");
+        const pendingUser = await db.pendingProfileUpdates.get("user");
         if (pendingUser && userType && userType !== "patient") {
-          const payload = JSON.parse(pendingUser);
+          const payload = JSON.parse(pendingUser.payload);
           const { data } = await apiClient.patch<{
             status: string;
             user: UserProfile;
           }>("/auth/users/me", payload);
           setAuth(token ?? "", userType, data.user, data.user.is_verified);
-          localStorage.removeItem("pending_user_profile_update");
+          await db.pendingProfileUpdates.delete("user");
           toast.success(
             "¡Tus cambios de perfil profesional se sincronizaron con el servidor!",
           );
