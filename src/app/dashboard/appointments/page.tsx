@@ -71,29 +71,33 @@ export default function PatientAppointmentsPage() {
     const statusMap: Record<string, { label: string; className: string }> = {
       PENDING: {
         label: "Pendiente",
-        className: "bg-teal-50 text-teal-700 border-teal-100",
+        className:
+          "bg-pharmako-warning-light text-pharmako-warning border-pharmako-warning/10",
       },
       CONFIRMED: {
         label: "Confirmada",
-        className: "bg-emerald-50 text-emerald-700 border-emerald-100",
+        className:
+          "bg-pharmako-success-light text-pharmako-success border-pharmako-success/10",
       },
       COMPLETED: {
         label: "Completada",
-        className: "bg-slate-50 text-slate-700 border-slate-200",
+        className: "bg-slate-50 text-slate-600 border-slate-200",
       },
       CANCELLED: {
         label: "Cancelada",
-        className: "bg-red-50 text-red-700 border-red-100",
+        className:
+          "bg-pharmako-danger-light text-pharmako-danger border-pharmako-danger/10",
       },
       NO_SHOW: {
         label: "No Asistió",
-        className: "bg-amber-50 text-amber-700 border-amber-100",
+        className:
+          "bg-pharmako-danger-light text-pharmako-danger border-pharmako-danger/10",
       },
     };
 
     const config = statusMap[status] || {
       label: status,
-      className: "bg-slate-50 text-slate-700 border-slate-200",
+      className: "bg-slate-50 text-slate-600 border-slate-200",
     };
 
     return (
@@ -113,16 +117,16 @@ export default function PatientAppointmentsPage() {
       {/* Encabezado */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-2xl font-bold tracking-tight text-pharmako-text-primary">
             Mis Citas Médicas
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-pharmako-text-secondary">
             Visualiza tu historial completo de citas programadas, pasadas y
             canceladas.
           </p>
         </div>
         <Link href="/dashboard/booking">
-          <Button className="bg-[#23dce1] hover:bg-[#23dce1]/95 text-white font-semibold rounded-xl text-sm h-10 px-5 flex items-center gap-2 transition-all shadow-sm">
+          <Button className="bg-pharmako-primary hover:bg-pharmako-primary-hover text-white font-semibold rounded-lg text-sm h-10 px-5 flex items-center gap-2 transition-all shadow-sm">
             <Plus className="size-4" />
             Nueva Cita
           </Button>
@@ -130,7 +134,7 @@ export default function PatientAppointmentsPage() {
       </div>
 
       {/* Selector de Pestañas (Filtros) */}
-      <div className="flex items-center gap-1 border-b border-slate-200 overflow-x-auto pb-px">
+      <div className="flex items-center gap-1 border-b border-pharmako-border-soft overflow-x-auto pb-px">
         {(["all", "upcoming", "past", "cancelled"] as TabType[]).map((tab) => (
           <button
             key={tab}
@@ -138,8 +142,8 @@ export default function PatientAppointmentsPage() {
             className={cn(
               "px-4 py-2.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-all duration-200",
               activeTab === tab
-                ? "border-[#23dce1] text-[#23dce1]"
-                : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300",
+                ? "border-pharmako-primary text-pharmako-primary"
+                : "border-transparent text-pharmako-text-muted hover:text-pharmako-text-primary hover:border-pharmako-border",
             )}
           >
             {tab === "all" && "Todas las Citas"}
@@ -156,28 +160,28 @@ export default function PatientAppointmentsPage() {
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-40 bg-white rounded-xl border border-slate-100 shadow-sm animate-pulse"
+              className="h-40 bg-pharmako-surface rounded-xl border border-pharmako-border-soft shadow-sm animate-pulse"
             />
           ))}
         </div>
       ) : isError ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-          <AlertCircle className="h-10 w-10 text-red-500 mb-3" />
-          <p className="text-base font-bold text-slate-900">
+        <div className="flex flex-col items-center justify-center py-12 text-center bg-pharmako-surface rounded-xl border border-pharmako-border-soft shadow-sm p-6">
+          <AlertCircle className="h-10 w-10 text-pharmako-danger mb-3" />
+          <p className="text-base font-bold text-pharmako-text-primary">
             Error al cargar las citas
           </p>
-          <p className="text-sm text-slate-500 mt-1 max-w-md">
+          <p className="text-sm text-pharmako-text-secondary mt-1 max-w-md">
             No se pudo obtener la información del servidor. Si estás sin
             conexión, revisa tu base de datos local.
           </p>
         </div>
       ) : filteredApts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-xl border border-slate-100 shadow-sm p-8">
-          <Calendar className="h-12 w-12 text-slate-300 mb-4" />
-          <p className="text-lg font-bold text-slate-800">
+        <div className="flex flex-col items-center justify-center py-16 text-center bg-pharmako-surface rounded-xl border border-pharmako-border-soft shadow-sm p-8">
+          <Calendar className="h-12 w-12 text-pharmako-text-muted mb-4" />
+          <p className="text-lg font-bold text-pharmako-text-primary">
             No se encontraron citas
           </p>
-          <p className="text-sm text-slate-400 mt-1 max-w-sm">
+          <p className="text-sm text-pharmako-text-secondary mt-1 max-w-sm">
             {activeTab === "upcoming" &&
               "No tienes citas programadas próximamente."}
             {activeTab === "past" &&
@@ -191,7 +195,7 @@ export default function PatientAppointmentsPage() {
             <Link href="/dashboard/booking" className="mt-4">
               <Button
                 size="sm"
-                className="bg-[#23dce1] hover:bg-[#23dce1]/90 text-white font-semibold rounded-xl px-4"
+                className="bg-pharmako-primary hover:bg-pharmako-primary-hover text-white font-semibold rounded-lg px-4"
               >
                 Agendar primera cita
               </Button>
@@ -223,20 +227,20 @@ export default function PatientAppointmentsPage() {
                 <div
                   key={apt.uuid}
                   className={cn(
-                    "bg-white rounded-xl border border-slate-100 p-5 shadow-sm",
-                    "hover:shadow-md transition-shadow duration-200 flex flex-col justify-between gap-4",
+                    "bg-pharmako-surface rounded-xl border border-pharmako-border-soft p-5 shadow-sm",
+                    "hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4",
                   )}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-teal-50 rounded-xl border border-teal-100 shrink-0">
-                        <User className="h-5 w-5 text-[#23dce1]" />
+                      <div className="p-2.5 bg-pharmako-primary-light rounded-xl border border-pharmako-primary-muted/20 shrink-0">
+                        <User className="h-5 w-5 text-pharmako-primary" />
                       </div>
                       <div>
-                        <h3 className="text-sm font-bold text-slate-900 truncate">
+                        <h3 className="text-sm font-bold text-pharmako-text-primary truncate">
                           {doctorName}
                         </h3>
-                        <p className="text-xs text-slate-500 font-medium">
+                        <p className="text-xs text-pharmako-text-secondary font-medium">
                           {specialtyLabel}
                         </p>
                       </div>
@@ -244,28 +248,28 @@ export default function PatientAppointmentsPage() {
                     {getStatusBadge(apt.status)}
                   </div>
 
-                  <div className="grid grid-cols-1 gap-2 text-xs text-slate-600 border-t border-slate-100 pt-3">
+                  <div className="grid grid-cols-1 gap-2 text-xs text-pharmako-text-secondary border-t border-pharmako-border-soft pt-3">
                     <div className="flex items-center gap-2.5">
-                      <Calendar className="h-4 w-4 text-slate-400 shrink-0" />
+                      <Calendar className="h-4 w-4 text-pharmako-text-muted shrink-0" />
                       <span className="capitalize">{formattedDate}</span>
                     </div>
                     <div className="flex items-center gap-2.5">
-                      <Clock className="h-4 w-4 text-slate-400 shrink-0" />
+                      <Clock className="h-4 w-4 text-pharmako-text-muted shrink-0" />
                       <span>{apt.time.slice(0, 5)} HS</span>
                     </div>
                     <div className="flex items-center gap-2.5">
-                      <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
+                      <MapPin className="h-4 w-4 text-pharmako-text-muted shrink-0" />
                       <span className="truncate">{clinicName}</span>
                     </div>
-                    <div className="flex items-center gap-2.5 font-medium text-slate-800">
+                    <div className="flex items-center gap-2.5 font-medium text-pharmako-text-primary">
                       {apt.type === "ONLINE" ? (
                         <>
-                          <Video className="h-4 w-4 text-[#23dce1] shrink-0" />
+                          <Video className="h-4 w-4 text-pharmako-primary shrink-0" />
                           <span>Telemedicina (Enlace en tu correo)</span>
                         </>
                       ) : (
                         <>
-                          <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                          <CheckCircle2 className="h-4 w-4 text-pharmako-success shrink-0" />
                           <span>Consulta Presencial</span>
                         </>
                       )}
@@ -278,8 +282,8 @@ export default function PatientAppointmentsPage() {
 
           {/* Controles de Paginación */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-2">
-              <p className="text-xs text-slate-500 font-medium">
+            <div className="flex items-center justify-between border-t border-pharmako-border-soft pt-4 mt-2">
+              <p className="text-xs text-pharmako-text-secondary font-medium">
                 Total de páginas: {totalPages}
               </p>
               <div className="flex items-center gap-2">
@@ -288,12 +292,12 @@ export default function PatientAppointmentsPage() {
                   size="sm"
                   onClick={() => handlePageChange(page - 1)}
                   disabled={page === 1}
-                  className="rounded-xl border-slate-200 hover:bg-slate-50 text-xs h-8 px-3 flex items-center gap-1"
+                  className="rounded-lg border-pharmako-border hover:bg-pharmako-background text-xs h-8 px-3 flex items-center gap-1"
                 >
                   <ChevronLeft className="size-3.5" />
                   Anterior
                 </Button>
-                <span className="text-xs font-semibold text-slate-800 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200/50">
+                <span className="text-xs font-semibold text-pharmako-primary bg-pharmako-primary-light px-3 py-1.5 rounded-lg border border-pharmako-primary-muted/20">
                   Pág. {page}
                 </span>
                 <Button
@@ -301,7 +305,7 @@ export default function PatientAppointmentsPage() {
                   size="sm"
                   onClick={() => handlePageChange(page + 1)}
                   disabled={page >= totalPages}
-                  className="rounded-xl border-slate-200 hover:bg-slate-50 text-xs h-8 px-3 flex items-center gap-1"
+                  className="rounded-lg border-pharmako-border hover:bg-pharmako-background text-xs h-8 px-3 flex items-center gap-1"
                 >
                   Siguiente
                   <ChevronRight className="size-3.5" />
