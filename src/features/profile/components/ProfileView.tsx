@@ -174,10 +174,10 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-pharmako-border-soft flex items-center gap-3 bg-slate-50/50">
-        <div className="p-1.5 bg-pharmako-primary-light rounded-lg">
-          <Icon className="h-4 w-4 text-pharmako-care" />
+    <div className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft">
+      <div className="px-6 py-4 border-b border-pharmako-border-soft flex items-center gap-3">
+        <div className="p-1.5rounded-lg">
+          <Icon className="h-6 w-6 text-pharmako-care" />
         </div>
         <h3 className="text-sm font-bold text-pharmako-text-primary uppercase tracking-wide">
           {title}
@@ -609,7 +609,7 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
             </Field>
 
             <Field label="Dirección de Habitación" icon={MapPin}>
-              <FInput
+              <FTextarea
                 {...register("address")}
                 placeholder="Calle, urbanización, edificio..."
                 error={formErrors.address?.message ?? errors.address}
@@ -714,9 +714,9 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
           type="submit"
           disabled={!isDirty || loading}
           className={[
-            "flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 shadow-sm",
+            "flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200",
             isDirty && !loading
-              ? "bg-pharmako-primary hover:bg-pharmako-primary-hover text-white hover:shadow-md cursor-pointer"
+              ? "bg-pharmako-care hover:bg-pharmako-primary-hover text-white hover:shadow-md cursor-pointer"
               : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed",
           ].join(" ")}
         >
@@ -1228,7 +1228,7 @@ export function ProfileView() {
       </div>
 
       {/* Tarjeta de Formulario Principal */}
-      <div className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft p-8 shadow-sm">
+      <div className="bg-pharmako-surface rounded-xl ">
         {isPatient ? (
           <PatientFormInner initial={patient} />
         ) : (
