@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,14 +21,21 @@ import {
   Heart,
   Droplet,
   FileText,
+  RefreshCw,
+  Wifi,
+  WifiOff,
+  CheckCircle2,
+  Trash2,
 } from "lucide-react";
 import Select from "react-select";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth";
 import apiClient from "@/lib/api/client";
+import { Button } from "@/components/ui/button";
 import type { PatientAccount, UserProfile } from "@/features/auth/types";
 import { useGetCities } from "@/features/auth/hooks/useGetCities";
 import { db } from "@/features/offline/database/schema";
+import { syncService } from "@/features/offline/services/syncService";
 
 // ── Schemas de Validación ──────────────────────────────────
 
@@ -1073,6 +1080,269 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
   );
 }
 
+interface LocalQueueItem {
+  id: string;
+  entity: string;
+  action: string;
+  timestamp: string;
+}
+
+interface LocalErrorItem {
+  id?: number;
+  entity: string;
+  message: string;
+  createdAt?: string;
+}
+
+function SyncStatusPanel() {
+  const [queue, setQueue] = useState<LocalQueueItem[]>([]);
+  const [errors, setErrors] = useState<LocalErrorItem[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isOnline, setIsOnline] = useState(() =>
+    typeof window !== "undefined" ? navigator.onLine : true,
+  );
+
+  const loadSyncData = useCallback(async (active: boolean) => {
+    try {
+      const q = (await db.syncQueue.toArray()) as unknown as LocalQueueItem[];
+      const errs =
+        (await db.syncErrors.toArray()) as unknown as LocalErrorItem[];
+      if (active) {
+        setQueue(q);
+        setErrors(errs);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    // Llamada inicial asíncrona diferida para evitar set-state-in-effect warnings síncronos
+    const timer = setTimeout(() => {
+      loadSyncData(active);
+    }, 0);
+
+    const interval = setInterval(() => {
+      loadSyncData(active);
+    }, 4000);
+
+    const handleStatus = () => setIsOnline(navigator.onLine);
+    window.addEventListener("online", handleStatus);
+    window.addEventListener("offline", handleStatus);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+      clearInterval(interval);
+      window.removeEventListener("online", handleStatus);
+      window.removeEventListener("offline", handleStatus);
+    };
+  }, [loadSyncData]);
+
+  const handleSyncNow = async () => {
+    if (!navigator.onLine) {
+      toast.error("No tienes conexión a internet.");
+      return;
+    }
+    setIsSyncing(true);
+    try {
+      await syncService.sync();
+      toast.success("Sincronización completada.");
+      await loadSyncData(true);
+    } catch {
+      // toast.error ya se dispara en el catch de useSync, pero forzamos recarga
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleClearErrors = async () => {
+    try {
+      await db.syncErrors.clear();
+      toast.success("Historial de errores limpio.");
+      await loadSyncData(true);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const getEntityLabel = (entity: string) => {
+    const labels: Record<string, string> = {
+      appointments: "Cita Médica",
+      patients: "Datos del Paciente",
+      consultations: "Consulta Médica",
+      vital_signs: "Signos Vitales",
+      prescriptions: "Receta Médica",
+      prescription_items: "Medicamento",
+      lab_requests: "Examen de Laboratorio",
+      quote_requests: "Solicitud de Presupuesto",
+    };
+    return labels[entity] ?? entity;
+  };
+
+  const getActionLabel = (action: string) => {
+    const labels: Record<string, string> = {
+      create: "Registrar",
+      update: "Actualizar",
+      delete: "Eliminar",
+    };
+    return labels[action] ?? action;
+  };
+
+  return (
+    <div className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft p-6 flex flex-col gap-5 mt-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-pharmako-border-soft pb-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-[#23dce1]/10 rounded-xl border border-pharmako-border-soft">
+            <RefreshCw
+              className={`h-5 w-5 text-[#23dce1] ${isSyncing ? "animate-spin" : ""}`}
+            />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-pharmako-text-primary">
+              Información por Sincronizar
+            </h3>
+            <p className="text-xs text-pharmako-text-secondary">
+              Monitoreo y estado de los cambios guardados localmente en modo sin
+              conexión.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
+              isOnline
+                ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                : "bg-slate-50 text-slate-600 border-slate-200"
+            }`}
+          >
+            {isOnline ? (
+              <>
+                <Wifi className="h-3.5 w-3.5" /> Online
+              </>
+            ) : (
+              <>
+                <WifiOff className="h-3.5 w-3.5" /> Offline
+              </>
+            )}
+          </span>
+
+          <Button
+            size="sm"
+            onClick={handleSyncNow}
+            disabled={isSyncing || !isOnline}
+            className="bg-[#23dce1] hover:bg-[#23dce1]/90 text-white font-semibold rounded-xl text-xs h-9 px-4 shrink-0 transition-colors"
+          >
+            {isSyncing ? "Sincronizando..." : "Sincronizar Ahora"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Listado de colas */}
+      {queue.length === 0 && errors.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-6 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+          <CheckCircle2 className="h-8 w-8 text-emerald-500 mb-2" />
+          <p className="text-sm font-semibold text-slate-800">
+            Todos tus datos están sincronizados
+          </p>
+          <p className="text-xs text-slate-400 mt-0.5">
+            No tienes cambios pendientes por subir al servidor.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Cola de Pendientes */}
+          <div className="flex flex-col gap-3">
+            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wide flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+              Cambios Pendientes ({queue.length})
+            </h4>
+
+            {queue.length === 0 ? (
+              <div className="p-4 bg-slate-50/40 rounded-xl border border-slate-100 text-center text-xs text-slate-400">
+                Sin cambios pendientes en la cola local.
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
+                {queue.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-white shadow-sm hover:border-[#23dce1]/20 transition-all"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-slate-900 truncate">
+                        {getActionLabel(item.action)}{" "}
+                        {getEntityLabel(item.entity)}
+                      </p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Guardado:{" "}
+                        {new Date(item.timestamp).toLocaleTimeString()}
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-100 shrink-0">
+                      Pendiente
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Cola de Errores */}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wide flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                Historial de Errores ({errors.length})
+              </h4>
+              {errors.length > 0 && (
+                <button
+                  onClick={handleClearErrors}
+                  className="text-xs font-medium text-red-600 hover:text-red-700 flex items-center gap-1 transition-colors"
+                >
+                  <Trash2 className="size-3.5" /> Limpiar
+                </button>
+              )}
+            </div>
+
+            {errors.length === 0 ? (
+              <div className="p-4 bg-slate-50/40 rounded-xl border border-slate-100 text-center text-xs text-slate-400">
+                Sin errores registrados.
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
+                {errors.map((item, idx) => (
+                  <div
+                    key={item.id ?? idx}
+                    className="flex flex-col gap-1 p-3 rounded-xl border border-red-100 bg-red-50/20"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-bold text-red-700 uppercase tracking-wider">
+                        {getEntityLabel(item.entity)}
+                      </span>
+                      <span className="text-[9px] text-red-500/80">
+                        {item.createdAt
+                          ? new Date(item.createdAt).toLocaleTimeString()
+                          : ""}
+                      </span>
+                    </div>
+                    <p className="text-xs text-red-900 font-medium">
+                      {item.message || "Error al sincronizar"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── ProfileView Principal ───────────────────────────────────
 
 export function ProfileView() {
@@ -1235,6 +1505,9 @@ export function ProfileView() {
           <UserProfileFormInner initial={user} />
         )}
       </div>
+
+      {/* Panel de Sincronización Local */}
+      <SyncStatusPanel />
     </motion.div>
   );
 }
