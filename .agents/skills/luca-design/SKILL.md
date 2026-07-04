@@ -1,3 +1,8 @@
+---
+name: luca-design
+description: Guidelines and rules for implementing UI components, pages, or features in the LUCA Health Operating System using tailwind, HSL colors, and Notion-isomatic design tokens.
+---
+
 # LUCA Design System — Skill for AI Agents
 
 ## Purpose
