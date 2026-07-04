@@ -8,7 +8,7 @@ export function usePatientActions(): QuickAction[] {
       label: "Agendar cita",
       icon: CalendarPlus,
       variant: "primary",
-      href: "/dashboard/citas",
+      href: "/dashboard/booking",
     },
     {
       id: "act-refill",
