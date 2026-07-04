@@ -137,4 +137,17 @@ export interface PatientAccount extends PatientProfile {
   avatar_url?: string | null;
   createdAt?: string;
   created_at?: string;
+  address?: string | null;
+  birthDate?: string | null;
+  birth_date?: string | null;
+  gender?: string | null;
+  bloodType?: string | null;
+  blood_type?: string | null;
+  allergies?: string | null;
+  chronicConditions?: string | null;
+  chronic_conditions?: string | null;
+  emergencyContactName?: string | null;
+  emergency_contact_name?: string | null;
+  emergencyContactPhone?: string | null;
+  emergency_contact_phone?: string | null;
 }

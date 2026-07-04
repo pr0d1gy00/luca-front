@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -16,6 +15,13 @@ import {
   Loader2,
   CreditCard,
   AtSign,
+  Camera,
+  Calendar,
+  Activity,
+  Heart,
+  Droplet,
+  Upload,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth";
@@ -23,51 +29,89 @@ import apiClient from "@/lib/api/client";
 import type { PatientAccount, UserProfile } from "@/features/auth/types";
 import { useGetCities } from "@/features/auth/hooks/useGetCities";
 
-// ── Schema ─────────────────────────────────────────────────
+// ── Schemas de Validación ──────────────────────────────────
 
 const patientSchema = z.object({
-  full_name: z.string().min(2, "Requerido"),
-  email: z.string().email("Email inválido").or(z.literal("")),
-  phone: z.string().min(10, "Teléfono inválido").or(z.literal("")),
+  full_name: z.string().min(2, "El nombre es muy corto"),
+  email: z.string().email("Correo electrónico inválido").or(z.literal("")),
+  phone: z
+    .string()
+    .min(10, "El teléfono debe tener al menos 10 dígitos")
+    .or(z.literal("")),
   username: z.string().optional(),
   national_id: z.string().optional(),
   city_id: z.string().optional(),
+  avatar_url: z.string().optional(),
+  address: z.string().optional(),
+  birth_date: z.string().optional(),
+  gender: z.string().optional(),
+  blood_type: z.string().optional(),
+  allergies: z.string().optional(),
+  chronic_conditions: z.string().optional(),
+  emergency_contact_name: z.string().optional(),
+  emergency_contact_phone: z.string().optional(),
 });
 
 const userSchema = z.object({
-  full_name: z.string().min(2, "Requerido"),
-  email: z.string().email("Email inválido"),
-  phone: z.string().min(10, "Teléfono inválido").or(z.literal("")),
+  full_name: z.string().min(2, "El nombre es muy corto"),
+  email: z.string().email("Correo electrónico inválido"),
+  phone: z
+    .string()
+    .min(10, "El teléfono debe tener al menos 10 dígitos")
+    .or(z.literal("")),
   city_id: z.string().optional(),
+  logo_url: z.string().optional(),
+  signature_url: z.string().optional(),
 });
 
 type PatientForm = z.infer<typeof patientSchema>;
 type UserForm = z.infer<typeof userSchema>;
 
-// ── Skeleton ────────────────────────────────────────────────
+// ── Skeletons ───────────────────────────────────────────────
 
 function ProfileSkeleton() {
   return (
-    <div className="flex flex-col gap-6 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto animate-pulse">
-      <div className="space-y-1.5">
-        <div className="h-8 w-40 bg-slate-100 rounded-lg" />
-        <div className="h-4 w-60 bg-slate-50 rounded" />
-      </div>
-      <div className="bg-white rounded-2xl border border-slate-200 p-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="space-y-1.5">
-              <div className="h-3 w-20 bg-slate-50 rounded" />
-              <div className="h-10 bg-slate-100 rounded-xl" />
-            </div>
-          ))}
+    <div className="flex flex-col gap-6 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto animate-pulse py-6">
+      <div className="flex items-center gap-5">
+        <div className="w-24 h-24 rounded-full bg-slate-100" />
+        <div className="space-y-2">
+          <div className="h-7 w-48 bg-slate-100 rounded-lg" />
+          <div className="h-4 w-32 bg-slate-50 rounded" />
         </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="h-64 bg-white rounded-xl border border-slate-200" />
+        <div className="h-64 bg-white rounded-xl border border-slate-200" />
       </div>
     </div>
   );
 }
 
-// ── Form field ─────────────────────────────────────────────
+// ── Componentes de Soporte de Diseño (Notion-isomatic) ──────
+
+function Card({
+  title,
+  icon: Icon,
+  children,
+}: {
+  title: string;
+  icon: React.ElementType;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-pharmako-border-soft flex items-center gap-3 bg-slate-50/50">
+        <div className="p-1.5 bg-pharmako-primary-light rounded-lg">
+          <Icon className="h-4 w-4 text-pharmako-care" />
+        </div>
+        <h3 className="text-sm font-bold text-pharmako-text-primary uppercase tracking-wide">
+          {title}
+        </h3>
+      </div>
+      <div className="p-6">{children}</div>
+    </div>
+  );
+}
 
 function Field({
   label,
@@ -81,15 +125,15 @@ function Field({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center gap-1.5 pl-0.5">
-        <Icon className="w-4 h-4 text-slate-400" />
-        <label className="text-xs font-semibold text-slate-600">{label}</label>
+        <Icon className="w-3.5 h-3.5 text-pharmako-text-muted" />
+        <label className="text-xs font-bold text-pharmako-text-secondary">
+          {label}
+        </label>
       </div>
       {children}
     </div>
   );
 }
-
-// ── Input ──────────────────────────────────────────────────
 
 function FInput({
   error,
@@ -101,77 +145,131 @@ function FInput({
       <input
         {...props}
         className={[
-          "w-full px-4 py-2.5 rounded-xl border bg-white text-sm text-slate-900",
-          "placeholder:text-slate-400",
-          "focus:outline-none focus:ring-2 focus:ring-slate-100 focus:border-slate-400",
-          "transition-colors duration-200",
+          "w-full px-4 py-2.5 rounded-xl border bg-white text-sm text-pharmako-text-primary",
+          "placeholder:text-pharmako-text-muted",
+          "focus:outline-none focus:ring-2 focus:ring-pharmako-primary-light focus:border-pharmako-primary",
+          "transition-colors duration-200 border-pharmako-border",
           error
-            ? "border-red-500 focus:ring-red-100 focus:border-red-500"
-            : "border-slate-200",
+            ? "border-pharmako-danger focus:ring-pharmako-danger-light focus:border-pharmako-danger"
+            : "",
           className,
         ]
           .filter(Boolean)
           .join(" ")}
       />
-      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+      {error && (
+        <p className="text-xs text-pharmako-danger mt-1 font-medium">{error}</p>
+      )}
     </div>
   );
 }
 
-// ── Status badge ───────────────────────────────────────────
-
-function StatusBadge({
-  status,
-  verified,
-}: {
-  status?: string;
-  verified?: boolean;
-}) {
-  if (status === "ACTIVE" && verified) {
-    return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-600">
-        <ShieldCheck className="w-3.5 h-3.5" />
-        Cuenta verificada
-      </span>
-    );
-  }
-  if (!verified) {
-    return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-600">
-        <ShieldCheck className="w-3.5 h-3.5" />
-        Pendiente de verificación
-      </span>
-    );
-  }
-  return null;
+function FTextarea({
+  error,
+  className,
+  ...props
+}: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { error?: string }) {
+  return (
+    <div>
+      <textarea
+        {...props}
+        className={[
+          "w-full px-4 py-2.5 rounded-xl border bg-white text-sm text-pharmako-text-primary min-h-[80px]",
+          "placeholder:text-pharmako-text-muted",
+          "focus:outline-none focus:ring-2 focus:ring-pharmako-primary-light focus:border-pharmako-primary",
+          "transition-colors duration-200 border-pharmako-border",
+          error
+            ? "border-pharmako-danger focus:ring-pharmako-danger-light focus:border-pharmako-danger"
+            : "",
+          className,
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      />
+      {error && (
+        <p className="text-xs text-pharmako-danger mt-1 font-medium">{error}</p>
+      )}
+    </div>
+  );
 }
 
-// ── Info row ───────────────────────────────────────────────
+function FSelect({
+  error,
+  children,
+  className,
+  ...props
+}: React.SelectHTMLAttributes<HTMLSelectElement> & { error?: string }) {
+  return (
+    <div>
+      <select
+        {...props}
+        className={[
+          "w-full px-4 py-2.5 rounded-xl border bg-white text-sm text-pharmako-text-primary",
+          "focus:outline-none focus:ring-2 focus:ring-pharmako-primary-light focus:border-pharmako-primary",
+          "transition-colors duration-200 border-pharmako-border",
+          error
+            ? "border-pharmako-danger focus:ring-pharmako-danger-light focus:border-pharmako-danger"
+            : "",
+          className,
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
+        {children}
+      </select>
+      {error && (
+        <p className="text-xs text-pharmako-danger mt-1 font-medium">{error}</p>
+      )}
+    </div>
+  );
+}
 
 function InfoRow({ label, value }: { label: string; value?: string | null }) {
   return (
-    <div className="flex items-center justify-between py-3 border-b border-slate-100 last:border-0">
-      <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+    <div className="flex items-center justify-between py-2.5 border-b border-pharmako-border-soft last:border-0">
+      <span className="text-xs font-semibold text-pharmako-text-muted uppercase tracking-wider">
         {label}
       </span>
-      <span className="text-sm text-slate-700 font-semibold truncate max-w-[60%]">
+      <span className="text-sm text-pharmako-text-primary font-bold truncate max-w-[65%]">
         {value || "—"}
       </span>
     </div>
   );
 }
 
-// ── Patient form ───────────────────────────────────────────
+function StatusBadge({ status }: { status?: string }) {
+  const isActive = status === "ACTIVE" || status === "active";
+  return (
+    <span
+      className={[
+        "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border",
+        isActive
+          ? "bg-pharmako-success-light border-pharmako-success/30 text-pharmako-success"
+          : "bg-pharmako-warning-light border-pharmako-warning/30 text-pharmako-warning",
+      ].join(" ")}
+    >
+      <ShieldCheck className="w-3.5 h-3.5" />
+      {isActive ? "Cuenta Activa" : "Estado: " + (status || "Inactivo")}
+    </span>
+  );
+}
+
+// ── Patient Profile Form ────────────────────────────────────
 
 function PatientFormInner({ initial }: { initial: PatientAccount }) {
   const { token, setAuth, userType } = useAuthStore();
   const { data: cities } = useGetCities();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(
+    initial.avatar_url ?? null,
+  );
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors: formErrors, isDirty },
   } = useForm<PatientForm>({
     resolver: zodResolver(patientSchema),
@@ -182,8 +280,34 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
       username: initial.username ?? "",
       national_id: initial.national_id ?? "",
       city_id: initial.city_id ?? "",
+      avatar_url: initial.avatar_url ?? "",
+      address: initial.address ?? "",
+      birth_date: initial.birth_date ?? "",
+      gender: initial.gender ?? "",
+      blood_type: initial.blood_type ?? "",
+      allergies: initial.allergies ?? "",
+      chronic_conditions: initial.chronic_conditions ?? "",
+      emergency_contact_name: initial.emergency_contact_name ?? "",
+      emergency_contact_phone: initial.emergency_contact_phone ?? "",
     },
   });
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("La foto de perfil debe pesar menos de 2MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64Str = reader.result as string;
+        setAvatarPreview(base64Str);
+        setValue("avatar_url", base64Str, { shouldDirty: true });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const onSubmit = async (payload: PatientForm) => {
     setLoading(true);
@@ -196,7 +320,9 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
       if (userType) {
         setAuth(token ?? "", userType, data, true);
       }
-      toast.success("¡Perfil actualizado!");
+      toast.success(
+        "¡Tu perfil de paciente ha sido actualizado correctamente!",
+      );
     } catch (err: unknown) {
       const e = err as {
         response?: { data?: { errors?: Record<string, string[]> } };
@@ -208,9 +334,9 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
           mapped[k] = be[k][0];
         });
         setErrors(mapped);
-        toast.error("Corregí los campos marcados.");
+        toast.error("Por favor, corrige los campos del formulario.");
       } else {
-        toast.error("Error al actualizar el perfil.");
+        toast.error("Hubo un error al actualizar los datos.");
       }
     } finally {
       setLoading(false);
@@ -218,93 +344,251 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        <Field label="Nombre completo" icon={User}>
-          <FInput
-            {...register("full_name")}
-            placeholder="Tu nombre completo"
-            error={formErrors.full_name?.message ?? errors.full_name}
-          />
-        </Field>
-
-        <Field label="Correo electrónico" icon={Mail}>
-          <FInput
-            {...register("email")}
-            type="email"
-            placeholder="tu@email.com"
-            error={formErrors.email?.message ?? errors.email}
-          />
-        </Field>
-
-        <Field label="Teléfono" icon={Phone}>
-          <FInput
-            {...register("phone")}
-            type="tel"
-            placeholder="+58 412 123 4567"
-            error={formErrors.phone?.message ?? errors.phone}
-          />
-        </Field>
-
-        <Field label="Nombre de usuario" icon={AtSign}>
-          <FInput
-            {...register("username")}
-            placeholder="@usuario"
-            error={formErrors.username?.message ?? errors.username}
-          />
-        </Field>
-
-        <Field label="Cédula / ID" icon={CreditCard}>
-          <FInput
-            {...register("national_id")}
-            placeholder="V-12345678"
-            error={formErrors.national_id?.message ?? errors.national_id}
-          />
-        </Field>
-
-        <Field label="Ciudad" icon={MapPin}>
-          <select
-            {...register("city_id")}
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900
-                       focus:outline-none focus:ring-2 focus:ring-slate-100 focus:border-slate-400
-                       transition-colors duration-200"
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      {/* Sección Superior: Avatar y Nombre */}
+      <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-pharmako-border-soft">
+        <div className="relative group w-24 h-24 rounded-full overflow-hidden border-2 border-pharmako-border bg-slate-50 shadow-sm flex items-center justify-center">
+          {avatarPreview ? (
+            <img
+              src={avatarPreview}
+              alt="Avatar"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <User className="w-10 h-10 text-pharmako-text-muted" />
+          )}
+          <button
+            type="button"
+            onClick={() => avatarInputRef.current?.click()}
+            className="absolute inset-0 bg-black/45 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
           >
-            <option value="">Seleccionar ciudad</option>
-            {cities?.map((city) => (
-              <option key={city.id} value={city.id}>
-                {city.name}
-              </option>
-            ))}
-          </select>
-        </Field>
+            <Camera className="w-4 h-4 mb-0.5" />
+            <span className="text-[9px] font-bold">Cambiar</span>
+          </button>
+          <input
+            type="file"
+            ref={avatarInputRef}
+            onChange={handleAvatarChange}
+            accept="image/*"
+            className="hidden"
+          />
+        </div>
+        <div className="text-center sm:text-left space-y-1">
+          <h2 className="text-lg font-bold text-pharmako-text-primary">
+            {initial.full_name}
+          </h2>
+          <p className="text-xs text-pharmako-text-secondary font-medium">
+            Expediente de Paciente Global
+          </p>
+          <div className="flex justify-center sm:justify-start pt-1">
+            <StatusBadge status={initial.status} />
+          </div>
+        </div>
       </div>
 
-      {/* Info readonly */}
-      <div className="rounded-xl bg-slate-50 border border-slate-150 p-4">
-        <InfoRow label="ID de cuenta" value={initial.uuid} />
-        <InfoRow label="Estado" value={initial.status} />
+      {/* Grid de Secciones */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Card 1: Datos Personales */}
+        <Card title="Datos Personales" icon={User}>
+          <div className="space-y-4">
+            <Field label="Nombre Completo" icon={User}>
+              <FInput
+                {...register("full_name")}
+                placeholder="Nombre y apellido"
+                error={formErrors.full_name?.message ?? errors.full_name}
+              />
+            </Field>
+
+            <Field label="Cédula / Documento de Identidad" icon={CreditCard}>
+              <FInput
+                {...register("national_id")}
+                placeholder="V-12345678"
+                error={formErrors.national_id?.message ?? errors.national_id}
+              />
+            </Field>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Fecha de Nacimiento" icon={Calendar}>
+                <FInput
+                  {...register("birth_date")}
+                  type="date"
+                  error={formErrors.birth_date?.message ?? errors.birth_date}
+                />
+              </Field>
+
+              <Field label="Género" icon={User}>
+                <FSelect
+                  {...register("gender")}
+                  error={formErrors.gender?.message ?? errors.gender}
+                >
+                  <option value="">Seleccionar</option>
+                  <option value="MALE">Masculino</option>
+                  <option value="FEMALE">Femenino</option>
+                  <option value="OTHER">Otro</option>
+                </FSelect>
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Nombre de Usuario" icon={AtSign}>
+                <FInput
+                  {...register("username")}
+                  placeholder="@usuario"
+                  error={formErrors.username?.message ?? errors.username}
+                />
+              </Field>
+
+              <Field label="Ciudad" icon={MapPin}>
+                <FSelect
+                  {...register("city_id")}
+                  error={formErrors.city_id?.message ?? errors.city_id}
+                >
+                  <option value="">Seleccionar</option>
+                  {cities?.map((city) => (
+                    <option key={city.id} value={city.id}>
+                      {city.name}
+                    </option>
+                  ))}
+                </FSelect>
+              </Field>
+            </div>
+          </div>
+        </Card>
+
+        {/* Card 2: Información de Contacto */}
+        <Card title="Contacto de Cuenta" icon={Mail}>
+          <div className="space-y-4">
+            <Field label="Correo Electrónico" icon={Mail}>
+              <FInput
+                {...register("email")}
+                type="email"
+                placeholder="correo@ejemplo.com"
+                error={formErrors.email?.message ?? errors.email}
+              />
+            </Field>
+
+            <Field label="Teléfono (WhatsApp)" icon={Phone}>
+              <FInput
+                {...register("phone")}
+                type="tel"
+                placeholder="+58 412 123 4567"
+                error={formErrors.phone?.message ?? errors.phone}
+              />
+            </Field>
+
+            <Field label="Dirección de Habitación" icon={MapPin}>
+              <FInput
+                {...register("address")}
+                placeholder="Calle, urbanización, edificio..."
+                error={formErrors.address?.message ?? errors.address}
+              />
+            </Field>
+          </div>
+        </Card>
+
+        {/* Card 3: Información Médica */}
+        <Card title="Expediente Clínico" icon={Activity}>
+          <div className="space-y-4">
+            <Field label="Tipo de Sangre" icon={Droplet}>
+              <FSelect
+                {...register("blood_type")}
+                error={formErrors.blood_type?.message ?? errors.blood_type}
+              >
+                <option value="">Seleccionar</option>
+                <option value="O+">O Positivo (O+)</option>
+                <option value="O-">O Negativo (O-)</option>
+                <option value="A+">A Positivo (A+)</option>
+                <option value="A-">A Negativo (A-)</option>
+                <option value="B+">B Positivo (B+)</option>
+                <option value="B-">B Negativo (B-)</option>
+                <option value="AB+">AB Positivo (AB+)</option>
+                <option value="AB-">AB Negativo (AB-)</option>
+              </FSelect>
+            </Field>
+
+            <Field label="Alergias Conocidas" icon={Heart}>
+              <FTextarea
+                {...register("allergies")}
+                placeholder="Medicamentos, alimentos, etc."
+                error={formErrors.allergies?.message ?? errors.allergies}
+              />
+            </Field>
+
+            <Field label="Condiciones Crónicas" icon={Activity}>
+              <FTextarea
+                {...register("chronic_conditions")}
+                placeholder="Hipertensión, asma, diabetes, etc."
+                error={
+                  formErrors.chronic_conditions?.message ??
+                  errors.chronic_conditions
+                }
+              />
+            </Field>
+          </div>
+        </Card>
+
+        {/* Card 4: Contacto de Emergencia */}
+        <Card title="Contacto de Emergencia" icon={Heart}>
+          <div className="space-y-4">
+            <Field label="Nombre del Contacto" icon={User}>
+              <FInput
+                {...register("emergency_contact_name")}
+                placeholder="Nombre de un familiar o allegado"
+                error={
+                  formErrors.emergency_contact_name?.message ??
+                  errors.emergency_contact_name
+                }
+              />
+            </Field>
+
+            <Field label="Teléfono del Contacto" icon={Phone}>
+              <FInput
+                {...register("emergency_contact_phone")}
+                type="tel"
+                placeholder="Teléfono de contacto"
+                error={
+                  formErrors.emergency_contact_phone?.message ??
+                  errors.emergency_contact_phone
+                }
+              />
+            </Field>
+
+            <div className="rounded-xl bg-slate-50 border border-pharmako-border-soft p-4 mt-6">
+              <InfoRow label="ID Expediente" value={initial.uuid} />
+              <InfoRow
+                label="Fecha Registro"
+                value={
+                  initial.created_at
+                    ? new Date(initial.created_at).toLocaleDateString()
+                    : null
+                }
+              />
+            </div>
+          </div>
+        </Card>
       </div>
 
-      <div className="flex justify-end">
+      {/* Botón de Guardado */}
+      <div className="flex justify-end pt-4">
         <button
           type="submit"
           disabled={!isDirty || loading}
           className={[
-            "flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200",
+            "flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 shadow-sm",
             isDirty && !loading
-              ? "bg-slate-900 hover:bg-slate-800 text-white shadow-sm hover:shadow-md cursor-pointer"
+              ? "bg-pharmako-primary hover:bg-pharmako-primary-hover text-white hover:shadow-md cursor-pointer"
               : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed",
           ].join(" ")}
         >
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Guardando…
+              Guardando cambios…
             </>
           ) : (
             <>
               <Save className="w-4 h-4" />
-              Guardar cambios
+              Guardar Perfil
             </>
           )}
         </button>
@@ -313,17 +597,27 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
   );
 }
 
-// ── User form ─────────────────────────────────────────────
+// ── User Profile Form (Doctor/Pharmacy/Clinic) ──────────────
 
 function UserProfileFormInner({ initial }: { initial: UserProfile }) {
   const { token, setAuth, userType } = useAuthStore();
   const { data: cities } = useGetCities();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [logoPreview, setLogoPreview] = useState<string | null>(
+    initial.logo_url ?? null,
+  );
+  const [sigPreview, setSigPreview] = useState<string | null>(
+    initial.signature_url ?? null,
+  );
+
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const sigInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors: formErrors, isDirty },
   } = useForm<UserForm>({
     resolver: zodResolver(userSchema),
@@ -332,8 +626,44 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
       email: initial.email,
       phone: initial.phone ?? "",
       city_id: initial.city_id ?? "",
+      logo_url: initial.logo_url ?? "",
+      signature_url: initial.signature_url ?? "",
     },
   });
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("La foto de perfil/logo debe pesar menos de 2MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64Str = reader.result as string;
+        setLogoPreview(base64Str);
+        setValue("logo_url", base64Str, { shouldDirty: true });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSigChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 1 * 1024 * 1024) {
+        toast.error("La firma digital debe pesar menos de 1MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64Str = reader.result as string;
+        setSigPreview(base64Str);
+        setValue("signature_url", base64Str, { shouldDirty: true });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const onSubmit = async (payload: UserForm) => {
     setLoading(true);
@@ -346,7 +676,7 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
       if (userType) {
         setAuth(token ?? "", userType, data, data.is_verified);
       }
-      toast.success("¡Perfil actualizado!");
+      toast.success("¡Perfil actualizado con éxito!");
     } catch (err: unknown) {
       const e = err as {
         response?: { data?: { errors?: Record<string, string[]> } };
@@ -358,9 +688,9 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
           mapped[k] = be[k][0];
         });
         setErrors(mapped);
-        toast.error("Corregí los campos marcados.");
+        toast.error("Corrige los campos del formulario.");
       } else {
-        toast.error("Error al actualizar el perfil.");
+        toast.error("Error al actualizar la información.");
       }
     } finally {
       setLoading(false);
@@ -368,96 +698,186 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        <Field label="Nombre completo" icon={User}>
-          <FInput
-            {...register("full_name")}
-            placeholder="Tu nombre completo"
-            error={formErrors.full_name?.message ?? errors.full_name}
-          />
-        </Field>
-
-        <Field label="Correo electrónico" icon={Mail}>
-          <FInput
-            {...register("email")}
-            type="email"
-            placeholder="tu@email.com"
-            error={formErrors.email?.message ?? errors.email}
-          />
-        </Field>
-
-        <Field label="Teléfono" icon={Phone}>
-          <FInput
-            {...register("phone")}
-            type="tel"
-            placeholder="+58 412 123 4567"
-            error={formErrors.phone?.message ?? errors.phone}
-          />
-        </Field>
-
-        <Field label="Ciudad" icon={MapPin}>
-          <select
-            {...register("city_id")}
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900
-                       focus:outline-none focus:ring-2 focus:ring-slate-100 focus:border-slate-400
-                       transition-colors duration-200"
-          >
-            <option value="">Seleccionar ciudad</option>
-            {cities?.map((city) => (
-              <option key={city.id} value={city.id}>
-                {city.name}
-              </option>
-            ))}
-          </select>
-        </Field>
-      </div>
-
-      {/* Info readonly */}
-      <div className="rounded-xl bg-slate-50 border border-slate-150 p-4 space-y-0">
-        <InfoRow label="Rol" value={initial.role} />
-        {initial.plan_type && (
-          <InfoRow label="Plan" value={initial.plan_type} />
-        )}
-        <InfoRow label="ID de cuenta" value={initial.uuid} />
-      </div>
-
-      {initial.provider_profile && (
-        <div className="rounded-xl bg-slate-50 border border-slate-150 p-4">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 pb-2 border-b border-slate-200">
-            Datos comerciales
-          </p>
-          <div className="space-y-0">
-            <InfoRow
-              label="Nombre comercial"
-              value={initial.provider_profile.commercial_name}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      {/* Superior: Logo y Nombre */}
+      <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-pharmako-border-soft">
+        <div className="relative group w-24 h-24 rounded-full overflow-hidden border-2 border-pharmako-border bg-slate-50 shadow-sm flex items-center justify-center">
+          {logoPreview ? (
+            <img
+              src={logoPreview}
+              alt="Logo"
+              className="w-full h-full object-cover"
             />
-            <InfoRow label="RIF" value={initial.provider_profile.rif} />
-            <InfoRow label="Tipo" value={initial.provider_profile.type} />
+          ) : (
+            <User className="w-10 h-10 text-pharmako-text-muted" />
+          )}
+          <button
+            type="button"
+            onClick={() => logoInputRef.current?.click()}
+            className="absolute inset-0 bg-black/45 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+          >
+            <Camera className="w-4 h-4 mb-0.5" />
+            <span className="text-[9px] font-bold">Cambiar</span>
+          </button>
+          <input
+            type="file"
+            ref={logoInputRef}
+            onChange={handleLogoChange}
+            accept="image/*"
+            className="hidden"
+          />
+        </div>
+        <div className="text-center sm:text-left space-y-1">
+          <h2 className="text-lg font-bold text-pharmako-text-primary">
+            {initial.full_name}
+          </h2>
+          <p className="text-xs text-pharmako-text-secondary font-medium">
+            Portal Profesional — Rol: {initial.role}
+          </p>
+          <div className="flex justify-center sm:justify-start pt-1">
+            <StatusBadge status={initial.status} />
           </div>
         </div>
-      )}
+      </div>
 
-      <div className="flex justify-end">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Card 1: Datos de Usuario */}
+        <Card title="Información de Usuario" icon={User}>
+          <div className="space-y-4">
+            <Field label="Nombre Completo" icon={User}>
+              <FInput
+                {...register("full_name")}
+                placeholder="Nombre completo"
+                error={formErrors.full_name?.message ?? errors.full_name}
+              />
+            </Field>
+
+            <Field label="Correo Electrónico" icon={Mail}>
+              <FInput
+                {...register("email")}
+                type="email"
+                placeholder="correo@ejemplo.com"
+                error={formErrors.email?.message ?? errors.email}
+              />
+            </Field>
+
+            <Field label="Teléfono" icon={Phone}>
+              <FInput
+                {...register("phone")}
+                type="tel"
+                placeholder="Teléfono móvil"
+                error={formErrors.phone?.message ?? errors.phone}
+              />
+            </Field>
+
+            <Field label="Ciudad" icon={MapPin}>
+              <FSelect
+                {...register("city_id")}
+                error={formErrors.city_id?.message ?? errors.city_id}
+              >
+                <option value="">Seleccionar ciudad</option>
+                {cities?.map((city) => (
+                  <option key={city.id} value={city.id}>
+                    {city.name}
+                  </option>
+                ))}
+              </FSelect>
+            </Field>
+          </div>
+        </Card>
+
+        {/* Card 2: Firma Digital e Info */}
+        <Card title="Firma y Licencias" icon={FileText}>
+          <div className="space-y-5">
+            {initial.role === "DOCTOR" && (
+              <div className="space-y-2">
+                <Field label="Firma Digital (Sello)" icon={FileText}>
+                  <div className="flex items-center gap-4">
+                    <div className="w-32 h-20 border border-dashed border-pharmako-border rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden relative group">
+                      {sigPreview ? (
+                        <img
+                          src={sigPreview}
+                          alt="Firma"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <span className="text-xs text-pharmako-text-muted font-medium">
+                          Sin firma
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => sigInputRef.current?.click()}
+                        className="absolute inset-0 bg-black/45 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer text-xs font-bold"
+                      >
+                        Subir firma
+                      </button>
+                    </div>
+                    <input
+                      type="file"
+                      ref={sigInputRef}
+                      onChange={handleSigChange}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <div className="space-y-0.5 text-xs text-pharmako-text-secondary">
+                      <p className="font-semibold text-pharmako-text-primary">
+                        Firma Médica
+                      </p>
+                      <p className="text-[10px] text-pharmako-text-muted">
+                        Formatos JPG/PNG. Máx 1MB.
+                      </p>
+                    </div>
+                  </div>
+                </Field>
+              </div>
+            )}
+
+            {initial.provider_profile && (
+              <div className="bg-slate-50 border border-pharmako-border-soft rounded-xl p-4 mt-2">
+                <p className="text-xs font-bold text-pharmako-text-primary uppercase tracking-wide border-b border-pharmako-border-soft pb-2 mb-3">
+                  Datos del Proveedor
+                </p>
+                <div className="space-y-1">
+                  <InfoRow
+                    label="Nombre Comercial"
+                    value={initial.provider_profile.commercial_name}
+                  />
+                  <InfoRow label="RIF" value={initial.provider_profile.rif} />
+                  <InfoRow label="Tipo" value={initial.provider_profile.type} />
+                </div>
+              </div>
+            )}
+
+            <div className="rounded-xl border border-pharmako-border-soft p-4">
+              <InfoRow label="Plan de Cuenta" value={initial.plan_type} />
+              <InfoRow label="Código de Cuenta" value={initial.uuid} />
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Botón de Guardado */}
+      <div className="flex justify-end pt-4">
         <button
           type="submit"
           disabled={!isDirty || loading}
           className={[
-            "flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200",
+            "flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 shadow-sm",
             isDirty && !loading
-              ? "bg-slate-900 hover:bg-slate-800 text-white shadow-sm hover:shadow-md cursor-pointer"
+              ? "bg-pharmako-primary hover:bg-pharmako-primary-hover text-white hover:shadow-md cursor-pointer"
               : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed",
           ].join(" ")}
         >
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Guardando…
+              Guardando cambios…
             </>
           ) : (
             <>
               <Save className="w-4 h-4" />
-              Guardar cambios
+              Guardar Perfil
             </>
           )}
         </button>
@@ -466,10 +886,10 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
   );
 }
 
-// ── ProfileView ────────────────────────────────────────────
+// ── ProfileView Principal ───────────────────────────────────
 
 export function ProfileView() {
-  const { token, userType, isVerified } = useAuthStore();
+  const { token, userType } = useAuthStore();
   const isPatient = userType === "patient";
 
   const [profileData, setProfileData] = useState<
@@ -488,7 +908,7 @@ export function ProfileView() {
     apiClient
       .get<PatientAccount | UserProfile>(endpoint)
       .then(({ data }) => setProfileData(data))
-      .catch(() => toast.error("No se pudo cargar el perfil."))
+      .catch(() => toast.error("No se pudo cargar el perfil del usuario."))
       .finally(() => setLoading(false));
   }, [userType, isPatient]);
 
@@ -504,29 +924,24 @@ export function ProfileView() {
       initial="hidden"
       animate="visible"
       variants={{
-        hidden: { opacity: 0 },
-        visible: { opacity: 1, transition: { duration: 0.3 } },
+        hidden: { opacity: 0, y: 15 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
       }}
-      className="flex flex-col gap-6 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto"
+      className="flex flex-col gap-6 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto py-6"
     >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Mi Perfil
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Gestiona tu información personal y configuración de cuenta.
-          </p>
-        </div>
-        <StatusBadge
-          status={isPatient ? patient.status : user.status}
-          verified={isVerified}
-        />
+      {/* Título de la Página */}
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight text-pharmako-text-primary">
+          Mi Perfil
+        </h1>
+        <p className="text-sm text-pharmako-text-secondary">
+          Gestiona tu información personal, médica y configuración de la
+          plataforma LUCA.
+        </p>
       </div>
 
-      {/* Form card */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
+      {/* Tarjeta de Formulario Principal */}
+      <div className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft p-8 shadow-sm">
         {isPatient ? (
           <PatientFormInner initial={patient} />
         ) : (

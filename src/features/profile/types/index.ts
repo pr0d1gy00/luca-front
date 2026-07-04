@@ -9,6 +9,14 @@ export interface PatientProfileEdit {
   username?: string;
   city_id?: string;
   avatar_url?: string;
+  address?: string;
+  birth_date?: string;
+  gender?: string;
+  blood_type?: string;
+  allergies?: string;
+  chronic_conditions?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
 }
 
 /** Datos editables del perfil de usuario (doctor/proveedor/admin) */

@@ -15,7 +15,7 @@ export function useGetPatientProfileQuery(token: string | null) {
         "/auth/patients/me",
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      return data as PatientAccount;
+      return data as unknown as PatientAccount;
     },
     enabled: !!token,
     staleTime: 5 * 60 * 1000,
