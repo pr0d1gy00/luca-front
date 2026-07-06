@@ -116,4 +116,11 @@ export const appointmentApi = {
     });
     return response.data;
   },
+
+  getPatientAppointmentDetail: async (uuid: string): Promise<unknown> => {
+    const response = await apiClient.get<unknown>(
+      `/patients/me/appointments/${uuid}`,
+    );
+    return response.data;
+  },
 };

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { usePatientAppointmentsQuery } from "@/features/appointments/hooks/usePatientAppointmentsQuery";
+import { appointmentApi } from "@/features/appointments/api/appointmentApi";
 import {
   Calendar,
   Clock,
@@ -13,12 +14,47 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
+  Mail,
+  Phone,
+  Building,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 type TabType = "all" | "upcoming" | "past" | "cancelled";
+
+interface DetailedAppointment {
+  uuid: string;
+  patientUuid: string;
+  doctorUuid: string;
+  clinicBranchUuid: string;
+  date: string;
+  time: string;
+  type: "IN_PERSON" | "ONLINE";
+  status: string;
+  notes?: string;
+  reason?: string;
+  doctor?: {
+    full_name?: string;
+    fullName?: string;
+    specialties?: { name: string }[];
+    email?: string;
+    phone?: string;
+  };
+  clinic_branch?: {
+    name?: string;
+    address?: string;
+    phone?: string;
+  };
+}
 
 export default function PatientAppointmentsPage() {
   const [page, setPage] = useState(1);
@@ -33,6 +69,51 @@ export default function PatientAppointmentsPage() {
 
   const appointments = paginatedData?.data || [];
   const totalPages = paginatedData?.last_page || 1;
+
+  const [selectedApt, setSelectedApt] = useState<DetailedAppointment | null>(
+    null,
+  );
+  const [detailedApt, setDetailedApt] = useState<DetailedAppointment | null>(
+    null,
+  );
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+
+  useEffect(() => {
+    if (!selectedApt) {
+      const t = setTimeout(() => setDetailedApt(null), 0);
+      return () => clearTimeout(t);
+    }
+
+    const t1 = setTimeout(() => {
+      setDetailedApt(selectedApt);
+
+      const isOnline = typeof window !== "undefined" && navigator.onLine;
+      if (!isOnline) return;
+
+      setIsLoadingDetail(true);
+      appointmentApi
+        .getPatientAppointmentDetail(selectedApt.uuid)
+        .then((res: unknown) => {
+          const typedRes = res as { data?: DetailedAppointment };
+          if (typedRes?.data) {
+            setDetailedApt(typedRes.data);
+          }
+        })
+        .catch((err) => {
+          console.warn(
+            "[PatientAppointmentsPage] Error fetching details:",
+            err,
+          );
+        })
+        .finally(() => {
+          setIsLoadingDetail(false);
+        });
+    }, 0);
+
+    return () => {
+      clearTimeout(t1);
+    };
+  }, [selectedApt]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -120,7 +201,7 @@ export default function PatientAppointmentsPage() {
             className={cn(
               "px-4 py-2.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-all duration-200",
               activeTab === tab
-                ? "border-pharmako-primary text-pharmako-primary"
+                ? "border-pharmako-care text-pharmako-care"
                 : "border-transparent text-pharmako-text-muted hover:text-pharmako-text-primary hover:border-pharmako-border",
             )}
           >
@@ -204,15 +285,16 @@ export default function PatientAppointmentsPage() {
               return (
                 <div
                   key={apt.uuid}
+                  onClick={() => setSelectedApt(apt)}
                   className={cn(
-                    "bg-pharmako-surface rounded-xl border border-pharmako-border-soft p-5 shadow-sm",
-                    "hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4",
+                    "bg-pharmako-surface rounded-xl border border-pharmako-border-soft p-5 cursor-pointer",
+                    "hover:bg-slate-50 transition-all duration-200 flex flex-col justify-between gap-4",
                   )}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-pharmako-primary-light rounded-xl border border-pharmako-primary-muted/20 shrink-0">
-                        <User className="h-5 w-5 text-pharmako-primary" />
+                      <div className="p-2.5 rounded-xl shrink-0">
+                        <User className="h-6 w-6 text-pharmako-care" />
                       </div>
                       <div>
                         <h3 className="text-sm font-bold text-pharmako-text-primary truncate">
@@ -293,6 +375,181 @@ export default function PatientAppointmentsPage() {
           )}
         </div>
       )}
+      {/* Modal de Detalles de Cita (luca-design) */}
+      <Dialog
+        open={!!selectedApt}
+        onOpenChange={(open) => !open && setSelectedApt(null)}
+      >
+        <DialogContent className="bg-pharmako-surface sm:max-w-md rounded-xl shadow-lg border border-pharmako-border-soft p-6">
+          {detailedApt && (
+            <>
+              <DialogHeader className="flex flex-col gap-1.5 pb-4 border-b border-pharmako-border-soft">
+                <div className="flex items-center justify-between gap-3">
+                  <DialogTitle className="text-lg font-bold text-pharmako-text-primary flex items-center gap-2">
+                    Detalles de la Cita
+                    {isLoadingDetail && (
+                      <span className="text-[10px] font-normal text-pharmako-text-muted animate-pulse">
+                        (Cargando...)
+                      </span>
+                    )}
+                  </DialogTitle>
+                  {getStatusBadge(detailedApt.status)}
+                </div>
+              </DialogHeader>
+
+              <div className="flex flex-col gap-5 py-4 max-h-[60vh] overflow-y-auto pr-1">
+                {/* Sección Médico */}
+                <div className="space-y-2">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
+                    Médico Especialista
+                  </h4>
+                  <div className="p-3.5 bg-pharmako-surface-warm rounded-lg border border-pharmako-border-soft flex items-start gap-3">
+                    <div className="p-2 bg-pharmako-primary-light rounded-lg border border-pharmako-primary-muted/20 shrink-0">
+                      <User className="h-5 w-5 text-pharmako-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-pharmako-text-primary">
+                        {detailedApt.doctor?.full_name ||
+                          detailedApt.doctor?.fullName ||
+                          "Médico Especialista"}
+                      </p>
+                      <p className="text-xs text-pharmako-text-secondary font-medium mt-0.5">
+                        {detailedApt.doctor?.specialties?.[0]?.name ||
+                          "Medicina General"}
+                      </p>
+
+                      {/* Datos de contacto adicionales */}
+                      <div className="mt-2.5 space-y-1.5 border-t border-pharmako-border-soft/60 pt-2.5 text-xs text-pharmako-text-secondary">
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-3.5 w-3.5 text-pharmako-text-muted" />
+                          <span className="truncate">
+                            {detailedApt.doctor?.email ||
+                              "contacto@lucahealth.com"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-3.5 w-3.5 text-pharmako-text-muted" />
+                          <span>
+                            {detailedApt.doctor?.phone || "+54 9 11 5555-5555"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sección Clínica */}
+                <div className="space-y-2">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
+                    Sede y Ubicación
+                  </h4>
+                  <div className="p-3.5 bg-pharmako-surface-warm rounded-lg border border-pharmako-border-soft flex items-start gap-3">
+                    <div className="p-2 bg-pharmako-primary-light rounded-lg border border-pharmako-primary-muted/20 shrink-0">
+                      <Building className="h-5 w-5 text-pharmako-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-pharmako-text-primary">
+                        {detailedApt.clinic_branch?.name ||
+                          "Sede Principal LUCA"}
+                      </p>
+                      <div className="mt-2 space-y-1.5 text-xs text-pharmako-text-secondary">
+                        <div className="flex items-start gap-2">
+                          <MapPin className="h-3.5 w-3.5 text-pharmako-text-muted mt-0.5 shrink-0" />
+                          <span className="leading-relaxed">
+                            {detailedApt.clinic_branch?.address ||
+                              "Av. Principal 1230, CABA"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-3.5 w-3.5 text-pharmako-text-muted" />
+                          <span>
+                            {detailedApt.clinic_branch?.phone ||
+                              "+54 11 4444-4444"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Detalles de la cita */}
+                <div className="space-y-2">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
+                    Información de la Consulta
+                  </h4>
+                  <div className="p-3.5 rounded-lg border border-pharmako-border-soft space-y-3">
+                    <div className="grid grid-cols-2 gap-3 text-xs text-pharmako-text-secondary">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-pharmako-text-muted" />
+                        <span className="capitalize">
+                          {new Date(detailedApt.date).toLocaleDateString(
+                            "es-ES",
+                            {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-pharmako-text-muted" />
+                        <span>{detailedApt.time.slice(0, 5)} HS</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs font-medium text-pharmako-text-primary border-t border-pharmako-border-soft/60 pt-2.5">
+                      {detailedApt.type === "ONLINE" ? (
+                        <>
+                          <Video className="h-4 w-4 text-pharmako-primary shrink-0" />
+                          <span>Consulta Online (Telemedicina)</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="h-4 w-4 text-pharmako-success shrink-0" />
+                          <span>Consulta Presencial en Sede</span>
+                        </>
+                      )}
+                    </div>
+
+                    {detailedApt.reason && (
+                      <div className="border-t border-pharmako-border-soft/60 pt-2.5">
+                        <span className="text-xs font-semibold text-pharmako-text-primary block mb-1">
+                          Motivo de Consulta:
+                        </span>
+                        <p className="text-xs text-pharmako-text-secondary leading-relaxed bg-pharmako-background p-2 rounded border border-pharmako-border-soft">
+                          {detailedApt.reason}
+                        </p>
+                      </div>
+                    )}
+
+                    {detailedApt.notes && (
+                      <div className="border-t border-pharmako-border-soft/60 pt-2.5">
+                        <span className="text-xs font-semibold text-pharmako-text-primary block mb-1">
+                          Notas del Paciente:
+                        </span>
+                        <p className="text-xs text-pharmako-text-secondary leading-relaxed bg-pharmako-background p-2 rounded border border-pharmako-border-soft">
+                          {detailedApt.notes}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter className="border-t border-pharmako-border-soft pt-4 flex items-center justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedApt(null)}
+                  className="border-pharmako-border text-pharmako-text-primary hover:bg-pharmako-background rounded-lg font-medium"
+                >
+                  Cerrar
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
