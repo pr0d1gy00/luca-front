@@ -380,13 +380,13 @@ export default function PatientAppointmentsPage() {
         open={!!selectedApt}
         onOpenChange={(open) => !open && setSelectedApt(null)}
       >
-        <DialogContent className="bg-pharmako-surface sm:max-w-md rounded-xl shadow-lg border border-pharmako-border-soft p-6">
+        <DialogContent className="bg-pharmako-surface sm:max-w-2xl rounded-xl shadow-lg border border-pharmako-border-soft p-6">
           {detailedApt && (
             <>
               <DialogHeader className="flex flex-col gap-1.5 pb-4 border-b border-pharmako-border-soft">
                 <div className="flex items-center justify-between gap-3">
                   <DialogTitle className="text-lg font-bold text-pharmako-text-primary flex items-center gap-2">
-                    Detalles de la Cita
+                    Detalles de la Cita Médica
                     {isLoadingDetail && (
                       <span className="text-[10px] font-normal text-pharmako-text-muted animate-pulse">
                         (Cargando...)
@@ -397,142 +397,167 @@ export default function PatientAppointmentsPage() {
                 </div>
               </DialogHeader>
 
-              <div className="flex flex-col gap-5 py-4 max-h-[60vh] overflow-y-auto pr-1">
-                {/* Sección Médico */}
-                <div className="space-y-2">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
-                    Médico Especialista
-                  </h4>
-                  <div className="p-3.5 bg-pharmako-surface-warm rounded-lg border border-pharmako-border-soft flex items-start gap-3">
-                    <div className="p-2 bg-pharmako-primary-light rounded-lg border border-pharmako-primary-muted/20 shrink-0">
-                      <User className="h-5 w-5 text-pharmako-primary" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-pharmako-text-primary">
-                        {detailedApt.doctor?.full_name ||
-                          detailedApt.doctor?.fullName ||
-                          "Médico Especialista"}
-                      </p>
-                      <p className="text-xs text-pharmako-text-secondary font-medium mt-0.5">
-                        {detailedApt.doctor?.specialties?.[0]?.name ||
-                          "Medicina General"}
-                      </p>
-
-                      {/* Datos de contacto adicionales */}
-                      <div className="mt-2.5 space-y-1.5 border-t border-pharmako-border-soft/60 pt-2.5 text-xs text-pharmako-text-secondary">
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-3.5 w-3.5 text-pharmako-text-muted" />
-                          <span className="truncate">
-                            {detailedApt.doctor?.email ||
-                              "contacto@lucahealth.com"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-3.5 w-3.5 text-pharmako-text-muted" />
-                          <span>
-                            {detailedApt.doctor?.phone || "+54 9 11 5555-5555"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Sección Clínica */}
-                <div className="space-y-2">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
-                    Sede y Ubicación
-                  </h4>
-                  <div className="p-3.5 bg-pharmako-surface-warm rounded-lg border border-pharmako-border-soft flex items-start gap-3">
-                    <div className="p-2 bg-pharmako-primary-light rounded-lg border border-pharmako-primary-muted/20 shrink-0">
-                      <Building className="h-5 w-5 text-pharmako-primary" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-pharmako-text-primary">
-                        {detailedApt.clinic_branch?.name ||
-                          "Sede Principal LUCA"}
-                      </p>
-                      <div className="mt-2 space-y-1.5 text-xs text-pharmako-text-secondary">
-                        <div className="flex items-start gap-2">
-                          <MapPin className="h-3.5 w-3.5 text-pharmako-text-muted mt-0.5 shrink-0" />
-                          <span className="leading-relaxed">
-                            {detailedApt.clinic_branch?.address ||
-                              "Av. Principal 1230, CABA"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-3.5 w-3.5 text-pharmako-text-muted" />
-                          <span>
-                            {detailedApt.clinic_branch?.phone ||
-                              "+54 11 4444-4444"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Detalles de la cita */}
-                <div className="space-y-2">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
-                    Información de la Consulta
-                  </h4>
-                  <div className="p-3.5 rounded-lg border border-pharmako-border-soft space-y-3">
-                    <div className="grid grid-cols-2 gap-3 text-xs text-pharmako-text-secondary">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-pharmako-text-muted" />
+              {/* Grid Layout de 2 Columnas */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4 max-h-[60vh] overflow-y-auto pr-1">
+                {/* Columna Izquierda: Información de la Consulta */}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
+                      Información de la Consulta
+                    </h4>
+                    <div className="p-4 rounded-xl border border-pharmako-border-soft space-y-3 bg-pharmako-surface shadow-xs">
+                      <div className="flex items-center gap-2.5 text-xs text-pharmako-text-secondary">
+                        <Calendar className="h-4 w-4 text-pharmako-care shrink-0" />
                         <span className="capitalize">
                           {new Date(detailedApt.date).toLocaleDateString(
                             "es-ES",
                             {
+                              weekday: "long",
                               day: "numeric",
-                              month: "short",
+                              month: "long",
                               year: "numeric",
                             },
                           )}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-pharmako-text-muted" />
+                      <div className="flex items-center gap-2.5 text-xs text-pharmako-text-secondary">
+                        <Clock className="h-4 w-4 text-pharmako-care shrink-0" />
                         <span>{detailedApt.time.slice(0, 5)} HS</span>
                       </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-xs font-medium text-pharmako-text-primary border-t border-pharmako-border-soft/60 pt-2.5">
-                      {detailedApt.type === "ONLINE" ? (
-                        <>
-                          <Video className="h-4 w-4 text-pharmako-primary shrink-0" />
-                          <span>Consulta Online (Telemedicina)</span>
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="h-4 w-4 text-pharmako-success shrink-0" />
-                          <span>Consulta Presencial en Sede</span>
-                        </>
-                      )}
-                    </div>
-
-                    {detailedApt.reason && (
-                      <div className="border-t border-pharmako-border-soft/60 pt-2.5">
-                        <span className="text-xs font-semibold text-pharmako-text-primary block mb-1">
-                          Motivo de Consulta:
-                        </span>
-                        <p className="text-xs text-pharmako-text-secondary leading-relaxed bg-pharmako-background p-2 rounded border border-pharmako-border-soft">
-                          {detailedApt.reason}
-                        </p>
+                      <div className="flex items-center gap-2.5 text-xs font-medium text-pharmako-text-primary border-t border-pharmako-border-soft/60 pt-2.5">
+                        {detailedApt.type === "ONLINE" ? (
+                          <>
+                            <Video className="h-4 w-4 text-pharmako-primary shrink-0" />
+                            <span>Consulta Virtual / Telemedicina</span>
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="h-4 w-4 text-pharmako-success shrink-0" />
+                            <span>Consulta Presencial</span>
+                          </>
+                        )}
                       </div>
-                    )}
+                    </div>
+                  </div>
 
-                    {detailedApt.notes && (
-                      <div className="border-t border-pharmako-border-soft/60 pt-2.5">
-                        <span className="text-xs font-semibold text-pharmako-text-primary block mb-1">
-                          Notas del Paciente:
-                        </span>
-                        <p className="text-xs text-pharmako-text-secondary leading-relaxed bg-pharmako-background p-2 rounded border border-pharmako-border-soft">
-                          {detailedApt.notes}
-                        </p>
+                  {detailedApt.reason && (
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
+                        Motivo de Consulta
+                      </h4>
+                      <div className="p-3 bg-pharmako-surface rounded-xl border border-pharmako-border-soft text-xs text-pharmako-text-secondary leading-relaxed">
+                        {detailedApt.reason}
                       </div>
-                    )}
+                    </div>
+                  )}
+
+                  {detailedApt.notes && (
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
+                        Notas del Paciente
+                      </h4>
+                      <div className="p-3 bg-pharmako-surface rounded-xl border border-pharmako-border-soft text-xs text-pharmako-text-secondary leading-relaxed">
+                        {detailedApt.notes}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Columna Derecha: Médico y Clínica */}
+                <div className="space-y-4">
+                  {/* Sección Médico */}
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
+                      Médico Especialista
+                    </h4>
+                    <div className="p-4 bg-pharmako-surface rounded-xl border border-pharmako-border-soft flex items-start gap-3 shadow-xs">
+                      <div className="p-2 bg-pharmako-primary-light rounded-xl border border-pharmako-primary-muted/10 shrink-0">
+                        <User className="h-5 w-5 text-pharmako-care" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-pharmako-text-primary">
+                          {detailedApt.doctor?.full_name ||
+                            detailedApt.doctor?.fullName ||
+                            "Médico Especialista"}
+                        </p>
+                        <p className="text-xs text-pharmako-text-secondary font-medium mt-0.5">
+                          {detailedApt.doctor?.specialties?.[0]?.name ||
+                            "Medicina General"}
+                        </p>
+
+                        <div className="mt-3 space-y-1.5 border-t border-pharmako-border-soft/60 pt-2.5 text-xs text-pharmako-text-secondary">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-3.5 w-3.5 text-pharmako-text-muted" />
+                            <span className="truncate">
+                              {detailedApt.doctor?.email ||
+                                "contacto@lucahealth.com"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-3.5 w-3.5 text-pharmako-text-muted" />
+                            <span>
+                              {detailedApt.doctor?.phone ||
+                                "+54 9 11 5555-5555"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sección Clínica */}
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
+                      Sede de Atención
+                    </h4>
+                    <div className="p-4 bg-pharmako-surface rounded-xl border border-pharmako-border-soft flex items-start gap-3 shadow-xs">
+                      <div className="p-2 bg-pharmako-primary-light rounded-xl border border-pharmako-primary-muted/10 shrink-0">
+                        <Building className="h-5 w-5 text-pharmako-care" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-pharmako-text-primary">
+                          {detailedApt.clinic_branch?.name ||
+                            "Sede Principal LUCA"}
+                        </p>
+                        <div className="mt-2.5 space-y-2 text-xs text-pharmako-text-secondary">
+                          <div className="flex items-start gap-2">
+                            <MapPin className="h-3.5 w-3.5 text-pharmako-text-muted mt-0.5 shrink-0" />
+                            <span className="leading-relaxed">
+                              {detailedApt.clinic_branch?.address ||
+                                "Av. Principal 1230, CABA"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-3.5 w-3.5 text-pharmako-text-muted" />
+                            <span>
+                              {detailedApt.clinic_branch?.phone ||
+                                "+54 11 4444-4444"}
+                            </span>
+                          </div>
+
+                          {/* Ayuda de Navegación Google Maps */}
+                          {detailedApt.type !== "ONLINE" &&
+                            detailedApt.clinic_branch?.address && (
+                              <div className="pt-1.5 border-t border-pharmako-border-soft/60">
+                                <a
+                                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                                    (detailedApt.clinic_branch?.name ||
+                                      "Sede Clínica") +
+                                      " " +
+                                      detailedApt.clinic_branch.address,
+                                  )}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 text-pharmako-primary hover:text-pharmako-primary-hover font-semibold transition-colors"
+                                >
+                                  <MapPin className="h-3.5 w-3.5 text-pharmako-care shrink-0" />
+                                  Cómo llegar (Google Maps)
+                                </a>
+                              </div>
+                            )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
