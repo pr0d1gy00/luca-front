@@ -65,6 +65,7 @@ export default function PatientAppointmentsPage() {
     data: paginatedData,
     isLoading,
     isError,
+    isFetching,
   } = usePatientAppointmentsQuery(page, activeTab);
 
   const appointments = paginatedData?.data || [];
@@ -214,17 +215,17 @@ export default function PatientAppointmentsPage() {
       </div>
 
       {/* Contenedor Principal / Lista */}
-      {isLoading ? (
+      {isLoading || (isFetching && appointments.length === 0) ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-40 bg-pharmako-surface rounded-xl border border-pharmako-border-soft shadow-sm animate-pulse"
+              className="h-40 bg-pharmako-surface rounded-xl animate-pulse"
             />
           ))}
         </div>
       ) : isError ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center bg-pharmako-surface rounded-xl border border-pharmako-border-soft shadow-sm p-6">
+        <div className="flex flex-col items-center justify-center py-12 text-center bg-pharmako-surface rounded-xl  p-6">
           <AlertCircle className="h-10 w-10 text-pharmako-danger mb-3" />
           <p className="text-base font-bold text-pharmako-text-primary">
             Error al cargar las citas
@@ -235,7 +236,7 @@ export default function PatientAppointmentsPage() {
           </p>
         </div>
       ) : appointments.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center bg-pharmako-surface rounded-xl border border-pharmako-border-soft shadow-sm p-8">
+        <div className="flex flex-col items-center justify-center py-16 text-center bg-pharmako-surface rounded-xl p-8">
           <Calendar className="h-12 w-12 text-pharmako-text-muted mb-4" />
           <p className="text-lg font-bold text-pharmako-text-primary">
             No se encontraron citas
