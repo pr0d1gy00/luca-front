@@ -68,7 +68,7 @@ export default function PatientAppointmentsPage() {
   } = usePatientAppointmentsQuery(page, activeTab);
 
   const appointments = paginatedData?.data || [];
-  const totalPages = paginatedData?.last_page || 1;
+  const totalPages: number = paginatedData?.last_page || 1;
 
   const [selectedApt, setSelectedApt] = useState<DetailedAppointment | null>(
     null,
@@ -406,7 +406,7 @@ export default function PatientAppointmentsPage() {
                       Información de la Consulta
                     </h4>
                     <div className="p-4 border-b border-pharmako-border-soft space-y-3">
-                      <div className="flex items-center gap-2.5 text-xs text-pharmako-text-secondary">
+                      <div className="flex items-center gap-2.5 text-sm text-pharmako-text-secondary">
                         <Calendar className="h-4 w-4 text-pharmako-care shrink-0" />
                         <span className="capitalize">
                           {new Date(detailedApt.date).toLocaleDateString(
@@ -420,7 +420,7 @@ export default function PatientAppointmentsPage() {
                           )}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2.5 text-xs text-pharmako-text-secondary">
+                      <div className="flex items-center gap-2.5 text-sm text-pharmako-text-secondary">
                         <Clock className="h-4 w-4 text-pharmako-care shrink-0" />
                         <span>{detailedApt.time.slice(0, 5)} HS</span>
                       </div>
@@ -470,8 +470,8 @@ export default function PatientAppointmentsPage() {
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
                       Médico Especialista
                     </h4>
-                    <div className="p-4 border-b border-pharmako-border-soft flex items-start gap-3 ">
-                      <div className="p-2 bg-pharmako-primary-light rounded-xl border border-pharmako-primary-muted/10 shrink-0">
+                    <div className="p-4 flex items-start gap-3 ">
+                      <div className="p-2 rounded-xl shrink-0">
                         <User className="h-5 w-5 text-pharmako-care" />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -510,8 +510,8 @@ export default function PatientAppointmentsPage() {
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
                       Sede de Atención
                     </h4>
-                    <div className="p-4 border-b border-pharmako-border-soft flex items-start gap-3">
-                      <div className="p-2 bg-pharmako-primary-light rounded-xl border border-pharmako-primary-muted/10 shrink-0">
+                    <div className="p-4 flex items-start gap-3">
+                      <div className="p-2 rounded-xl shrink-0">
                         <Building className="h-5 w-5 text-pharmako-care" />
                       </div>
                       <div className="min-w-0 flex-1">
