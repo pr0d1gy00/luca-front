@@ -8,16 +8,19 @@ import { useCallback } from "react";
 
 export const patientAppointmentKeys = {
   all: ["patient-appointments"] as const,
-  list: (page: number) =>
-    [...patientAppointmentKeys.all, "list", page] as const,
+  list: (page: number, filter: string) =>
+    [...patientAppointmentKeys.all, "list", page, filter] as const,
 };
 
-export function usePatientAppointmentsQuery(page: number = 1) {
+export function usePatientAppointmentsQuery(
+  page: number = 1,
+  filter: string = "all",
+) {
   const { user } = useAuthStore();
   const patientUuid = user?.id ?? user?.uuid ?? "";
 
   const fetchOfflineAppointments = useCallback(
-    async (pageNumber: number) => {
+    async (pageNumber: number, activeFilter: string) => {
       if (!patientUuid) {
         return {
           current_page: pageNumber,
@@ -33,18 +36,37 @@ export function usePatientAppointmentsQuery(page: number = 1) {
         const allLocal = await db.appointments.toArray();
 
         // 2. Filtrar por el paciente actual
-        const patientApts = allLocal.filter(
+        let patientApts = allLocal.filter(
           (apt) => apt.patientUuid === patientUuid,
         );
 
-        // 3. Ordenar por fecha y hora descendente (más recientes y futuras primero)
+        // 3. Aplicar filtros locales de estado
+        const todayStr = new Date().toISOString().split("T")[0];
+        if (activeFilter === "upcoming") {
+          patientApts = patientApts.filter(
+            (apt) =>
+              apt.date >= todayStr &&
+              apt.status !== "CANCELLED" &&
+              apt.status !== "COMPLETED",
+          );
+        } else if (activeFilter === "past") {
+          patientApts = patientApts.filter(
+            (apt) =>
+              apt.status === "COMPLETED" ||
+              (apt.date < todayStr && apt.status !== "CANCELLED"),
+          );
+        } else if (activeFilter === "cancelled") {
+          patientApts = patientApts.filter((apt) => apt.status === "CANCELLED");
+        }
+
+        // 4. Ordenar por fecha y hora descendente (más recientes y futuras primero)
         patientApts.sort((a, b) => {
           const dateTimeA = `${a.date}T${a.time}`;
           const dateTimeB = `${b.date}T${b.time}`;
           return dateTimeB.localeCompare(dateTimeA);
         });
 
-        // 4. Paginar localmente (20 elementos por página)
+        // 5. Paginar localmente (20 elementos por página)
         const perPage = 20;
         const total = patientApts.length;
         const lastPage = Math.ceil(total / perPage) || 1;
@@ -52,10 +74,8 @@ export function usePatientAppointmentsQuery(page: number = 1) {
         const pagedData = patientApts.slice(startIndex, startIndex + perPage);
 
         // Mapeamos los campos locales a los campos esperados por la UI
-        // (doctor y clinicBranch son relaciones que simulamos localmente si no existen)
         const mappedData = pagedData.map((apt) => ({
           ...apt,
-          // Mock simple de relaciones si no están hidratadas localmente
           doctor: (apt as unknown as Record<string, unknown>).doctor ?? {
             full_name: "Médico de Guardia",
             specialties: [{ name: "Medicina General" }],
@@ -92,21 +112,20 @@ export function usePatientAppointmentsQuery(page: number = 1) {
   );
 
   return useQuery({
-    queryKey: patientAppointmentKeys.list(page),
+    queryKey: patientAppointmentKeys.list(page, filter),
     queryFn: async () => {
       const isOnline = typeof window !== "undefined" && navigator.onLine;
 
       if (!isOnline) {
-        return fetchOfflineAppointments(page);
+        return fetchOfflineAppointments(page, filter);
       }
 
       try {
-        const response = await appointmentApi.getPatientAppointments(page);
-        // La paginación de Laravel tiene la estructura { data: { data: [...], current_page: ... } }
-        const paginated = (response as Record<string, unknown>).data as Record<
-          string,
-          unknown
-        >;
+        const response = await appointmentApi.getPatientAppointments(
+          page,
+          filter,
+        );
+        const paginated = response as Record<string, unknown>;
         const appointmentsArray = (paginated?.data as unknown[]) || [];
 
         // Guardar las citas descargadas localmente en Dexie de forma asíncrona
@@ -160,7 +179,7 @@ export function usePatientAppointmentsQuery(page: number = 1) {
           "[usePatientAppointmentsQuery] Server fetch failed. Falling back to local cache.",
           error,
         );
-        return fetchOfflineAppointments(page);
+        return fetchOfflineAppointments(page, filter);
       }
     },
     staleTime: 2 * 60 * 1000, // 2 minutos de caché fresca

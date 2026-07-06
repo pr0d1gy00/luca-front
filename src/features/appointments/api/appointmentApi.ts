@@ -107,12 +107,12 @@ export const appointmentApi = {
     await apiClient.delete(`/appointments/${uuid}`);
   },
 
-  /**
-   * Get paginated appointments for the authenticated patient
-   */
-  getPatientAppointments: async (page: number = 1): Promise<unknown> => {
+  getPatientAppointments: async (
+    page: number = 1,
+    filter: string = "all",
+  ): Promise<unknown> => {
     const response = await apiClient.get<unknown>("/patients/me/appointments", {
-      params: { page },
+      params: { page, filter },
     });
     return response.data;
   },

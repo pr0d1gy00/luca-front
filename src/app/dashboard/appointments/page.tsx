@@ -29,35 +29,10 @@ export default function PatientAppointmentsPage() {
     data: paginatedData,
     isLoading,
     isError,
-  } = usePatientAppointmentsQuery(page);
+  } = usePatientAppointmentsQuery(page, activeTab);
 
   const appointments = paginatedData?.data || [];
   const totalPages = paginatedData?.last_page || 1;
-
-  // Filtrado local de las citas según la pestaña activa
-  const getFilteredAppointments = () => {
-    const todayStr = new Date().toISOString().split("T")[0];
-
-    return appointments.filter((apt) => {
-      const isCancelled = apt.status === "CANCELLED";
-      const isCompleted = apt.status === "COMPLETED";
-      const isPastDate = apt.date < todayStr;
-
-      switch (activeTab) {
-        case "upcoming":
-          return !isCancelled && !isCompleted && !isPastDate;
-        case "past":
-          return isCompleted || (isPastDate && !isCancelled);
-        case "cancelled":
-          return isCancelled;
-        case "all":
-        default:
-          return true;
-      }
-    });
-  };
-
-  const filteredApts = getFilteredAppointments();
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -138,7 +113,10 @@ export default function PatientAppointmentsPage() {
         {(["all", "upcoming", "past", "cancelled"] as TabType[]).map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => {
+              setActiveTab(tab);
+              setPage(1);
+            }}
             className={cn(
               "px-4 py-2.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-all duration-200",
               activeTab === tab
@@ -175,7 +153,7 @@ export default function PatientAppointmentsPage() {
             conexión, revisa tu base de datos local.
           </p>
         </div>
-      ) : filteredApts.length === 0 ? (
+      ) : appointments.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center bg-pharmako-surface rounded-xl border border-pharmako-border-soft shadow-sm p-8">
           <Calendar className="h-12 w-12 text-pharmako-text-muted mb-4" />
           <p className="text-lg font-bold text-pharmako-text-primary">
@@ -205,7 +183,7 @@ export default function PatientAppointmentsPage() {
       ) : (
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredApts.map((apt) => {
+            {appointments.map((apt) => {
               const doctorName =
                 apt.doctor?.full_name ||
                 apt.doctor?.fullName ||
