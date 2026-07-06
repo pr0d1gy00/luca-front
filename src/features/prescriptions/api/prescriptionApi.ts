@@ -23,7 +23,7 @@ export const prescriptionApi = {
    * Obtiene las cotizaciones/ofertas del mercado para el paciente.
    */
   getPatientQuotes: async () => {
-    const { data } = await apiClient.get("/patients/me/quotes");
+    const { data } = await apiClient.get("/patients/me/quote-requests");
     return data;
   },
 };
