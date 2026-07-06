@@ -44,6 +44,13 @@ export const navigationConfig: NavItem[] = [
     roles: ["patient"],
   },
   {
+    title: "Mis Recetas",
+    name: "recetas",
+    href: "/dashboard/recetas",
+    icon: PiPillBold,
+    roles: ["patient"],
+  },
+  {
     title: "Pacientes",
     name: "patients",
     href: "/dashboard/patients",
