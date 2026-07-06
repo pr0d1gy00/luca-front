@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { usePatientAppointmentsQuery } from "@/features/appointments/hooks/usePatientAppointmentsQuery";
 import { appointmentApi } from "@/features/appointments/api/appointmentApi";
+import { useAuthStore } from "@/store/auth";
 import {
   Calendar,
   Clock,
@@ -57,6 +58,7 @@ interface DetailedAppointment {
 }
 
 export default function PatientAppointmentsPage() {
+  const { user } = useAuthStore();
   const [page, setPage] = useState(1);
   const [activeTab, setActiveTab] = useState<TabType>("all");
   const [, startTransition] = useTransition();
@@ -215,7 +217,7 @@ export default function PatientAppointmentsPage() {
       </div>
 
       {/* Contenedor Principal / Lista */}
-      {isLoading || (isFetching && appointments.length === 0) ? (
+      {isLoading || (isFetching && appointments.length === 0) || !user ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map((i) => (
             <div
