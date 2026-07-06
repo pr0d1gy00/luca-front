@@ -125,26 +125,26 @@ export default function PatientAppointmentsPage() {
 
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; className: string }> = {
-      PENDING: {
+      pending: {
         label: "Pendiente",
         className:
           "bg-pharmako-warning-light text-pharmako-warning border-pharmako-warning/10",
       },
-      CONFIRMED: {
+      confirmed: {
         label: "Confirmada",
         className:
           "bg-pharmako-success-light text-pharmako-success border-pharmako-success/10",
       },
-      COMPLETED: {
+      completed: {
         label: "Completada",
         className: "bg-slate-50 text-slate-600 border-slate-200",
       },
-      CANCELLED: {
+      cancelled: {
         label: "Cancelada",
         className:
           "bg-pharmako-danger-light text-pharmako-danger border-pharmako-danger/10",
       },
-      NO_SHOW: {
+      no_show: {
         label: "No Asistió",
         className:
           "bg-pharmako-danger-light text-pharmako-danger border-pharmako-danger/10",
