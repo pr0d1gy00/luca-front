@@ -387,25 +387,25 @@ export default function PatientAppointmentsPage() {
                 <div className="flex items-center justify-between gap-3">
                   <DialogTitle className="text-lg font-bold text-pharmako-text-primary flex items-center gap-2">
                     Detalles de la Cita Médica
+                    {getStatusBadge(detailedApt.status)}
                     {isLoadingDetail && (
                       <span className="text-[10px] font-normal text-pharmako-text-muted animate-pulse">
                         (Cargando...)
                       </span>
                     )}
                   </DialogTitle>
-                  {getStatusBadge(detailedApt.status)}
                 </div>
               </DialogHeader>
 
               {/* Grid Layout de 2 Columnas */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4 max-h-[60vh] overflow-y-auto pr-1">
+              <div className="gap-6 py-4 max-h-[60vh] overflow-y-auto pr-1">
                 {/* Columna Izquierda: Información de la Consulta */}
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
                       Información de la Consulta
                     </h4>
-                    <div className="p-4 rounded-xl border border-pharmako-border-soft space-y-3 bg-pharmako-surface shadow-xs">
+                    <div className="p-4 border-b border-pharmako-border-soft space-y-3">
                       <div className="flex items-center gap-2.5 text-xs text-pharmako-text-secondary">
                         <Calendar className="h-4 w-4 text-pharmako-care shrink-0" />
                         <span className="capitalize">
@@ -466,11 +466,11 @@ export default function PatientAppointmentsPage() {
                 {/* Columna Derecha: Médico y Clínica */}
                 <div className="space-y-4">
                   {/* Sección Médico */}
-                  <div className="space-y-2">
+                  <div className="space-y-2 mt-4">
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
                       Médico Especialista
                     </h4>
-                    <div className="p-4 bg-pharmako-surface rounded-xl border border-pharmako-border-soft flex items-start gap-3 shadow-xs">
+                    <div className="p-4 border-b border-pharmako-border-soft flex items-start gap-3 ">
                       <div className="p-2 bg-pharmako-primary-light rounded-xl border border-pharmako-primary-muted/10 shrink-0">
                         <User className="h-5 w-5 text-pharmako-care" />
                       </div>
@@ -506,11 +506,11 @@ export default function PatientAppointmentsPage() {
                   </div>
 
                   {/* Sección Clínica */}
-                  <div className="space-y-2">
+                  <div className="space-y-2 mt-4">
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
                       Sede de Atención
                     </h4>
-                    <div className="p-4 bg-pharmako-surface rounded-xl border border-pharmako-border-soft flex items-start gap-3 shadow-xs">
+                    <div className="p-4 border-b border-pharmako-border-soft flex items-start gap-3">
                       <div className="p-2 bg-pharmako-primary-light rounded-xl border border-pharmako-primary-muted/10 shrink-0">
                         <Building className="h-5 w-5 text-pharmako-care" />
                       </div>
@@ -562,11 +562,11 @@ export default function PatientAppointmentsPage() {
                 </div>
               </div>
 
-              <DialogFooter className="border-t border-pharmako-border-soft pt-4 flex items-center justify-end">
+              <DialogFooter className="bg-white border-t border-pharmako-border-soft pt-4 flex items-center justify-end">
                 <Button
                   variant="outline"
                   onClick={() => setSelectedApt(null)}
-                  className="border-pharmako-border text-pharmako-text-primary hover:bg-pharmako-background rounded-lg font-medium"
+                  className="bg-red-500/10 border-red-500/10 text-red-500 hover:text-red-500 hover:bg-red-500/20 rounded-lg font-medium"
                 >
                   Cerrar
                 </Button>
