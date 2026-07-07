@@ -7,21 +7,21 @@ import {
   Calendar,
   User,
   Activity,
-  FileText,
   Heart,
   Thermometer,
   Waves,
   Mail,
   Phone,
-  Building,
   AlertCircle,
   ChevronLeft,
   ChevronRight,
   ClipboardList,
   Pill,
+  Search,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -73,17 +73,41 @@ interface DetailedConsultation {
   } | null;
 }
 
+const COMMON_SPECIALTIES = [
+  "Medicina General",
+  "Cardiología",
+  "Pediatría",
+  "Ginecología",
+  "Traumatología",
+  "Dermatología",
+  "Oftalmología",
+];
+
 export default function PatientConsultationsPage() {
   const { user } = useAuthStore();
   const [page, setPage] = useState(1);
   const [, startTransition] = useTransition();
+
+  // Estados de los filtros
+  const [searchVal, setSearchVal] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [specialtyVal, setSpecialtyVal] = useState("");
+
+  // Debounce para el buscador de texto
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchVal);
+      setPage(1); // Reiniciar a página 1 cuando cambia el filtro
+    }, 350);
+    return () => clearTimeout(handler);
+  }, [searchVal]);
 
   const {
     data: paginatedData,
     isLoading,
     isError,
     isFetching,
-  } = usePatientConsultationsQuery(page);
+  } = usePatientConsultationsQuery(page, debouncedSearch, specialtyVal);
 
   const consultations = paginatedData?.data || [];
   const totalPages: number = paginatedData?.last_page || 1;
@@ -111,6 +135,15 @@ export default function PatientConsultationsPage() {
     }
   };
 
+  const handleClearFilters = () => {
+    setSearchVal("");
+    setDebouncedSearch("");
+    setSpecialtyVal("");
+    setPage(1);
+  };
+
+  const hasActiveFilters = !!searchVal || !!specialtyVal;
+
   return (
     <div className="flex flex-col gap-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-6">
       {/* Encabezado */}
@@ -122,6 +155,61 @@ export default function PatientConsultationsPage() {
           Accede al registro de tus consultas, diagnósticos SOAP y
           prescripciones.
         </p>
+      </div>
+
+      {/* Barra de Filtros (Buscador y Especialidad) */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-pharmako-surface p-4 rounded-xl border border-pharmako-border-soft">
+        {/* Buscador de Texto */}
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-pharmako-text-muted" />
+          <Input
+            type="text"
+            placeholder="Buscar por diagnóstico, síntoma o doctor..."
+            value={searchVal}
+            onChange={(e) => setSearchVal(e.target.value)}
+            className="pl-9 pr-8 bg-pharmako-surface border-pharmako-border focus:ring-pharmako-primary text-xs h-9 rounded-lg"
+          />
+          {searchVal && (
+            <button
+              onClick={() => setSearchVal("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-pharmako-text-muted hover:text-pharmako-text-primary transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Dropdown de Especialidad */}
+        <div className="w-full sm:w-56">
+          <select
+            value={specialtyVal}
+            onChange={(e) => {
+              setSpecialtyVal(e.target.value);
+              setPage(1);
+            }}
+            className="w-full h-9 rounded-lg border border-pharmako-border bg-pharmako-surface px-3 py-1 text-xs text-pharmako-text-primary outline-none focus:ring-1 focus:ring-pharmako-primary transition-all"
+          >
+            <option value="">Todas las especialidades</option>
+            {COMMON_SPECIALTIES.map((spec) => (
+              <option key={spec} value={spec}>
+                {spec}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Botón para Limpiar */}
+        {hasActiveFilters && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleClearFilters}
+            className="border-pharmako-border hover:bg-pharmako-background text-xs h-9 px-3 shrink-0 rounded-lg flex items-center gap-1.5"
+          >
+            <X className="h-3.5 w-3.5" />
+            Limpiar Filtros
+          </Button>
+        )}
       </div>
 
       {/* Contenedor Principal / Lista */}
@@ -152,9 +240,20 @@ export default function PatientConsultationsPage() {
             No se encontraron consultas registradas
           </p>
           <p className="text-sm text-pharmako-text-secondary mt-1 max-w-sm">
-            Tus consultas y diagnósticos aparecerán aquí una vez que asistas a
-            tu primera cita en el consultorio.
+            {hasActiveFilters
+              ? "Prueba modificando los términos de búsqueda o especialidad seleccionada."
+              : "Tus consultas y diagnósticos aparecerán aquí una vez que asistas a tu primera cita."}
           </p>
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClearFilters}
+              className="mt-4 border-pharmako-border hover:bg-pharmako-background text-xs h-8 px-3 rounded-lg"
+            >
+              Restablecer filtros
+            </Button>
+          )}
         </div>
       ) : (
         <div className="flex flex-col gap-4">

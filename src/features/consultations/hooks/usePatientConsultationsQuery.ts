@@ -8,16 +8,25 @@ import { useCallback } from "react";
 
 export const patientConsultationKeys = {
   all: ["patient-consultations"] as const,
-  list: (page: number) =>
-    [...patientConsultationKeys.all, "list", page] as const,
+  list: (page: number, search?: string, specialty?: string) =>
+    [
+      ...patientConsultationKeys.all,
+      "list",
+      page,
+      { search, specialty },
+    ] as const,
 };
 
-export function usePatientConsultationsQuery(page: number = 1) {
+export function usePatientConsultationsQuery(
+  page: number = 1,
+  search: string = "",
+  specialty: string = "",
+) {
   const { user } = useAuthStore();
   const patientUuid = user?.id ?? user?.uuid ?? "";
 
   const fetchOfflineConsultations = useCallback(
-    async (pageNumber: number) => {
+    async (pageNumber: number, offSearch: string, offSpecialty: string) => {
       if (!patientUuid) {
         return {
           current_page: pageNumber,
@@ -37,27 +46,18 @@ export function usePatientConsultationsQuery(page: number = 1) {
           (c) => c.patientUuid === patientUuid,
         );
 
-        // 3. Ordenar por fecha descendente
-        patientConsults.sort((a, b) => b.date.localeCompare(a.date));
-
-        // 4. Paginar localmente (20 por página)
-        const perPage = 20;
-        const total = patientConsults.length;
-        const lastPage = Math.ceil(total / perPage) || 1;
-        const startIndex = (pageNumber - 1) * perPage;
-        const pagedData = patientConsults.slice(
-          startIndex,
-          startIndex + perPage,
-        );
-
-        // Para cada consulta offline, cargamos también sus relaciones locales
-        const mappedData = await Promise.all(
-          pagedData.map(async (c) => {
+        // Map para simular la estructura de especialidades e información del doctor
+        let consultsWithDocs = await Promise.all(
+          patientConsults.map(async (c) => {
             // Buscar signos vitales locales para la consulta
             const vital = await db.vitalSigns
               .where("consultationUuid")
               .equals(c.uuid)
               .first();
+
+            // Buscar si ya tiene datos de user offline
+            const mappedUser = (c as unknown as Record<string, unknown>)
+              .user as Record<string, unknown> | undefined;
 
             return {
               id: c.uuid,
@@ -69,8 +69,7 @@ export function usePatientConsultationsQuery(page: number = 1) {
               diagnosis: c.diagnosis,
               treatment_plan: c.treatmentPlan,
               dynamic_data: c.dynamicData,
-              // Relación simulada del médico para offline
-              user: (c as unknown as Record<string, unknown>).user ?? {
+              user: mappedUser ?? {
                 full_name: "Médico de Guardia",
                 specialties: [{ name: "Medicina General" }],
               },
@@ -90,9 +89,58 @@ export function usePatientConsultationsQuery(page: number = 1) {
           }),
         );
 
+        // 3. Aplicar Filtro de Especialidad Offline
+        if (offSpecialty) {
+          const specQuery = offSpecialty.toLowerCase();
+          consultsWithDocs = consultsWithDocs.filter((c) => {
+            const specs = (c.user as Record<string, unknown>)?.specialties as
+              | Array<Record<string, unknown>>
+              | undefined;
+            const hasMatch = specs?.some((s) =>
+              String(s.name || "")
+                .toLowerCase()
+                .includes(specQuery),
+            );
+            return !!hasMatch;
+          });
+        }
+
+        // 4. Aplicar Filtro de Búsqueda Offline (Texto en diagnóstico, motivo o nombre médico)
+        if (offSearch) {
+          const searchQuery = offSearch.toLowerCase();
+          consultsWithDocs = consultsWithDocs.filter((c) => {
+            const diag = String(c.diagnosis || "").toLowerCase();
+            const reas = String(c.reason || "").toLowerCase();
+            const docName = String(
+              (c.user as Record<string, unknown>)?.full_name ||
+                (c.user as Record<string, unknown>)?.fullName ||
+                "",
+            ).toLowerCase();
+
+            return (
+              diag.includes(searchQuery) ||
+              reas.includes(searchQuery) ||
+              docName.includes(searchQuery)
+            );
+          });
+        }
+
+        // 5. Ordenar por fecha descendente
+        consultsWithDocs.sort((a, b) => b.date.localeCompare(a.date));
+
+        // 6. Paginar localmente (20 por página)
+        const perPage = 20;
+        const total = consultsWithDocs.length;
+        const lastPage = Math.ceil(total / perPage) || 1;
+        const startIndex = (pageNumber - 1) * perPage;
+        const pagedData = consultsWithDocs.slice(
+          startIndex,
+          startIndex + perPage,
+        );
+
         return {
           current_page: pageNumber,
-          data: mappedData,
+          data: pagedData,
           last_page: lastPage,
           per_page: perPage,
           total: total,
@@ -115,17 +163,20 @@ export function usePatientConsultationsQuery(page: number = 1) {
   );
 
   return useQuery({
-    queryKey: patientConsultationKeys.list(page),
+    queryKey: patientConsultationKeys.list(page, search, specialty),
     queryFn: async () => {
       const isOnline = typeof window !== "undefined" && navigator.onLine;
 
       if (!isOnline) {
-        return fetchOfflineConsultations(page);
+        return fetchOfflineConsultations(page, search, specialty);
       }
 
       try {
-        const response =
-          await patientConsultationApi.getPatientConsultations(page);
+        const response = await patientConsultationApi.getPatientConsultations(
+          page,
+          search,
+          specialty,
+        );
         const paginated = response as Record<string, unknown>;
         const rawArray =
           (paginated?.data?.data as unknown[]) ||
@@ -138,7 +189,11 @@ export function usePatientConsultationsQuery(page: number = 1) {
             const consult = rawConsult as Record<string, unknown>;
             const consultUuid = String(consult.uuid ?? consult.id ?? "");
 
-            await db.consultations.put({
+            // Conservamos la relación 'user' para la consulta guardándola como metadata
+            // para que esté disponible offline
+            const consultUser = consult.user || {};
+
+            const offlineConsultRecord = {
               uuid: consultUuid,
               patientUuid: String(
                 consult.patient_id ?? consult.patientUuid ?? patientUuid,
@@ -169,7 +224,15 @@ export function usePatientConsultationsQuery(page: number = 1) {
               dynamicData: (consult.dynamic_data ??
                 consult.dynamicData ??
                 {}) as Record<string, unknown>,
-            });
+              // Atributo dinámico guardado para persistir datos de médico offline
+              user: consultUser,
+            };
+
+            await db.consultations.put(
+              offlineConsultRecord as unknown as Parameters<
+                typeof db.consultations.put
+              >[0],
+            );
 
             // Guardar también los signos vitales si vienen en la respuesta
             if (consult.vital_sign || consult.vitalSign) {
@@ -212,7 +275,7 @@ export function usePatientConsultationsQuery(page: number = 1) {
           "[usePatientConsultationsQuery] Server fetch failed. Falling back to local cache.",
           error,
         );
-        return fetchOfflineConsultations(page);
+        return fetchOfflineConsultations(page, search, specialty);
       }
     },
     staleTime: 2 * 60 * 1000,
