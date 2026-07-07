@@ -5,6 +5,7 @@ import {
   PiFileTextBold,
   PiCalendarBold,
   PiClockBold,
+  PiCreditCardBold,
 } from "react-icons/pi";
 import React from "react";
 
@@ -62,6 +63,13 @@ export const navigationConfig: NavItem[] = [
     name: "lab-results",
     href: "/dashboard/lab-results",
     icon: PiFileTextBold,
+    roles: ["patient"],
+  },
+  {
+    title: "Mis Facturas",
+    name: "invoices",
+    href: "/dashboard/invoices",
+    icon: PiCreditCardBold,
     roles: ["patient"],
   },
   {
