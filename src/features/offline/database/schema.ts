@@ -238,7 +238,7 @@ export interface LabResult extends SyncableEntity {
   notes: string;
   reviewedByDoctorUuid: string | null;
   reviewedAt: string | null;
-  status: "PENDING_REVIEW" | "COMPLETED" | "ABNORMAL";
+  status: "PENDING" | "COMPLETED" | "ABNORMAL" | "CANCELLED";
   performedAt: string;
 }
 
