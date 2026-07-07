@@ -73,6 +73,13 @@ export const navigationConfig: NavItem[] = [
     roles: ["patient"],
   },
   {
+    title: "Mis Documentos",
+    name: "medical-documents",
+    href: "/dashboard/medical-documents",
+    icon: PiFileTextBold,
+    roles: ["patient"],
+  },
+  {
     title: "Pacientes",
     name: "patients",
     href: "/dashboard/patients",
