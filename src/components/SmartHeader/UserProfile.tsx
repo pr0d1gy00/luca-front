@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { SettingsIcon, LogOutIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useLogout } from "@/features/auth/hooks/useLogout";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -32,7 +33,8 @@ const ROLE_LABELS: Record<Role, string> = {
 
 export function UserProfile() {
   const router = useRouter();
-  const { name, email, avatar, role, clearAuth } = useAuthStore();
+  const { name, email, avatar, role } = useAuthStore();
+  const { logout } = useLogout();
   const roleLabel = ROLE_LABELS[role] ?? "Médico";
   const initials = name ? name[0].toUpperCase() : "U";
 
@@ -91,8 +93,7 @@ export function UserProfile() {
           role="menuitem"
           variant="destructive"
           onClick={() => {
-            clearAuth();
-            router.push("/");
+            logout();
           }}
         >
           <LogOutIcon className="size-4" />

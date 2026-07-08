@@ -1,9 +1,7 @@
-"use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, X, Pill, FileText } from "lucide-react";
+import { Plus, X, Pill, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   consultationSchema,
@@ -20,19 +18,8 @@ import { DigitalPrescriptionCard } from "./DigitalPrescriptionCard";
 interface ClinicalNotesFormProps {
   onSubmit: (data: Consultation) => void;
   onGeneratePrescription: (data: Consultation) => void;
-  patient?: {
-    firstName: string;
-    lastName: string;
-    documentId: string;
-    birthDate: Date;
-    biologicalSex: "MALE" | "FEMALE";
-  };
-  doctor?: {
-    name: string;
-    specialty: string;
-    mpps: string;
-    cm: string;
-  };
+  patient?: Patient;
+  doctor?: Doctor;
   medicationsCatalog?: {
     id: string;
     activePrinciple: string;
@@ -45,6 +32,19 @@ interface ClinicalNotesFormProps {
       | "AMPOLLA"
       | "CREMA";
   }[];
+  defaultValues?: {
+    motivoConsulta: string;
+    examenFisico: string;
+    diagnostico: string;
+    prescriptions?: {
+      medicationId: string;
+      dose: string;
+      frequency: string;
+      duration: string;
+      notes?: string;
+    }[];
+  };
+  isSubmitting?: boolean;
 }
 
 // Mock medications catalog
@@ -173,6 +173,8 @@ export function ClinicalNotesForm({
   patient,
   doctor,
   medicationsCatalog,
+  defaultValues,
+  isSubmitting = false,
 }: ClinicalNotesFormProps) {
   const meds = medicationsCatalog ?? DEFAULT_MEDICATIONS;
   const [showPrescription, setShowPrescription] = useState(false);
@@ -196,9 +198,10 @@ export function ClinicalNotesForm({
     setValue,
     formState: { errors, isValid },
     watch,
+    reset,
   } = useForm<Consultation>({
     resolver: zodResolver(consultationSchema),
-    defaultValues: {
+    defaultValues: defaultValues ?? {
       motivoConsulta: "",
       examenFisico: "",
       diagnostico: "",
@@ -208,6 +211,40 @@ export function ClinicalNotesForm({
     },
     mode: "onChange",
   });
+
+  // Resetear el formulario reactivamente cuando lleguen los defaultValues
+  useEffect(() => {
+    if (defaultValues) {
+      reset(defaultValues);
+      
+      // Intentar re-popular las variables estructuradas medForms para cada récipe cargado
+      if (defaultValues.prescriptions && defaultValues.prescriptions.length > 0) {
+        const parsedMedForms = defaultValues.prescriptions.map((p) => {
+          // Desarmar dosis "1 tableta" -> quantity: "1"
+          const qty = p.dose ? p.dose.split(" ")[0] : "1";
+          
+          // Desarmar frecuencia "Cada 8 horas" -> freqValue: "8", freqPeriod: "horas"
+          const freqParts = p.frequency ? p.frequency.split(" ") : [];
+          const freqVal = freqParts[1] || "8";
+          const freqPer = freqParts[2] || "horas";
+          
+          // Desarmar duración "7 días" -> durValue: "7", durUnit: "días"
+          const durParts = p.duration ? p.duration.split(" ") : [];
+          const durVal = durParts[0] || "7";
+          const durUnit = durParts[1] || "días";
+
+          return {
+            quantity: isNaN(Number(qty)) ? "1" : qty,
+            freqValue: freqVal,
+            freqPeriod: freqPer,
+            durValue: durVal,
+            durUnit: durUnit,
+          };
+        });
+        setMedForms(parsedMedForms);
+      }
+    }
+  }, [defaultValues, reset]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -333,10 +370,18 @@ export function ClinicalNotesForm({
           </Button>
           <Button
             type="button"
+            disabled={isSubmitting}
             onClick={() => onSubmit(submittedData)}
-            className="rounded-2xl bg-blue-700 hover:bg-blue-800 text-white font-medium px-8 py-3"
+            className="rounded-2xl bg-blue-700 hover:bg-blue-800 text-white font-medium px-8 py-3 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Confirmar y Enviar Récipe
+            {isSubmitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Guardando...
+              </>
+            ) : (
+              "Confirmar y Enviar Récipe"
+            )}
           </Button>
         </div>
       </div>
@@ -621,11 +666,20 @@ export function ClinicalNotesForm({
       <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
         <Button
           type="submit"
-          disabled={!isValid}
-          className="rounded-2xl bg-blue-700 hover:bg-blue-800 text-white font-medium px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!isValid || isSubmitting}
+          className="rounded-2xl bg-blue-700 hover:bg-blue-800 text-white font-medium px-8 py-3 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <FileText className="size-4" />
-          Finalizar Consulta y Emitir Récipe
+          {isSubmitting ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              Procesando...
+            </>
+          ) : (
+            <>
+              <FileText className="size-4" />
+              Finalizar Consulta y Emitir Récipe
+            </>
+          )}
         </Button>
       </div>
     </form>

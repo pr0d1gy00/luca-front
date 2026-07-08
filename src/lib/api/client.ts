@@ -13,16 +13,16 @@ const apiClient = axios.create({
 
 let isRefreshing = false;
 let failedQueue: Array<{
-  resolve: (token: string) => void;
+  resolve: () => void;
   reject: (err: unknown) => void;
 }> = [];
 
-const processQueue = (error: unknown, token: string | null = null) => {
+const processQueue = (error: unknown) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve(token!);
+      prom.resolve();
     }
   });
   failedQueue = [];
@@ -31,7 +31,6 @@ const processQueue = (error: unknown, token: string | null = null) => {
 /**
  * Interceptor de solicitudes:
  * 1. Inyecta el encabezado Idempotency-Key para peticiones POST.
- * 2. Inyecta el token Bearer JWT desde el almacén de Zustand si existe.
  */
 apiClient.interceptors.request.use(
   (config) => {
@@ -40,12 +39,6 @@ apiClient.interceptors.request.use(
       if (!config.headers["Idempotency-Key"]) {
         config.headers["Idempotency-Key"] = uuidv4();
       }
-    }
-
-    // 2. Token de Autenticación
-    const token = useAuthStore.getState().token;
-    if (token && !config.headers["Authorization"]) {
-      config.headers["Authorization"] = `Bearer ${token}`;
     }
 
     return config;
@@ -69,10 +62,9 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       const state = useAuthStore.getState();
 
-      // Si no hay token guardado, o es un endpoint de auth público, rechazamos inmediatamente
-      // (los endpoints OTP retornan 401 por lógica de negocio, no por sesión expirada)
+      // Si es un endpoint de auth público, o no hay sesión activa local, rechazamos inmediatamente
       if (
-        !state.token ||
+        !state.userType ||
         originalRequest.url?.includes("/login") ||
         originalRequest.url?.includes("/refresh") ||
         originalRequest.url?.includes("/verify-otp") ||
@@ -92,11 +84,10 @@ apiClient.interceptors.response.use(
 
       // Si ya hay un refresco de token en progreso, encolamos la petición
       if (isRefreshing) {
-        return new Promise<string>((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
-          .then((token) => {
-            originalRequest.headers["Authorization"] = `Bearer ${token}`;
+          .then(() => {
             return apiClient(originalRequest);
           })
           .catch((err) => {
@@ -113,30 +104,22 @@ apiClient.interceptors.response.use(
             ? "/auth/patients/refresh"
             : "/auth/users/refresh";
 
-        // Usamos una instancia limpia de axios para no disparar interceptores recursivos
-        const response = await axios.post(
+        // Usamos una instancia limpia de axios con cookies
+        await axios.post(
           `${apiClient.defaults.baseURL}${refreshPath}`,
           {},
           {
+            withCredentials: true,
             headers: {
-              Authorization: `Bearer ${state.token}`,
               "Idempotency-Key": uuidv4(),
             },
           },
         );
 
-        const { access_token, accessToken } = response.data;
-        const newToken = access_token || accessToken || "";
-
-        if (state.userType && state.user) {
-          state.setAuth(newToken, state.userType, state.user);
-        }
-
-        processQueue(null, newToken);
-        originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+        processQueue(null);
         return apiClient(originalRequest);
       } catch (refreshError) {
-        processQueue(refreshError, null);
+        processQueue(refreshError);
         state.clearAuth();
         if (typeof window !== "undefined") {
           window.location.href = "/login";

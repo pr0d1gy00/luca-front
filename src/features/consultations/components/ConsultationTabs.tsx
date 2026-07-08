@@ -11,6 +11,25 @@ interface ConsultationTabsProps {
   onGeneratePrescription: (data: Consultation) => void;
   patient?: Patient;
   doctor?: Doctor;
+  defaultValues?: {
+    motivoConsulta: string;
+    examenFisico: string;
+    diagnostico: string;
+    prescriptions?: {
+      medicationId: string;
+      dose: string;
+      frequency: string;
+      duration: string;
+      notes?: string;
+    }[];
+  };
+  medicationsCatalog?: {
+    id: string;
+    activePrinciple: string;
+    concentration: string;
+    presentation: string;
+  }[];
+  isSubmitting?: boolean;
 }
 
 export function ConsultationTabs({
@@ -19,19 +38,22 @@ export function ConsultationTabs({
   onGeneratePrescription,
   patient,
   doctor,
+  defaultValues,
+  medicationsCatalog,
+  isSubmitting,
 }: ConsultationTabsProps) {
   return (
     <Tabs defaultValue="consultation" className="w-full">
       <TabsList className="w-full justify-start rounded-2xl bg-slate-100 p-1 gap-1">
         <TabsTrigger
           value="history"
-          className="rounded-xl data-[state=active]:bg-white data-[state=active]: data-[state=active]:text-slate-700"
+          className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-700"
         >
           Historial Clínico
         </TabsTrigger>
         <TabsTrigger
           value="consultation"
-          className="rounded-xl data-[state=active]:bg-white data-[state=active]: data-[state=active]:text-slate-700"
+          className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-700"
         >
           Consulta Actual
         </TabsTrigger>
@@ -47,6 +69,9 @@ export function ConsultationTabs({
           onGeneratePrescription={onGeneratePrescription}
           patient={patient}
           doctor={doctor}
+          defaultValues={defaultValues}
+          medicationsCatalog={medicationsCatalog}
+          isSubmitting={isSubmitting}
         />
       </TabsContent>
     </Tabs>

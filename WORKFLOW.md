@@ -2,6 +2,11 @@
 
 > Este es el proceso que uso para cada feature. Seguilo en orden.
 
+> ⚠️ **Source of truth de estilos:** este flujo referencia la skill **`luca-design`**
+> (en `.agents/skills/luca-design/SKILL.md`). Si este documento y la skill divergen,
+> **mandan los tokens y reglas de la skill**. Si actualizás este workflow, sincronizá
+> con la skill — no al revés.
+
 ---
 
 ## 1. Entender el contexto (codegraph)
@@ -66,32 +71,99 @@ src/features/tu-feature/
 
 ## 4. Sistema de diseño (obligatorio)
 
-### Colores
+> **Referencia canónica:** `.agents/skills/luca-design/SKILL.md` (sección 2 — Color System,
+> sección 6 — Borders, sección 7 — Components, sección 8 — Iconography).
+
+### Tokens — secciones por dominio
+
+LUCA separa los flujos en dos paletas. Usá la correcta para el contexto.
+
+**Doctor / Patient → Primary (azul)**
 
 | Elemento | Token |
 |----------|-------|
-| Íconos | `text-pharmako-care` |
-| Fondos de íconos | `bg-pharmako-care-light` |
-| Botones primarios | `bg-blue-700 text-white hover:bg-blue-800` |
-| Links | `text-blue-700 hover:text-blue-800` |
-| Bordes de cards | `border-slate-200` |
-| Fondo de cards | `bg-white` |
-| Títulos | `text-slate-900` |
-| Texto secundario | `text-slate-500` |
-| Texto muted | `text-slate-400` |
-| Éxito/Estable | `bg-emerald-50 text-emerald-600` |
-| Alerta/Warning | `bg-amber-50 text-amber-600` |
-| Badge de rol | `bg-pharmako-care-light text-pharmako-care` |
+| Botones primarios | `bg-pharmako-primary text-white hover:bg-pharmako-primary-hover` |
+| Links | `text-pharmako-primary hover:text-pharmako-primary-hover` |
+| Tinte íconos (cards) | `bg-pharmako-primary-light` |
+| Íconos de acción directa | `text-pharmako-primary` |
+| Border lateral de cards Doctor | `border-l-4 border-l-pharmako-primary` |
 
-### Prohibido
-- ❌ `shadow-sm`, `shadow-md`, `shadow-lg`, `shadow-xl`
-- ❌ `luca-primary`, `luca-muted`, `luca-accent`, `luca-surface`
-- ❌ `backdrop-blur`
-- ❌ `react-icons` (solo `lucide-react`)
+**Pharmacy / Medications → Care (teal)**
+
+| Elemento | Token |
+|----------|-------|
+| Botones Care | `bg-pharmako-care text-white hover:bg-pharmako-care-hover` |
+| Badge de categoría/rol | `bg-pharmako-care-light text-pharmako-care` |
+| Tinte íconos (cards) | `bg-pharmako-care-light` |
+| Border lateral de cards Pharmacy | `border-l-4 border-l-pharmako-care` |
+
+**Decorative (KPIs, headers, listas) — `text-pharmako-care`**
+(regla 8 de la skill: íconos dentro de KPI cards, section headers y list titles usan teal,
+independientemente del dominio — son landmarks visuales, no acciones interactivas).
+
+### Tokens — surfaces y textos (Notion-isomatic)
+
+| Elemento | Token |
+|----------|-------|
+| Fondo de app | `bg-pharmako-background` |
+| Fondo de cards | `bg-pharmako-surface` |
+| Surface cálida (opcional) | `bg-pharmako-surface-warm` |
+| Canvas / áreas sutiles | `bg-pharmako-canvas` |
+| Bordes de cards | `border-pharmako-border-soft` |
+| Bordes estándar | `border-pharmako-border` |
+| Títulos / texto primario | `text-pharmako-text-primary` |
+| Texto secundario | `text-pharmako-text-secondary` |
+| Texto muted / placeholder | `text-pharmako-text-muted` |
+
+### Tokens — semánticos
+
+| Estado | Token |
+|--------|-------|
+| Éxito / Estable / Completado | `bg-pharmako-success-light text-pharmako-success` |
+| Warning / Pendiente | `bg-pharmako-warning-light text-pharmako-warning` |
+| Danger / Error / Cancelado | `bg-pharmako-danger-light text-pharmako-danger` |
+| Accent | `bg-pharmako-accent-light text-pharmako-accent` |
+
+### Tokens — focus / interactive
+
+```tsx
+// Inputs y botones (regla 14 — accessibility)
+focus:border-pharmako-primary focus:ring-2 focus:ring-pharmako-primary focus:ring-offset-2
+
+// Button icon-only
+focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pharmako-primary focus-visible:ring-offset-2
+```
+
+### Sombras (regla 5)
+
+| Permitido | Uso |
+|-----------|-----|
+| `shadow-xs` | Lift muy sutil |
+| `shadow-sm` | Cards por default |
+| `shadow-md` | Cards en hover |
+| `shadow-lg` | Modals / popovers |
+| `shadow-xl` | Drawers / overlays grandes |
+
+**Prohibido:** `shadow-2xl` y más pesadas, `shadow-[4px_4px_0px_black]` y variantes
+neo-brutalistas, sombras combinadas con bordes negros gruesos.
+
+### Prohibido (resumen)
+
+- ❌ `shadow-2xl` o más pesadas, `shadow-[…]`, sombras neo-brutalistas (regla 5)
+- ❌ `border-black`, `border-2` gruesos, `border-slate-900` (regla 6)
+- ❌ `luca-primary`, `luca-muted`, `luca-accent`, `luca-surface` (legacy, no existen en la skill)
+- ❌ `backdrop-blur` (regla 9)
+- ❌ `react-icons` — **solo** `lucide-react` (regla 8)
+- ❌ `ease-linear` — siempre `easeOut` (regla 9)
+- ❌ `duration-1000` o más lentas (regla 9)
+- ❌ `animate-bounce` (regla 9)
+- ❌ **Tokens crudos sin prefijo `pharmako-*`**: `text-slate-*`, `bg-slate-*`, `bg-emerald-*`, `bg-amber-*`, `bg-rose-*`, `bg-teal-*`, `bg-blue-*`, `border-slate-*` en el feature code. Toda superficie, texto, borde y estado semántico debe pasar por los tokens de la skill.
 
 ---
 
 ## 5. Estructura de un componente
+
+> **Card Doctor/Patient** (Primary azul) — ejemplo alineado a `luca-design` sección 7:
 
 ```tsx
 "use client";
@@ -107,19 +179,39 @@ export function MiComponente() {
       variants={fadeUpVariant}
       initial="hidden"
       animate="visible"
-      className="bg-white rounded-2xl border border-slate-200 p-6"
+      className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft p-6"
     >
-      {/* Icon wrapper */}
-      <div className="bg-pharmako-care-light rounded-xl p-3">
-        <IconName className="w-5 h-5 text-pharmako-care" />
+      {/* Icon wrapper — Doctor flow: tinte primary */}
+      <div className="bg-pharmako-primary-light rounded-xl p-3">
+        <IconName className="h-5 w-5 text-pharmako-primary" />
       </div>
-      
+
       {/* Content */}
-      <h3 className="text-lg font-semibold text-slate-900">Título</h3>
-      <p className="text-sm text-slate-500">Descripción</p>
+      <h3 className="text-lg font-semibold text-pharmako-text-primary">Título</h3>
+      <p className="text-sm text-pharmako-text-secondary">Descripción</p>
     </motion.div>
   );
 }
+```
+
+> **Card Pharmacy/Medications** (Care teal) — mismo shell, distinto acento:
+
+```tsx
+<div className="bg-pharmako-surface rounded-xl border border-pharmako-border-soft p-6">
+  <div className="bg-pharmako-care-light rounded-xl p-3">
+    <IconName className="h-5 w-5 text-pharmako-care" />
+  </div>
+  <h3 className="text-lg font-semibold text-pharmako-text-primary">Título</h3>
+  <p className="text-sm text-pharmako-text-secondary">Descripción</p>
+</div>
+```
+
+> **Decorative KPI icon** (regla 8) — siempre `text-pharmako-care`, sin importar dominio:
+
+```tsx
+<div className="bg-pharmako-canvas rounded-xl p-3">
+  <KpiIcon className="h-5 w-5 text-pharmako-care" />
+</div>
 ```
 
 ---
@@ -164,6 +256,9 @@ Si creás rutas nuevas bajo `/dashboard/*`, el proxy ya las permite (agregamos `
 
 ## 9. Verificaciones antes de commitear
 
+> Los chequeos de estilo se alinean con la skill `luca-design` (sección 17 — Checklist Before PR).
+> Si todo devuelve vacío, el feature cumple el design system.
+
 ```bash
 # TypeScript
 npx tsc --noEmit --pretty 2>&1 | grep "mi-feature"
@@ -171,12 +266,28 @@ npx tsc --noEmit --pretty 2>&1 | grep "mi-feature"
 # Lint
 npx eslint src/features/mi-feature/ --quiet
 
-# Sombras (DEBE devolver vacío)
-grep -r "shadow-" src/features/mi-feature/
+# ── Tokens legacy `luca-*` (DEBE devolver vacío)
+grep -rE "\b(luca-(primary|muted|accent|surface))\b" src/features/mi-feature/
 
-# Luca tokens (DEBE devolver vacío)
-grep -r "luca-" src/features/mi-feature/
+# ── Tokens crudos sin prefijo pharmako (DEBE devolver vacío).
+# Cubren slate, emerald, amber, rose, teal, blue — toda la paleta cruda.
+grep -rE "\b(text|bg|border)-(slate|emerald|amber|rose|teal|blue)-(50|100|200|300|400|500|600|700|800|900)\b" src/features/mi-feature/
+
+# ── Sombras prohibidas (DEBE devolver vacío).
+# Solo shadow-xs/sm/md/lg/xl están permitidas (regla 5 de la skill).
+grep -rE "\bshadow-(2xl|inner|none|\[)" src/features/mi-feature/
+
+# ── backdrop-blur (DEBE devolver vacío)
+grep -r "backdrop-blur" src/features/mi-feature/
+
+# ── Icon libraries prohibidas (DEBE devolver vacío) — solo lucide-react
+grep -rE "from ['\"](react-icons|@iconify|@mui/icons-material)" src/features/mi-feature/
+
+# ── Animaciones prohibidas (DEBEN devolver vacío)
+grep -rE "(ease-linear|duration-1[0-9]{3}|animate-bounce)" src/features/mi-feature/
 ```
+
+**Si los siete greps devuelven vacío + `tsc` y `eslint` limpios → feature cumple `luca-design`.**
 
 ---
 
@@ -214,5 +325,5 @@ types/index.ts  →  hooks/  →  components/  →  index.ts
        ↓
 DashboardPage wiring  →  proxy check
        ↓
-tsc + eslint + grep shadow/luca  →  commit  →  push  →  engram
+tsc + eslint + grep pharmako/shadow/icons  →  commit  →  push  →  engram
 ```

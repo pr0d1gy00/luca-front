@@ -11,26 +11,26 @@ export const patientNotificationKeys = {
 };
 
 export function usePatientNotificationsQuery() {
-  const { user } = useAuthStore();
+  const { user, role } = useAuthStore();
   const patientUuid = user?.id ?? user?.uuid ?? "";
 
   return useQuery({
     queryKey: patientNotificationKeys.list(),
     queryFn: () => patientNotificationApi.getNotifications(),
-    enabled: !!patientUuid,
+    enabled: !!patientUuid && role === "patient",
     staleTime: 10 * 1000, // 10 segundos
     refetchInterval: 30 * 1000, // Auto-refetch cada 30 segundos
   });
 }
 
 export function usePatientUnreadCountQuery() {
-  const { user } = useAuthStore();
+  const { user, role } = useAuthStore();
   const patientUuid = user?.id ?? user?.uuid ?? "";
 
   return useQuery({
     queryKey: patientNotificationKeys.unreadCount(),
     queryFn: () => patientNotificationApi.getUnreadCount(),
-    enabled: !!patientUuid,
+    enabled: !!patientUuid && role === "patient",
     staleTime: 10 * 1000,
     refetchInterval: 30 * 1000,
   });

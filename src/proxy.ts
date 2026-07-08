@@ -32,6 +32,8 @@ function decodeJwt(token: string) {
  *   - 401                       → limpiar cookie y /login
  */
 export async function proxy(request: NextRequest) {
+  console.log("=== PROXY TRIGGERED ===", request.nextUrl.pathname);
+
   const path = request.nextUrl.pathname;
   const token = request.cookies.get(AUTH_COOKIE)?.value;
 
@@ -52,43 +54,38 @@ export async function proxy(request: NextRequest) {
   }
 
   // ── Con token → verificar con /me ───────────────────────────
-  const payload = decodeJwt(token);
-  const isPatient = !!(
-    payload &&
-    (payload.role === undefined ||
-      (typeof payload.iss === "string" && payload.iss.includes("/patients/")))
-  );
+  try {
+    const userMeResponse = await fetch(`${API_BASE}/auth/me`, {
+      headers: {
+        Cookie: `${AUTH_COOKIE}=${token}`,
+        Accept: "application/json",
+      },
+    });
 
-  const endpoint = isPatient
-    ? `${API_BASE}/auth/patients/me`
-    : `${API_BASE}/auth/users/me`;
+    // 401 → token inválido o vencido
+    if (userMeResponse.status === 401) {
+      const response = NextResponse.redirect(new URL("/login", request.url));
+      response.cookies.delete(AUTH_COOKIE);
+      return response;
+    }
 
-  const userMeResponse = await fetch(endpoint, {
-    headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-  });
-
-  // Cualquiera de las dos sigue en 401 → token inválido
-  if (userMeResponse.status === 401) {
-    const response = NextResponse.redirect(new URL("/login", request.url));
-    response.cookies.delete(AUTH_COOKIE);
-    return response;
-  }
-
-  // 200 OK → verificar is_verified
-  if (userMeResponse.ok) {
-    try {
+    // 200 OK → verificar is_verified
+    if (userMeResponse.ok) {
       const data = (await userMeResponse.json()) as {
-        is_verified?: boolean;
-        isVerified?: boolean;
-        user?: { is_verified?: boolean; isVerified?: boolean };
+        user?: {
+          role?: string;
+          isVerified?: boolean;
+          is_verified?: boolean;
+        };
       };
 
-      const user = data.user ? data.user : data;
+      const user = data.user;
+      if (user) {
+        const isPatient = user.role === "patient";
+        const isVerified = user.isVerified ?? user.is_verified ?? false;
 
-      // Patients no requieren KYC → siempre verificados
-      if (!isPatient) {
-        const isVerified = user.is_verified ?? user.isVerified ?? false;
-        if (!isVerified) {
+        // Si no es paciente y no está verificado, redirigir a pending-verification
+        if (!isPatient && !isVerified) {
           if (path !== "/dashboard/pending-verification") {
             return NextResponse.redirect(
               new URL("/dashboard/pending-verification", request.url),
@@ -96,18 +93,34 @@ export async function proxy(request: NextRequest) {
           }
         }
       }
-    } catch {
-      // JSON inválido → continuar
     }
-  }
 
-  // 403 para users → pending verification
-  if (userMeResponse.status === 403 && !isPatient) {
-    if (path !== "/dashboard/pending-verification") {
-      return NextResponse.redirect(
-        new URL("/dashboard/pending-verification", request.url),
-      );
+    // 403 para users → pending verification
+    if (userMeResponse.status === 403) {
+      try {
+        const data = (await userMeResponse.json()) as {
+          user?: { role?: string };
+        };
+        if (data.user?.role !== "patient") {
+          if (path !== "/dashboard/pending-verification") {
+            return NextResponse.redirect(
+              new URL("/dashboard/pending-verification", request.url),
+            );
+          }
+        }
+      } catch {
+        // En caso de que no tenga JSON body
+        if (path !== "/dashboard/pending-verification") {
+          return NextResponse.redirect(
+            new URL("/dashboard/pending-verification", request.url),
+          );
+        }
+      }
     }
+  } catch (err) {
+    console.error("[Proxy] Network/Verification error:", err);
+    // En caso de error de red con el backend, por seguridad lo mandamos a login
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();

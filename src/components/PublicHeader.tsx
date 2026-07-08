@@ -168,7 +168,7 @@ export default function PublicHeader() {
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
 	const [mounted, setMounted] = useState(false);
-	const token = useAuthStore((state) => state.token);
+	const role = useAuthStore((state) => state.role);
 
 	useEffect(() => {
 		setMounted(true);
@@ -185,7 +185,7 @@ export default function PublicHeader() {
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
 
-	const isLoggedIn = mounted && !!token;
+	const isLoggedIn = mounted && !!role;
 
 	const baseLinks = [
 		{ label: "Inicio", href: "/", icon: Home },

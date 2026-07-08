@@ -14,11 +14,36 @@ import { DailyAgenda } from "./DailyAgenda";
 import { QuickActions } from "./QuickActions";
 
 export function ResumenView() {
-  const kpis = useDoctorKPIs();
-  const appointments = useDoctorAgenda();
-  const nextPatient = useDoctorNextPatient();
+  const { kpis, isLoading: isKpiLoading } = useDoctorKPIs();
+  const { appointments, isLoading: isAgendaLoading } = useDoctorAgenda();
+  const { nextPatient, isLoading: isNextLoading } = useDoctorNextPatient();
   const { actions, toggleAction } = useDoctorActions();
   const router = useRouter();
+
+  const isLoading = isKpiLoading || isAgendaLoading || isNextLoading;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        {/* KPI skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="h-28 bg-slate-100 rounded-xl" />
+          <div className="h-28 bg-slate-100 rounded-xl" />
+          <div className="h-28 bg-slate-100 rounded-xl" />
+        </div>
+        {/* Next Patient & Action Checklist skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="h-48 bg-slate-100 rounded-xl" />
+          <div className="h-48 bg-slate-100 rounded-xl" />
+        </div>
+        {/* Agenda skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2 h-64 bg-slate-100 rounded-xl" />
+          <div className="h-64 bg-slate-100 rounded-xl" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -48,8 +73,8 @@ export function ResumenView() {
         >
           <DailyAgenda
             appointments={appointments}
-            onAppointmentClick={(_id) =>
-              router.push(`/dashboard/consultations/con-001`)
+            onAppointmentClick={(id) =>
+              router.push(`/dashboard/consultations/${id}`)
             }
           />
         </motion.div>

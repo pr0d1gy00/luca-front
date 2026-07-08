@@ -29,10 +29,27 @@ const ALERT_COLORS = {
 };
 
 interface NextPatientCardProps {
-  patient: NextPatient;
+  patient: NextPatient | null;
 }
 
 export function NextPatientCard({ patient }: NextPatientCardProps) {
+  if (!patient) {
+    return (
+      <motion.div
+        variants={scaleInVariant}
+        className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-center h-full min-h-[180px]"
+      >
+        <Stethoscope className="w-8 h-8 text-slate-300 mb-2" />
+        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+          Próximo Paciente
+        </span>
+        <p className="text-sm font-medium text-slate-500">
+          No hay más citas programadas para hoy
+        </p>
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       variants={scaleInVariant}

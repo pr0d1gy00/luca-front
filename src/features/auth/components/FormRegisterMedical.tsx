@@ -117,9 +117,7 @@ export default function FormRegisterMedical({
       console.log("formData", formData);
       const res = await registerDoctor.mutateAsync(formData);
       const user = res.user as UserProfile;
-      const token = res.access_token || res.accessToken || "";
-
-      setAuth(token, "user", user);
+      setAuth("user", user);
 
       toast.success("¡Médico registrado exitosamente!");
       router.push("/dashboard/pending-verification");

@@ -16,7 +16,7 @@ import type { PatientAccount, UserProfile } from "@/features/auth/types";
  */
 export function OfflineProvider({ children }: { children: React.ReactNode }) {
   const isOnline = useSyncStore((s) => s.isOnline);
-  const { userType, token, setAuth } = useAuthStore();
+  const { userType, setAuth } = useAuthStore();
 
   useEffect(() => {
     // Open the database — triggers version 1 and 2 migrations
@@ -39,7 +39,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
             status: string;
             user: PatientAccount;
           }>("/auth/patients/me", payload);
-          setAuth(token ?? "", "patient", data.user, true);
+          setAuth("patient", data.user, true);
           await db.pendingProfileUpdates.delete("patient");
           toast.success(
             "¡Tus cambios de perfil se sincronizaron con el servidor!",
@@ -54,7 +54,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
             status: string;
             user: UserProfile;
           }>("/auth/users/me", payload);
-          setAuth(token ?? "", userType, data.user, data.user.is_verified);
+          setAuth(userType, data.user, data.user.is_verified);
           await db.pendingProfileUpdates.delete("user");
           toast.success(
             "¡Tus cambios de perfil profesional se sincronizaron con el servidor!",
@@ -69,7 +69,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
     };
 
     syncPendingProfiles();
-  }, [isOnline, userType, token, setAuth]);
+  }, [isOnline, userType, setAuth]);
 
   return <>{children}</>;
 }

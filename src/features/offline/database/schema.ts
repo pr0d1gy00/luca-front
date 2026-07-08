@@ -435,6 +435,12 @@ class LucaDatabase extends Dexie {
     this.version(2).stores({
       pendingProfileUpdates: "id, updatedAt",
     });
+
+    // v3: Add appointmentUuid index to consultations for offline lookup
+    this.version(3).stores({
+      consultations:
+        "uuid, patientUuid, doctorUuid, appointmentUuid, date, status, updatedAt, _syncStatus",
+    });
   }
 }
 

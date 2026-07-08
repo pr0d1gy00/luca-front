@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // ── Enums ────────────────────────────────────────────────
-export const biologicalSexEnum = z.enum(["MALE", "FEMALE"]);
+export const biologicalSexEnum = z.enum(["MALE", "FEMALE", "OTHER"]);
 export type BiologicalSex = z.infer<typeof biologicalSexEnum>;
 
 export const presentationEnum = z.enum([
@@ -114,6 +114,7 @@ export type Doctor = z.infer<typeof doctorSchema>;
 export const biologicalSexLabels: Record<BiologicalSex, string> = {
   MALE: "Masculino",
   FEMALE: "Femenino",
+  OTHER: "Otro",
 };
 
 export const presentationLabels: Record<Presentation, string> = {

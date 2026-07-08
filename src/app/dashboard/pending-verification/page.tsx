@@ -7,18 +7,19 @@ import Image from "next/image";
 import { Clock, RefreshCw, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth";
+import { useLogout } from "@/features/auth/hooks/useLogout";
 import apiClient from "@/lib/api/client";
 import PharmakoReviewDocumentsWebP from "../../../../public/PharmakoReviewDocumentsExtraLarge-WEBP.webp";
 
 export default function PendingVerificationPage() {
   const router = useRouter();
-  const { userType, token, setAuth, clearAuth, user } = useAuthStore();
+  const { userType, setAuth, user } = useAuthStore();
+  const { logout: handleLogout, loading: loadingLogout } = useLogout();
 
   const [loadingRefresh, setLoadingRefresh] = useState(false);
-  const [loadingLogout, setLoadingLogout] = useState(false);
 
   const handleRefresh = async () => {
-    if (!token || !userType) {
+    if (!userType) {
       toast.error("Sesión inválida. Por favor, iniciá sesión de nuevo.");
       router.push("/login");
       return;
@@ -28,9 +29,7 @@ export default function PendingVerificationPage() {
     try {
       const endpoint =
         userType === "patient" ? "/auth/patients/me" : "/auth/users/me";
-      const { data } = await apiClient.get(endpoint, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await apiClient.get(endpoint);
 
       const isVerified =
         userType === "patient"
@@ -39,7 +38,7 @@ export default function PendingVerificationPage() {
             (data as { is_verified?: boolean }).is_verified ??
             false);
 
-      setAuth(token, userType, data, isVerified);
+      setAuth(userType, data, isVerified);
 
       if (isVerified) {
         toast.success("¡Tu cuenta ha sido aprobada! Redirigiendo…");
@@ -58,28 +57,6 @@ export default function PendingVerificationPage() {
       }
     } finally {
       setLoadingRefresh(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    setLoadingLogout(true);
-    try {
-      const endpoint =
-        userType === "patient" ? "/auth/patients/logout" : "/auth/users/logout";
-      await apiClient.post(
-        endpoint,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-    } catch {
-      // ignorar error del servidor, limpiamos local de todos modos
-    } finally {
-      clearAuth();
-      toast.success("Sesión cerrada.");
-      router.push("/login");
-      setLoadingLogout(false);
     }
   };
 

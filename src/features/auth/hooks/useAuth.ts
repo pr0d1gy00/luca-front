@@ -46,17 +46,16 @@ export function useLoginPatientMutation() {
   });
 }
 
-export function useGetPatientProfileQuery(token: string | null) {
+export function useGetPatientProfileQuery(enabled = true) {
   return useQuery<PatientProfile, unknown>({
-    queryKey: ["auth", "patient", "me", token],
+    queryKey: ["auth", "patient", "me"],
     queryFn: async () => {
       const { data } = await apiClient.get<PatientProfile>(
         "/auth/patients/me",
-        { headers: { Authorization: `Bearer ${token}` } },
       );
       return data;
     },
-    enabled: !!token,
+    enabled,
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -149,16 +148,14 @@ export function useVerifyOtpMutation() {
   });
 }
 
-export function useGetUserProfileQuery(token: string | null) {
+export function useGetUserProfileQuery(enabled = true) {
   return useQuery<UserProfile, unknown>({
-    queryKey: ["auth", "user", "me", token],
+    queryKey: ["auth", "user", "me"],
     queryFn: async () => {
-      const { data } = await apiClient.get<UserProfile>("/auth/users/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await apiClient.get<UserProfile>("/auth/users/me");
       return data;
     },
-    enabled: !!token,
+    enabled,
     staleTime: 5 * 60 * 1000,
   });
 }

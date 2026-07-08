@@ -84,8 +84,7 @@ export function LoginForm() {
       // Si la cuenta no está verificada (KYC pending), ir a pending page
       const isVerified = user.is_verified ?? user.isVerified ?? false;
       const requiresKyc = user.role === "DOCTOR" || user.role === "PROVIDER";
-      const userToken = resUser.access_token || resUser.accessToken || "";
-      setAuth(userToken, "user", user, isVerified);
+      setAuth("user", user, isVerified);
 
       if (!isVerified && requiresKyc) {
         toast.info(
@@ -118,20 +117,12 @@ export function LoginForm() {
           console.log("[LoginForm] Patient login response:", resPatient);
 
           // Obtener el perfil completo (PatientAccount) con campos adicionales
-          const patientToken =
-            resPatient.access_token || resPatient.accessToken || "";
-          console.log(
-            "[LoginForm] Patient token:",
-            patientToken ? "present" : "MISSING",
-          );
-
           const { data: patientFull } = await apiClient.get<PatientAccount>(
-            "/auth/patients/me",
-            { headers: { Authorization: `Bearer ${patientToken}` } },
+            "/auth/patients/me"
           );
           console.log("[LoginForm] /me response:", patientFull);
 
-          setAuth(patientToken, "patient", patientFull, true);
+          setAuth("patient", patientFull, true);
           console.log(
             "[LoginForm] Store state BEFORE redirect:",
             JSON.stringify(useAuthStore.getState()),
@@ -240,17 +231,15 @@ export function LoginForm() {
 
       const res = await verifyOtp.mutateAsync(payload);
       const profile = res.user;
-      const otpToken = res.access_token || res.accessToken || "";
       // El backend devuelve userType: 'patient' | 'user' según la cuenta real
       const detectedUserType = res.userType ?? "user";
 
       if (detectedUserType === "patient") {
         // Obtener el perfil completo (PatientAccount)
         const { data: patientFull } = await apiClient.get<PatientAccount>(
-          "/auth/patients/me",
-          { headers: { Authorization: `Bearer ${otpToken}` } },
+          "/auth/patients/me"
         );
-        setAuth(otpToken, "patient", patientFull, true);
+        setAuth("patient", patientFull, true);
         toast.success(
           `¡Bienvenido, ${
             patientFull.fullName || patientFull.full_name || "Usuario"
@@ -260,7 +249,7 @@ export function LoginForm() {
         const user = profile as UserProfile;
         const isVerified = user.is_verified ?? user.isVerified ?? false;
         const requiresKyc = user.role === "DOCTOR" || user.role === "PROVIDER";
-        setAuth(otpToken, "user", user, isVerified);
+        setAuth("user", user, isVerified);
 
         if (!isVerified && requiresKyc) {
           toast.info(

@@ -16,7 +16,6 @@ export interface AuthState {
   avatar?: string;
 
   // Real auth state
-  token: string | null;
   userType: "patient" | "user" | null;
   user: PatientAccount | UserProfile | PatientProfile | null;
   isVerified: boolean;
@@ -24,26 +23,11 @@ export interface AuthState {
   // Actions
   setRole: (role: Role) => void;
   setAuth: (
-    token: string,
     userType: "patient" | "user",
     user: PatientAccount | UserProfile | PatientProfile,
     isVerified?: boolean,
   ) => void;
   clearAuth: () => void;
-}
-
-// ── Cookie helpers (client-side only) ─────────────────────────
-const AUTH_COOKIE = "auth_token";
-
-function setCookie(name: string, value: string, days = 7) {
-  if (typeof document === "undefined") return;
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
-}
-
-function deleteCookie(name: string) {
-  if (typeof document === "undefined") return;
-  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
 }
 
 // ── Internal helpers ──────────────────────────────────────────
@@ -89,14 +73,13 @@ export const useAuthStore = create<AuthState>()(
       name: "",
       email: "",
       avatar: "",
-      token: null,
       userType: null,
       user: null,
       isVerified: false,
 
       setRole: (role) => set({ role }),
 
-      setAuth: (token, userType, user, isVerified) => {
+      setAuth: (userType, user, isVerified) => {
         console.log(
           "[setAuth] Called with userType:",
           userType,
@@ -106,9 +89,9 @@ export const useAuthStore = create<AuthState>()(
         const actualUser =
           user && typeof user === "object" && "user" in user
             ? ((user as Record<string, unknown>).user as
-                | PatientAccount
-                | UserProfile
-                | PatientProfile)
+              | PatientAccount
+              | UserProfile
+              | PatientProfile)
             : user;
 
         const verified = isVerified ?? resolveIsVerified(userType, actualUser);
@@ -119,20 +102,18 @@ export const useAuthStore = create<AuthState>()(
         console.log(
           "[setAuth] Full state before set:",
           JSON.stringify({
-            token: token ? "present" : "MISSING",
             userType,
             isVerified: verified,
             user: actualUser
               ? {
-                  fullName: (actualUser as { fullName?: string }).fullName,
-                  role: (actualUser as { role?: string }).role,
-                }
+                fullName: (actualUser as { fullName?: string }).fullName,
+                role: (actualUser as { role?: string }).role,
+              }
               : null,
           }),
         );
 
         set({
-          token,
           userType,
           user: actualUser,
           isVerified: verified,
@@ -141,16 +122,11 @@ export const useAuthStore = create<AuthState>()(
           email: actualUser.email ?? "",
           avatar: resolveAvatar(userType, actualUser),
         });
-
-        // Sincronizar cookie para middleware (Next.js server-side)
-        setCookie(AUTH_COOKIE, token);
       },
 
       clearAuth: () => {
-        // Seteamos role a null ANTES de borrar la cookie y navegar,
-        // así el DashboardPage no flashea el componente por defecto.
+        // Seteamos role a null, así el DashboardPage no flashea el componente por defecto.
         set({
-          token: null,
           userType: null,
           user: null,
           isVerified: false,
@@ -159,16 +135,12 @@ export const useAuthStore = create<AuthState>()(
           email: "",
           avatar: "",
         });
-
-        deleteCookie(AUTH_COOKIE);
       },
     }),
     {
       name: "luca-auth-storage",
       // SessionStorage es más seguro que localStorage: se limpia al cerrar pestaña
       storage: createJSONStorage(() => sessionStorage),
-      // No persistir el token real en storage, solo datos de usuario
-      // El token real va en la cookie HttpOnly del backend
       partialize: (state) => ({
         role: state.role,
         name: state.name,

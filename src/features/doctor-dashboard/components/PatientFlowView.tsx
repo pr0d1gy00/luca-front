@@ -20,9 +20,19 @@ import { AgendaItem } from "./AgendaItem";
 import { ActionChecklist } from "./ActionChecklist";
 
 export function PatientFlowView() {
-  const appointments = useDoctorAgenda();
+  const { appointments, isLoading } = useDoctorAgenda();
   const { actions, toggleAction } = useDoctorActions();
   const router = useRouter();
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 animate-pulse">
+        <div className="h-64 bg-slate-100 rounded-xl" />
+        <div className="h-64 bg-slate-100 rounded-xl" />
+        <div className="h-64 bg-slate-100 rounded-xl" />
+      </div>
+    );
+  }
 
   const waitingPatients = appointments.filter((a) => a.status === "en-espera");
   const currentPatient = appointments.find((a) => a.status === "en-curso");
@@ -41,12 +51,12 @@ export function PatientFlowView() {
         {waitingPatients.length === 0 ? (
           <EmptyState icon={Clock} message="No hay pacientes esperando" />
         ) : (
-          <div className="space-y-1">
+          <div className="space-y-1 p-2">
             {waitingPatients.map((apt) => (
               <AgendaItem
                 key={apt.id}
                 appointment={apt}
-                onClick={() => router.push(`/dashboard/consultations/con-001`)}
+                onClick={() => router.push(`/dashboard/consultations/${apt.id}`)}
               />
             ))}
           </div>
@@ -65,8 +75,8 @@ export function PatientFlowView() {
               <div className="size-10 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
                 <UserCheck className="w-5 h-5 text-emerald-600" />
               </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-900">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-slate-900 truncate">
                   {currentPatient.patientName}
                 </p>
                 <p className="text-xs text-slate-400">{currentPatient.type}</p>
@@ -79,25 +89,30 @@ export function PatientFlowView() {
                   icon: FileText,
                   label: "Historia Clínica",
                   color: "text-pharmako-care",
+                  query: "tab=historia",
                 },
                 {
                   icon: FlaskConical,
                   label: "Ordenar Laboratorio",
                   color: "text-violet-500",
+                  query: "tab=labs",
                 },
                 {
                   icon: FileText,
                   label: "Emitir Receta",
                   color: "text-emerald-500",
+                  query: "tab=receta",
                 },
                 {
                   icon: CalendarIcon,
                   label: "Agendar Seguimiento",
                   color: "text-amber-500",
+                  query: "tab=seguimiento",
                 },
               ].map((action) => (
                 <button
                   key={action.label}
+                  onClick={() => router.push(`/dashboard/consultations/${currentPatient.id}?${action.query}`)}
                   className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-slate-50 transition-colors text-left"
                 >
                   <action.icon

@@ -131,9 +131,7 @@ export default function FormRegisterInstitution({
 
       const res = await registerProvider.mutateAsync(formData);
       const user = res.user as UserProfile;
-      const token = res.access_token || res.accessToken || "";
-
-      setAuth(token, "user", user);
+      setAuth("user", user);
 
       toast.success("¡Institución registrada exitosamente!");
       router.push("/dashboard/pending-verification");

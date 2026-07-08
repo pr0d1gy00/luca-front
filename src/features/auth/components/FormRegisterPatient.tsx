@@ -90,13 +90,11 @@ export default function FormRegisterPatient({
       });
 
       // Obtener el perfil completo (PatientAccount) con campos adicionales
-      const token = res.access_token || res.accessToken || "";
       const { data: patientFull } = await apiClient.get<PatientAccount>(
-        "/auth/patients/me",
-        { headers: { Authorization: `Bearer ${token}` } },
+        "/auth/patients/me"
       );
 
-      setAuth(token, "patient", patientFull, true);
+      setAuth("patient", patientFull, true);
 
       toast.success("¡Cuenta creada exitosamente!");
       router.push("/dashboard");

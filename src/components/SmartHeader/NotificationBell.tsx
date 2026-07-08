@@ -47,7 +47,7 @@ export function NotificationBell({
   open: openProp,
   onOpenChange: onOpenChangeProp,
 }: NotificationBellProps = {}) {
-  const { user } = useAuthStore();
+  const { user, role } = useAuthStore();
   const router = useRouter();
   const [internalOpen, setInternalOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -56,7 +56,7 @@ export function NotificationBell({
   const open = isControlled ? openProp : internalOpen;
 
   // Solo consumimos si el rol es paciente
-  const isPatient = user?.role === "patient";
+  const isPatient = role === "patient";
 
   const { data: notificationsData, isFetching: isListFetching } =
     usePatientNotificationsQuery();

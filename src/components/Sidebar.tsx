@@ -32,6 +32,7 @@ import {
 import { cn } from "@/lib/utils";
 import { navigationConfig } from "@/config/navigation";
 import { useAuthStore, type Role } from "@/store/auth";
+import { useLogout } from "@/features/auth/hooks/useLogout";
 import {
   usePatientNotificationsQuery,
   usePatientUnreadCountQuery,
@@ -81,13 +82,13 @@ function InlineNotification({
 }: {
   effectiveExpanded: boolean;
 }) {
-  const { user } = useAuthStore();
+  const { user, role } = useAuthStore();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // Queries reales de paciente (sólo si es paciente)
-  const isPatient = user?.role === "patient";
+  const isPatient = role === "patient";
 
   const { data: notificationsData, isFetching: isListFetching } =
     usePatientNotificationsQuery();
@@ -351,7 +352,8 @@ interface SidebarProps {
 export default function Sidebar({ inDrawer = false }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { role, name, email, avatar, clearAuth } = useAuthStore();
+  const { role, name, email, avatar } = useAuthStore();
+  const { logout } = useLogout();
   const drawer = useDrawer();
 
   // ── Sidebar state ──────────────────────────────────────────
@@ -562,8 +564,7 @@ export default function Sidebar({ inDrawer = false }: SidebarProps) {
                 variant="destructive"
                 onClick={() => {
                   drawer?.close();
-                  clearAuth();
-                  router.push("/");
+                  logout();
                 }}
               >
                 <LogOut className="size-4" />
@@ -826,8 +827,7 @@ export default function Sidebar({ inDrawer = false }: SidebarProps) {
               <DropdownMenuItem
                 variant="destructive"
                 onClick={() => {
-                  clearAuth();
-                  router.push("/");
+                  logout();
                 }}
               >
                 <LogOut className="size-4" />

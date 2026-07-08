@@ -1,59 +1,29 @@
 "use client";
 
-import type { Appointment } from "../types";
+import { useDoctorDashboardQuery } from "./useDoctorDashboardQuery";
+import type { Appointment, AppointmentStatus } from "../types";
 
-const MOCK_AGENDA: Appointment[] = [
-  {
-    id: "apt-1",
-    patientName: "María García",
-    type: "Presencial",
-    time: "09:30",
-    status: "finalizada",
-  },
-  {
-    id: "apt-2",
-    patientName: "Carlos López",
-    type: "Virtual",
-    time: "10:15",
-    status: "en-curso",
-  },
-  {
-    id: "apt-3",
-    patientName: "Ana Martínez",
-    type: "Presencial",
-    time: "11:00",
-    status: "en-espera",
-  },
-  {
-    id: "apt-4",
-    patientName: "Pedro Rodríguez",
-    type: "Presencial",
-    time: "11:45",
-    status: "en-espera",
-  },
-  {
-    id: "apt-5",
-    patientName: "Sofía Hernández",
-    type: "Virtual",
-    time: "14:00",
-    status: "en-espera",
-  },
-  {
-    id: "apt-6",
-    patientName: "Diego Fernández",
-    type: "Presencial",
-    time: "15:30",
-    status: "en-espera",
-  },
-  {
-    id: "apt-7",
-    patientName: "Valentina Torres",
-    type: "Virtual",
-    time: "16:45",
-    status: "en-espera",
-  },
-];
+function mapStatus(status: string): AppointmentStatus {
+  const norm = status.toLowerCase().replace("_", "-");
+  if (norm === "completed" || norm === "finalizada") return "finalizada";
+  if (norm === "in-progress" || norm === "in_room" || norm === "en-curso" || norm === "in-room") return "en-curso";
+  return "en-espera";
+}
 
-export function useDoctorAgenda(): Appointment[] {
-  return MOCK_AGENDA;
+export function useDoctorAgenda() {
+  const { data, isLoading, error } = useDoctorDashboardQuery();
+
+  const appointments: Appointment[] = (data?.agenda ?? []).map((apt: any) => ({
+    id: apt.id,
+    patientName: apt.patientName,
+    type: apt.type,
+    time: apt.time,
+    status: mapStatus(apt.status),
+  }));
+
+  return {
+    appointments,
+    isLoading,
+    error,
+  };
 }

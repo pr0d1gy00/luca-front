@@ -306,9 +306,8 @@ function StatusBadge({ status }: { status?: string }) {
 }
 
 // ── Patient Profile Form ────────────────────────────────────
-
 function PatientFormInner({ initial }: { initial: PatientAccount }) {
-  const { token, setAuth, userType } = useAuthStore();
+  const { setAuth, userType } = useAuthStore();
   const { data: cities } = useGetCities();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -415,7 +414,7 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
       };
 
       if (userType) {
-        setAuth(token ?? "", userType, updatedUser, true);
+        setAuth(userType, updatedUser, true);
       }
       toast.success(
         "¡Tu perfil de paciente ha sido guardado localmente en IndexedDB! Se sincronizará cuando recuperes la conexión.",
@@ -431,7 +430,7 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
       }>("/auth/patients/me", payload);
       await db.pendingProfileUpdates.delete("patient");
       if (userType) {
-        setAuth(token ?? "", userType, data.user, true);
+        setAuth(userType, data.user, true);
       }
       toast.success(
         "¡Tu perfil de paciente ha sido actualizado correctamente!",
@@ -747,7 +746,7 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
 // ── User Profile Form (Doctor/Pharmacy/Clinic) ──────────────
 
 function UserProfileFormInner({ initial }: { initial: UserProfile }) {
-  const { token, setAuth, userType } = useAuthStore();
+  const { setAuth, userType } = useAuthStore();
   const { data: cities } = useGetCities();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -839,7 +838,7 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
       };
 
       if (userType) {
-        setAuth(token ?? "", userType, updatedUser, updatedUser.is_verified);
+        setAuth(userType, updatedUser, updatedUser.is_verified);
       }
       toast.success(
         "¡Tu perfil profesional ha sido guardado localmente en IndexedDB! Se sincronizará cuando recuperes la conexión.",
@@ -855,7 +854,7 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
       }>("/auth/users/me", payload);
       await db.pendingProfileUpdates.delete("user");
       if (userType) {
-        setAuth(token ?? "", userType, data.user, data.user.is_verified);
+        setAuth(userType, data.user, data.user.is_verified);
       }
       toast.success("¡Perfil actualizado con éxito!");
     } catch (err: unknown) {

@@ -7,31 +7,28 @@ import type {
 } from "@/features/auth/types";
 import type { PatientProfileEdit, UserProfileEdit } from "../types";
 
-export function useGetPatientProfileQuery(token: string | null) {
+export function useGetPatientProfileQuery(enabled = true) {
   return useQuery<PatientAccount, unknown>({
-    queryKey: ["profile", "patient", token],
+    queryKey: ["profile", "patient"],
     queryFn: async () => {
       const { data } = await apiClient.get<PatientProfile>(
         "/auth/patients/me",
-        { headers: { Authorization: `Bearer ${token}` } },
       );
       return data as unknown as PatientAccount;
     },
-    enabled: !!token,
+    enabled,
     staleTime: 5 * 60 * 1000,
   });
 }
 
-export function useGetUserProfileQuery(token: string | null) {
+export function useGetUserProfileQuery(enabled = true) {
   return useQuery<UserProfile, unknown>({
-    queryKey: ["profile", "user", token],
+    queryKey: ["profile", "user"],
     queryFn: async () => {
-      const { data } = await apiClient.get<UserProfile>("/auth/users/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await apiClient.get<UserProfile>("/auth/users/me");
       return data;
     },
-    enabled: !!token,
+    enabled,
     staleTime: 5 * 60 * 1000,
   });
 }
