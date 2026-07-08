@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect } from "react";
+import { use, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -23,6 +23,7 @@ export default function ConsultationDetailPage({
   const updateConsultation = useUpdateConsultation();
   const { data: medicationsCatalog } = useMedicationsCatalog();
   const router = useRouter();
+  const hasTriggeredInit = useRef(false);
 
   // Auto-iniciar la consulta si no existe un registro previo
   useEffect(() => {
@@ -30,8 +31,11 @@ export default function ConsultationDetailPage({
       detail &&
       !detail.consultation.uuid &&
       !startConsultation.isPending &&
-      !startConsultation.isSuccess
+      !startConsultation.isSuccess &&
+      !startConsultation.isError &&
+      !hasTriggeredInit.current
     ) {
+      hasTriggeredInit.current = true;
       startConsultation.mutate({
         patientUuid: detail.patient.uuid,
         appointmentUuid: detail.appointment.uuid,
