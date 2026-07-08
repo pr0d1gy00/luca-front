@@ -222,7 +222,7 @@ export default function PatientAppointmentsPage() {
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-40 bg-pharmako-surface rounded-xl animate-pulse"
+              className="h-40 bg-pharmako-background rounded-xl animate-pulse"
             />
           ))}
         </div>

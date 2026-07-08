@@ -180,9 +180,25 @@ function InlineNotification({
           </button>
         </DialogTrigger>
 
-        <DialogContent className="sm:max-w-[480px] bg-pharmako-surface rounded-xl shadow-lg border border-pharmako-border-soft p-6">
-          <DialogHeader className="pb-3 border-b border-pharmako-border-soft flex flex-row items-center justify-between gap-4">
-            <DialogTitle className="text-base font-bold text-pharmako-text-primary">
+        <DialogContent
+          className="
+      w-full max-w-[92vw] sm:max-w-[480px] md:max-w-[580px] lg:max-w-[680px] xl:max-w-[760px] 2xl:max-w-[840px]
+      h-[80vh]
+      max-h-[650px]
+      bg-pharmako-surface
+      rounded-xl
+      shadow-lg
+      border
+      border-pharmako-border-soft
+      p-0
+      gap-0
+      flex
+      flex-col
+      overflow-hidden
+    "
+        >
+          <DialogHeader className="p-6 pb-4 border-b border-pharmako-border-soft flex flex-row items-center justify-between gap-4 shrink-0">
+            <DialogTitle className="text-xl font-bold text-pharmako-text-primary">
               Notificaciones
             </DialogTitle>
             {unreadCount > 0 && (
@@ -196,119 +212,121 @@ function InlineNotification({
             )}
           </DialogHeader>
 
-          <div className="max-h-[60vh] overflow-y-auto divide-y divide-pharmako-border-soft/60 -mx-6 -mb-6">
+          <div className="flex-1 min-h-0 flex flex-col">
             {isListFetching && notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 gap-2">
+              <div className="h-full flex flex-col items-center justify-center gap-2 p-6">
                 <div className="h-6 w-6 border-2 border-pharmako-care border-t-transparent rounded-full animate-spin" />
                 <p className="text-[11px] text-pharmako-text-secondary">
                   Buscando notificaciones...
                 </p>
               </div>
             ) : notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center p-6 text-pharmako-text-muted">
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
                 <Bell className="h-8 w-8 text-pharmako-text-muted mb-2 opacity-60" />
-                <p className="text-xs font-semibold text-pharmako-text-primary">
+                <p className="text-md font-semibold text-pharmako-text-primary">
                   No tienes notificaciones
                 </p>
-                <p className="text-[10px] text-pharmako-text-secondary mt-0.5">
+                <p className="text-sm text-pharmako-text-secondary mt-1">
                   Te avisaremos cuando haya novedades en tu cuenta.
                 </p>
               </div>
             ) : (
-              notifications.map((not: NotificationItem) => {
-                const isExpanded = expandedId === not.uuid;
-                const { icon: NotifIcon, color: iconStyle } = getNotifIcon(
-                  not.type,
-                );
-                const formattedDate = new Date(
-                  not.created_at,
-                ).toLocaleDateString("es-ES", {
-                  day: "numeric",
-                  month: "short",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
+              <div className="flex-1 overflow-y-auto divide-y divide-pharmako-border-soft/60">
+                {notifications.map((not: NotificationItem) => {
+                  const isExpanded = expandedId === not.uuid;
+                  const { icon: NotifIcon, color: iconStyle } = getNotifIcon(
+                    not.type,
+                  );
+                  const formattedDate = new Date(
+                    not.created_at,
+                  ).toLocaleDateString("es-ES", {
+                    day: "numeric",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
 
-                return (
-                  <div
-                    key={not.uuid}
-                    className={cn(
-                      "px-6 transition-colors duration-150",
-                      !not.is_read && "bg-slate-50/50",
-                    )}
-                  >
-                    <button
-                      onClick={() => toggleExpand(not.uuid, not.is_read)}
-                      className="flex items-start gap-3 w-full py-4 text-left hover:opacity-90 relative"
+                  return (
+                    <div
+                      key={not.uuid}
+                      className={cn(
+                        "px-6 transition-colors duration-150",
+                        !not.is_read && "bg-slate-50/50",
+                      )}
                     >
-                      <div
-                        className={cn(
-                          "size-8 rounded-lg flex items-center justify-center shrink-0 border",
-                          iconStyle,
-                        )}
+                      <button
+                        onClick={() => toggleExpand(not.uuid, not.is_read)}
+                        className="flex items-start gap-3 w-full py-4 text-left hover:opacity-90 relative"
                       >
-                        <NotifIcon className="size-4 shrink-0" />
-                      </div>
-                      <div className="flex-1 min-w-0 pr-4">
-                        <div className="flex items-center justify-between gap-2">
-                          <p
-                            className={cn(
-                              "text-xs text-slate-800 truncate",
-                              !not.is_read
-                                ? "font-bold text-slate-950"
-                                : "font-medium",
-                            )}
-                          >
-                            {not.title}
-                          </p>
-                          <ChevronDown
-                            className={cn(
-                              "w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200",
-                              isExpanded && "rotate-180",
-                            )}
-                          />
-                        </div>
-                        <p className="text-[10px] text-slate-400 mt-1">
-                          {formattedDate}
-                        </p>
-                      </div>
-                      {!not.is_read && (
-                        <span className="absolute right-6 top-1/2 -translate-y-1/2 size-2 rounded-full bg-pharmako-care" />
-                      )}
-                    </button>
-
-                    <AnimatePresence initial={false}>
-                      {isExpanded && (
-                        <motion.div
-                          key="detail"
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.18, ease: "easeOut" }}
-                          className="overflow-hidden"
+                        <div
+                          className={cn(
+                            "size-8 rounded-lg flex items-center justify-center shrink-0 border",
+                            iconStyle,
+                          )}
                         >
-                          <div className="pb-4 pl-11">
-                            <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                              {not.message}
+                          <NotifIcon className="size-4 shrink-0" />
+                        </div>
+                        <div className="flex-1 min-w-0 pr-4">
+                          <div className="flex items-center justify-between gap-2">
+                            <p
+                              className={cn(
+                                "text-xs text-slate-800 truncate",
+                                !not.is_read
+                                  ? "font-bold text-slate-950"
+                                  : "font-medium",
+                              )}
+                            >
+                              {not.title}
                             </p>
-                            {not.link && (
-                              <button
-                                onClick={() => {
-                                  setOpen(false);
-                                  router.push(not.link);
-                                }}
-                                className="text-xs font-bold text-pharmako-primary hover:text-pharmako-primary-hover transition-colors flex items-center gap-0.5"
-                              >
-                                Ir a la sección →
-                              </button>
-                            )}
+                            <ChevronDown
+                              className={cn(
+                                "w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200",
+                                isExpanded && "rotate-180",
+                              )}
+                            />
                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })
+                          <p className="text-[10px] text-slate-400 mt-1">
+                            {formattedDate}
+                          </p>
+                        </div>
+                        {!not.is_read && (
+                          <span className="absolute right-6 top-1/2 -translate-y-1/2 size-2 rounded-full bg-pharmako-care" />
+                        )}
+                      </button>
+
+                      <AnimatePresence initial={false}>
+                        {isExpanded && (
+                          <motion.div
+                            key="detail"
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.18, ease: "easeOut" }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pb-4 pl-11">
+                              <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                                {not.message}
+                              </p>
+                              {not.link && (
+                                <button
+                                  onClick={() => {
+                                    setOpen(false);
+                                    router.push(not.link);
+                                  }}
+                                  className="text-xs font-bold text-pharmako-primary hover:text-pharmako-primary-hover transition-colors flex items-center gap-0.5"
+                                >
+                                  Ir a la sección →
+                                </button>
+                              )}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         </DialogContent>

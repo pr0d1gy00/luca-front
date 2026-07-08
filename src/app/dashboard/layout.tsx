@@ -5,6 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import { DrawerToggleContext } from "@/app/dashboard/drawer-context";
 import { MobileDrawer } from "@/features/doctor-dashboard/components/MobileDrawer";
 import { BottomNav } from "@/features/doctor-dashboard/components/BottomNav";
+import { SmartHeader } from "@/components/SmartHeader";
 
 export default function DashboardLayout({
   children,
@@ -21,6 +22,9 @@ export default function DashboardLayout({
         <Sidebar />
 
         <main className="flex-1 flex flex-col h-full overflow-y-auto pb-16 lg:pb-0 lg:pl-[84px] thin-scrollbar">
+          <div className="lg:hidden">
+            <SmartHeader />
+          </div>
           <div className="flex-1 p-6 lg:p-8 pt-6">{children}</div>
         </main>
       </div>
