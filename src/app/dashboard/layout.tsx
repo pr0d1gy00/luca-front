@@ -31,7 +31,7 @@ export default function DashboardLayout({
 
       {/* Mobile drawer (sheet) — reuses Sidebar component */}
       <MobileDrawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <div className="pt-14">
+        <div className="h-full flex flex-col pt-14 pb-4">
           <Sidebar inDrawer />
         </div>
       </MobileDrawer>

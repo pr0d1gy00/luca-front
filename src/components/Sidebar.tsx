@@ -411,41 +411,164 @@ export default function Sidebar({ inDrawer = false }: SidebarProps) {
   // ── Mobile / inDrawer render ───────────────────────────────
   if (inDrawer) {
     return (
-      <nav className="flex flex-col w-full p-4 gap-1">
-        <div className="flex items-center gap-3 mb-6 px-2">
-          <Image
-            src="/PharmakoLogoOnlyFace-PNG.png"
-            alt="Pharmako"
-            width={36}
-            height={36}
-            className="shrink-0"
-          />
-          <span className="font-semibold text-lg text-pharmako-text-primary tracking-tight">
-            Pharmako
-          </span>
+      <div className="flex-1 flex flex-col justify-between h-full p-4">
+        <div className="space-y-6">
+          {/* Logo */}
+          <div className="flex items-center gap-3 px-2">
+            <Image
+              src="/PharmakoLogoOnlyFace-PNG.png"
+              alt="Pharmako"
+              width={36}
+              height={36}
+              className="shrink-0"
+            />
+            <span className="font-semibold text-lg text-pharmako-text-primary tracking-tight">
+              Pharmako
+            </span>
+          </div>
+
+          {/* Navigation */}
+          <nav className="space-y-1 no-scrollbar pb-4 border-b">
+            {allowedLinks.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <div key={item.href} className="relative">
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "flex items-center rounded-xl transition-all duration-200 gap-3 px-3 py-2.5",
+                      "text-pharmako-text-secondary hover:text-pharmako-text-primary relative",
+                    )}
+                  >
+                    {isActive && (
+                      <div
+                        className={cn(
+                          "absolute left-0 top-1/2 -translate-y-1/2",
+                          "w-[3px] h-5 bg-pharmako-care rounded-r-full",
+                        )}
+                      />
+                    )}
+
+                    <div
+                      className={cn(
+                        "flex items-center justify-center rounded-lg transition-colors duration-200",
+                        "size-9 shrink-0",
+                        isActive
+                          ? "bg-pharmako-care-light text-pharmako-care"
+                          : "hover:bg-slate-100",
+                      )}
+                    >
+                      <Icon className="w-5 h-5" />
+                    </div>
+
+                    <span className="text-sm font-medium whitespace-nowrap">
+                      {item.title}
+                    </span>
+                  </Link>
+                </div>
+              );
+            })}
+          </nav>
         </div>
 
-        {allowedLinks.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
-                "font-medium text-sm",
-                isActive
-                  ? "bg-pharmako-primary-light text-pharmako-primary"
-                  : "text-pharmako-text-secondary hover:bg-slate-100 hover:text-pharmako-text-primary",
-              )}
+        {/* Footer: Search + Notifications + Profile */}
+        <div className="space-y-1.5 mt-auto pt-4 border-t">
+          {/* Search */}
+          <button
+            onClick={() => {}}
+            className={cn(
+              "flex items-center rounded-xl transition-all duration-200 w-full gap-3 px-3 py-2.5",
+              "text-pharmako-text-muted hover:text-pharmako-text-primary hover:bg-slate-100",
+            )}
+            title="Buscar"
+          >
+            <div className="flex items-center justify-center rounded-lg size-9 shrink-0">
+              <Search className="w-5 h-5" />
+            </div>
+            <span className="text-sm font-medium whitespace-nowrap">
+              Buscar
+            </span>
+          </button>
+
+          {/* Notifications */}
+          <InlineNotification effectiveExpanded={true} />
+
+          {/* User Profile */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={cn(
+                  "flex items-center rounded-xl transition-all duration-200 w-full gap-3 px-3 py-2.5",
+                  "text-pharmako-text-muted hover:text-pharmako-text-primary hover:bg-slate-100",
+                )}
+                title="Perfil de usuario"
+              >
+                <div className="flex items-center justify-center rounded-lg size-9 shrink-0">
+                  <Avatar className="size-8">
+                    {avatar ? (
+                      <AvatarImage src={avatar} alt={name || "Usuario"} />
+                    ) : null}
+                    <AvatarFallback className="text-xs">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                <div className="flex flex-col items-start whitespace-nowrap overflow-hidden min-w-0">
+                  <span className="text-sm font-medium text-pharmako-text-primary truncate w-full text-left">
+                    {name || "Usuario"}
+                  </span>
+                  <span className="text-[11px] text-pharmako-text-muted/70 truncate w-full text-left">
+                    {roleLabel}
+                  </span>
+                </div>
+              </button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent
+              align="start"
+              side="top"
+              sideOffset={12}
+              className="w-56"
             >
-              <Icon className="w-5 h-5 shrink-0" />
-              <span>{item.title}</span>
-            </Link>
-          );
-        })}
-      </nav>
+              <DropdownMenuLabel className="font-semibold text-slate-900 text-sm">
+                {name || "Usuario"}
+              </DropdownMenuLabel>
+              {email && (
+                <DropdownMenuLabel className="text-xs text-pharmako-text-muted font-normal pt-0">
+                  {email}
+                </DropdownMenuLabel>
+              )}
+              <div className="px-1.5 pb-1">
+                <Badge variant="secondary" className="text-[10px] capitalize">
+                  {roleLabel}
+                </Badge>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/dashboard/profile"
+                  className="flex items-center gap-2 w-full"
+                >
+                  <Settings className="size-4" />
+                  <span>Configuración</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => {
+                  clearAuth();
+                  router.push("/");
+                }}
+              >
+                <LogOut className="size-4" />
+                <span>Cerrar sesión</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
     );
   }
 
