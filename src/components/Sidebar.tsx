@@ -50,6 +50,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { useDrawer } from "@/app/dashboard/drawer-context";
 
 // ─────────────────────────────────────────────────────────────
 // Constants
@@ -351,6 +352,7 @@ export default function Sidebar({ inDrawer = false }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { role, name, email, avatar, clearAuth } = useAuthStore();
+  const drawer = useDrawer();
 
   // ── Sidebar state ──────────────────────────────────────────
   const subscribe = useCallback((callback: () => void) => {
@@ -436,6 +438,7 @@ export default function Sidebar({ inDrawer = false }: SidebarProps) {
                 <div key={item.href} className="relative">
                   <Link
                     href={item.href}
+                    onClick={() => drawer?.close()}
                     className={cn(
                       "flex items-center rounded-xl transition-all duration-200 gap-3 px-3 py-2.5",
                       "text-pharmako-text-secondary hover:text-pharmako-text-primary relative",
@@ -545,7 +548,7 @@ export default function Sidebar({ inDrawer = false }: SidebarProps) {
                 </Badge>
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild onClick={() => drawer?.close()}>
                 <Link
                   href="/dashboard/profile"
                   className="flex items-center gap-2 w-full"
@@ -558,6 +561,7 @@ export default function Sidebar({ inDrawer = false }: SidebarProps) {
               <DropdownMenuItem
                 variant="destructive"
                 onClick={() => {
+                  drawer?.close();
                   clearAuth();
                   router.push("/");
                 }}
