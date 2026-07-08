@@ -1,0 +1,59 @@
+"use client";
+
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { patientNotificationApi } from "../api/patientNotificationApi";
+import { useAuthStore } from "@/store/auth";
+
+export const patientNotificationKeys = {
+  all: ["patient-notifications"] as const,
+  list: () => [...patientNotificationKeys.all, "list"] as const,
+  unreadCount: () => [...patientNotificationKeys.all, "unread-count"] as const,
+};
+
+export function usePatientNotificationsQuery() {
+  const { user } = useAuthStore();
+  const patientUuid = user?.id ?? user?.uuid ?? "";
+
+  return useQuery({
+    queryKey: patientNotificationKeys.list(),
+    queryFn: () => patientNotificationApi.getNotifications(),
+    enabled: !!patientUuid,
+    staleTime: 10 * 1000, // 10 segundos
+    refetchInterval: 30 * 1000, // Auto-refetch cada 30 segundos
+  });
+}
+
+export function usePatientUnreadCountQuery() {
+  const { user } = useAuthStore();
+  const patientUuid = user?.id ?? user?.uuid ?? "";
+
+  return useQuery({
+    queryKey: patientNotificationKeys.unreadCount(),
+    queryFn: () => patientNotificationApi.getUnreadCount(),
+    enabled: !!patientUuid,
+    staleTime: 10 * 1000,
+    refetchInterval: 30 * 1000,
+  });
+}
+
+export function useMarkNotificationReadMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (uuid: string) => patientNotificationApi.markAsRead(uuid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: patientNotificationKeys.all });
+    },
+  });
+}
+
+export function useMarkAllNotificationsReadMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => patientNotificationApi.markAllAsRead(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: patientNotificationKeys.all });
+    },
+  });
+}

@@ -2,11 +2,20 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/auth";
+import {
+  usePatientNotificationsQuery,
+  usePatientUnreadCountQuery,
+  useMarkNotificationReadMutation,
+  useMarkAllNotificationsReadMutation,
+} from "@/features/notifications/hooks/usePatientNotifications";
 import {
   BellIcon,
   AlertTriangleIcon,
   CheckCircleIcon,
   ChevronDown,
+  Bell,
 } from "lucide-react";
 import {
   Dialog,
@@ -17,69 +26,15 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
-// ---------------------------------------------------------------------------
-// Mock Data
-// ---------------------------------------------------------------------------
-
-const MOCK_NOTIFICATIONS = [
-  {
-    id: "1",
-    type: "alert" as const,
-    icon: "AlertTriangle" as const,
-    title: "Resultado de laboratorio crítico",
-    timestamp: "Hace 5 min",
-  },
-  {
-    id: "2",
-    type: "info" as const,
-    icon: "Bell" as const,
-    title: "Cita confirmada para mañana",
-    timestamp: "Hace 30 min",
-  },
-  {
-    id: "3",
-    type: "success" as const,
-    icon: "CheckCircle" as const,
-    title: "Receta lista para retirar",
-    timestamp: "Hace 1 hora",
-  },
-];
-
-const NOTIF_DETAILS: Record<string, { detail: string; action: string }> = {
-  "1": {
-    detail:
-      "Paciente: Roberto Suárez. Hemoglobina: 6.2 g/dL. El valor crítico requiere evaluación inmediata. Se recomienda repetir la muestra y contactar al paciente.",
-    action: "Revisar ficha del paciente",
-  },
-  "2": {
-    detail:
-      "Paciente: Carmen Vega. Cita programada para el 02/05/2026 a las 10:00. No se presentó ni notificó. Intentar contacto telefónico.",
-    action: "Llamar al paciente",
-  },
-  "3": {
-    detail:
-      "Receta electrónica #4532 del paciente Pedro Rodríguez lista para firma digital. Vence en 48 horas.",
-    action: "Firmar receta",
-  },
-};
-
-type Notification = (typeof MOCK_NOTIFICATIONS)[number];
-
-const ICON_MAP = {
-  AlertTriangle: AlertTriangleIcon,
-  Bell: BellIcon,
-  CheckCircle: CheckCircleIcon,
-} as const;
-
-const ICON_COLOR: Record<Notification["type"], string> = {
-  alert: "text-amber-500",
-  info: "text-pharmako-care",
-  success: "text-emerald-500",
-};
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
+interface NotificationItem {
+  uuid: string;
+  type: "SYSTEM" | "NEW_QUOTE_REQUEST" | "QUOTE_RECEIVED" | "FOLLOW_UP_ALERT";
+  title: string;
+  message: string;
+  is_read: boolean;
+  link: string | null;
+  created_at: string;
+}
 
 interface NotificationBellProps {
   /** Controlled mode: external open state (for SmartHeader → MobileHeader wiring) */
@@ -92,10 +47,30 @@ export function NotificationBell({
   open: openProp,
   onOpenChange: onOpenChangeProp,
 }: NotificationBellProps = {}) {
+  const { user } = useAuthStore();
+  const router = useRouter();
   const [internalOpen, setInternalOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
   const isControlled = openProp !== undefined;
   const open = isControlled ? openProp : internalOpen;
+
+  // Solo consumimos si el rol es paciente
+  const isPatient = user?.role === "patient";
+
+  const { data: notificationsData, isFetching: isListFetching } =
+    usePatientNotificationsQuery();
+  const { data: unreadCountData } = usePatientUnreadCountQuery();
+
+  const markAsReadMutation = useMarkNotificationReadMutation();
+  const markAllAsReadMutation = useMarkAllNotificationsReadMutation();
+
+  const notifications = isPatient
+    ? notificationsData?.data?.data || notificationsData?.data || []
+    : [];
+  const unreadCount = isPatient
+    ? Number(unreadCountData?.data?.count || unreadCountData?.count || 0)
+    : 0;
 
   const handleOpenChange = (next: boolean) => {
     if (!isControlled) setInternalOpen(next);
@@ -103,25 +78,58 @@ export function NotificationBell({
     onOpenChangeProp?.(next);
   };
 
-  const toggleExpand = (id: string) => {
-    setExpandedId((prev) => (prev === id ? null : id));
+  const toggleExpand = (uuid: string, isRead: boolean) => {
+    setExpandedId((prev) => (prev === uuid ? null : uuid));
+    if (!isRead && isPatient) {
+      markAsReadMutation.mutate(uuid);
+    }
   };
 
-  const count = MOCK_NOTIFICATIONS.length;
+  const handleMarkAllRead = () => {
+    if (isPatient) {
+      markAllAsReadMutation.mutate();
+    }
+  };
+
+  const getNotifIcon = (type: string) => {
+    switch (type) {
+      case "NEW_QUOTE_REQUEST":
+        return {
+          icon: AlertTriangleIcon,
+          color: "text-amber-500 bg-amber-50 border-amber-100",
+        };
+      case "QUOTE_RECEIVED":
+        return {
+          icon: CheckCircleIcon,
+          color: "text-emerald-500 bg-emerald-50 border-emerald-100",
+        };
+      case "FOLLOW_UP_ALERT":
+        return {
+          icon: AlertTriangleIcon,
+          color: "text-rose-500 bg-rose-50 border-rose-100",
+        };
+      case "SYSTEM":
+      default:
+        return {
+          icon: BellIcon,
+          color: "text-pharmako-care bg-blue-50 border-blue-100",
+        };
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <button
-          aria-label={`Notificaciones (${count})`}
+          aria-label={`Notificaciones (${unreadCount})`}
           className={cn(
             "relative hidden md:inline-flex items-center justify-center size-11 rounded-full",
             "hover:bg-slate-100 transition-colors",
             "focus-visible:ring-2 focus-visible:ring-luca-primary/20 focus-visible:outline-none",
           )}
         >
-          <BellIcon className="size-5 text-luca-muted-dark" />
-          {count > 0 && (
+          <Bell className="size-5 text-luca-muted-dark" />
+          {unreadCount > 0 && (
             <span
               className={cn(
                 "absolute -top-0.5 -right-0.5 flex items-center justify-center",
@@ -130,79 +138,143 @@ export function NotificationBell({
                 "select-none",
               )}
             >
-              {count}
+              {unreadCount}
             </span>
           )}
         </button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[480px]">
-        <DialogHeader>
-          <DialogTitle>Notificaciones</DialogTitle>
+      <DialogContent className="sm:max-w-[480px] bg-pharmako-surface rounded-xl shadow-lg border border-pharmako-border-soft p-6">
+        <DialogHeader className="pb-3 border-b border-pharmako-border-soft flex flex-row items-center justify-between gap-4">
+          <DialogTitle className="text-base font-bold text-pharmako-text-primary">
+            Notificaciones
+          </DialogTitle>
+          {unreadCount > 0 && (
+            <button
+              onClick={handleMarkAllRead}
+              disabled={markAllAsReadMutation.isPending}
+              className="text-xs text-pharmako-primary hover:text-pharmako-primary-hover font-bold transition-colors disabled:opacity-50 shrink-0"
+            >
+              Marcar todas como leídas
+            </button>
+          )}
         </DialogHeader>
 
-        <div className="divide-y divide-slate-100 -mx-6 -mb-6">
-          {MOCK_NOTIFICATIONS.map((notification) => {
-            const NotifIcon = ICON_MAP[notification.icon];
-            const details = NOTIF_DETAILS[notification.id];
-            const isExpanded = expandedId === notification.id;
+        <div className="max-h-[60vh] overflow-y-auto divide-y divide-pharmako-border-soft/60 -mx-6 -mb-6">
+          {isListFetching && notifications.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-2">
+              <div className="h-6 w-6 border-2 border-pharmako-care border-t-transparent rounded-full animate-spin" />
+              <p className="text-[11px] text-pharmako-text-secondary">
+                Buscando notificaciones...
+              </p>
+            </div>
+          ) : notifications.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center p-6 text-pharmako-text-muted">
+              <Bell className="h-8 w-8 text-pharmako-text-muted mb-2 opacity-60" />
+              <p className="text-xs font-semibold text-pharmako-text-primary">
+                No tienes notificaciones
+              </p>
+              <p className="text-[10px] text-pharmako-text-secondary mt-0.5">
+                Te avisaremos cuando haya novedades en tu cuenta.
+              </p>
+            </div>
+          ) : (
+            notifications.map((not: NotificationItem) => {
+              const isExpanded = expandedId === not.uuid;
+              const { icon: NotifIcon, color: iconStyle } = getNotifIcon(
+                not.type,
+              );
+              const formattedDate = new Date(not.created_at).toLocaleDateString(
+                "es-ES",
+                {
+                  day: "numeric",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                },
+              );
 
-            return (
-              <div key={notification.id} className="px-6">
-                <button
-                  onClick={() => toggleExpand(notification.id)}
-                  className="flex items-start gap-3 w-full py-4 text-left transition-colors hover:opacity-80"
-                >
-                  <div
-                    className={cn(
-                      "mt-0.5 shrink-0",
-                      ICON_COLOR[notification.type],
-                    )}
-                  >
-                    <NotifIcon className="size-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium text-slate-800">
-                        {notification.title}
-                      </p>
-                      <ChevronDown
-                        className={cn(
-                          "w-4 h-4 text-slate-300 shrink-0 transition-transform duration-200",
-                          isExpanded && "rotate-180",
-                        )}
-                      />
-                    </div>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      {notification.timestamp}
-                    </p>
-                  </div>
-                </button>
-
-                <AnimatePresence initial={false}>
-                  {isExpanded && details && (
-                    <motion.div
-                      key="detail"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2, ease: "easeOut" }}
-                      className="overflow-hidden"
-                    >
-                      <div className="pb-4 pl-7">
-                        <p className="text-sm text-slate-600 leading-relaxed mb-3">
-                          {details.detail}
-                        </p>
-                        <button className="text-xs font-semibold text-pharmako-care hover:text-pharmako-care-hover transition-colors">
-                          {details.action} →
-                        </button>
-                      </div>
-                    </motion.div>
+              return (
+                <div
+                  key={not.uuid}
+                  className={cn(
+                    "px-6 transition-colors duration-150",
+                    !not.is_read && "bg-slate-50/50",
                   )}
-                </AnimatePresence>
-              </div>
-            );
-          })}
+                >
+                  <button
+                    onClick={() => toggleExpand(not.uuid, not.is_read)}
+                    className="flex items-start gap-3 w-full py-4 text-left hover:opacity-90 relative"
+                  >
+                    <div
+                      className={cn(
+                        "size-8 rounded-lg flex items-center justify-center shrink-0 border",
+                        iconStyle,
+                      )}
+                    >
+                      <NotifIcon className="size-4 shrink-0" />
+                    </div>
+                    <div className="flex-1 min-w-0 pr-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <p
+                          className={cn(
+                            "text-xs text-slate-800 truncate",
+                            !not.is_read
+                              ? "font-bold text-slate-950"
+                              : "font-medium",
+                          )}
+                        >
+                          {not.title}
+                        </p>
+                        <ChevronDown
+                          className={cn(
+                            "w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200",
+                            isExpanded && "rotate-180",
+                          )}
+                        />
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-1">
+                        {formattedDate}
+                      </p>
+                    </div>
+                    {!not.is_read && (
+                      <span className="absolute right-6 top-1/2 -translate-y-1/2 size-2 rounded-full bg-pharmako-care" />
+                    )}
+                  </button>
+
+                  <AnimatePresence initial={false}>
+                    {isExpanded && (
+                      <motion.div
+                        key="detail"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pb-4 pl-11">
+                          <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                            {not.message}
+                          </p>
+                          {not.link && (
+                            <button
+                              onClick={() => {
+                                handleOpenChange(false);
+                                router.push(not.link);
+                              }}
+                              className="text-xs font-bold text-pharmako-primary hover:text-pharmako-primary-hover transition-colors flex items-center gap-0.5"
+                            >
+                              Ir a la sección →
+                            </button>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })
+          )}
         </div>
       </DialogContent>
     </Dialog>
