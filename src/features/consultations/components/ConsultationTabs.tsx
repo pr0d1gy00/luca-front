@@ -44,16 +44,16 @@ export function ConsultationTabs({
 }: ConsultationTabsProps) {
   return (
     <Tabs defaultValue="consultation" className="w-full">
-      <TabsList className="w-full justify-start rounded-2xl bg-slate-100 p-1 gap-1">
+      <TabsList className="w-full justify-start gap-1">
         <TabsTrigger
           value="history"
-          className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-700"
+          className="text-pharmako-text-secondary hover:text-pharmako-text-primary data-[state=active]:bg-white data-[state=active]:border-b data-[state=active]:border-pharmako-care data-[state=active]:text-pharmako-care "
         >
           Historial Clínico
         </TabsTrigger>
         <TabsTrigger
           value="consultation"
-          className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-700"
+          className="text-pharmako-text-secondary hover:text-pharmako-text-primary data-[state=active]:bg-white data-[state=active]:border-b data-[state=active]:border-pharmako-care data-[state=active]:text-pharmako-care "
         >
           Consulta Actual
         </TabsTrigger>

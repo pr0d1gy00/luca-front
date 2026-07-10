@@ -6,6 +6,7 @@ import { db } from "@/features/offline/database/schema";
 import { useOnlineStatus } from "@/features/offline/hooks/useOnlineStatus";
 import { useAuthStore } from "@/store/auth";
 import { v4 as uuidv4 } from "uuid";
+import { toast } from "sonner";
 
 interface StartConsultationPayload {
   patientUuid: string;
@@ -27,6 +28,16 @@ interface UpdateConsultationPayload {
     duration: string;
     notes?: string;
   }[];
+  vitals?: {
+    weight?: string;
+    height?: string;
+    systolic_bp?: string;
+    diastolic_bp?: string;
+    heart_rate?: string;
+    respiratory_rate?: string;
+    temperature?: string;
+    oxygen_sat?: string;
+  };
 }
 
 export function useStartConsultation() {
@@ -51,7 +62,9 @@ export function useStartConsultation() {
           if (apt) {
             clinicBranchUuid = apt.clinicBranchUuid;
             // Marcar cita local como in-progress
-            await db.appointments.update(payload.appointmentUuid, { status: "IN_PROGRESS" });
+            await db.appointments.update(payload.appointmentUuid, {
+              status: "IN_PROGRESS",
+            });
           }
         }
 
@@ -98,8 +111,17 @@ export function useStartConsultation() {
       return data;
     },
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["active-consultation", variables.appointmentUuid] });
+      queryClient.invalidateQueries({
+        queryKey: ["active-consultation", variables.appointmentUuid],
+      });
       queryClient.invalidateQueries({ queryKey: ["doctor-appointments"] });
+    },
+    onError: (error: any) => {
+      const serverMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Error al iniciar la consulta";
+      toast.error("Error al iniciar consulta", { description: serverMessage });
     },
   });
 }
@@ -113,7 +135,8 @@ export function useUpdateConsultation() {
       if (!isOnline) {
         // Flujo Offline: Modificar en Dexie
         const existing = await db.consultations.get(payload.uuid);
-        if (!existing) throw new Error("Consulta no encontrada en base de datos local");
+        if (!existing)
+          throw new Error("Consulta no encontrada en base de datos local");
 
         const dateStr = new Date().toISOString();
         const updatedRecord = {
@@ -122,24 +145,79 @@ export function useUpdateConsultation() {
           physicalExam: payload.physical_exam ?? existing.physicalExam,
           diagnosis: payload.diagnosis ?? existing.diagnosis,
           treatmentPlan: payload.treatment_plan ?? existing.treatmentPlan,
-          status: (payload.status?.toUpperCase() as "IN_PROGRESS" | "COMPLETED" | "CANCELLED") ?? existing.status,
+          status:
+            (payload.status?.toUpperCase() as
+              | "IN_PROGRESS"
+              | "COMPLETED"
+              | "CANCELLED") ?? existing.status,
           updatedAt: dateStr,
-          _syncStatus: existing._syncStatus === "created" ? ("created" as const) : ("updated" as const),
+          _syncStatus:
+            existing._syncStatus === "created"
+              ? ("created" as const)
+              : ("updated" as const),
         };
 
         await db.consultations.put(updatedRecord);
 
         // Si se marca completed, actualizar cita local asociada
         if (payload.status === "completed" && existing.appointmentUuid) {
-          await db.appointments.update(existing.appointmentUuid, { status: "COMPLETED" });
+          await db.appointments.update(existing.appointmentUuid, {
+            status: "COMPLETED",
+          });
+        }
+
+        // Guardar signos vitales localmente en Dexie si vienen
+        if (payload.vitals) {
+          await db.vitalSigns
+            .where("consultationUuid")
+            .equals(payload.uuid)
+            .delete();
+          await db.vitalSigns.add({
+            uuid: uuidv4(),
+            patientUuid: existing.patientUuid,
+            consultationUuid: payload.uuid,
+            weight: payload.vitals.weight
+              ? parseFloat(payload.vitals.weight)
+              : null,
+            height: payload.vitals.height
+              ? parseFloat(payload.vitals.height)
+              : null,
+            systolicBp: payload.vitals.systolic_bp
+              ? parseInt(payload.vitals.systolic_bp)
+              : null,
+            diastolicBp: payload.vitals.diastolic_bp
+              ? parseInt(payload.vitals.diastolic_bp)
+              : null,
+            heartRate: payload.vitals.heart_rate
+              ? parseInt(payload.vitals.heart_rate)
+              : null,
+            respiratoryRate: payload.vitals.respiratory_rate
+              ? parseFloat(payload.vitals.respiratory_rate)
+              : null,
+            temperature: payload.vitals.temperature
+              ? parseFloat(payload.vitals.temperature)
+              : null,
+            oxygenSat: payload.vitals.oxygen_sat
+              ? parseInt(payload.vitals.oxygen_sat)
+              : null,
+            date: dateStr,
+            updatedAt: dateStr,
+            _syncStatus: "created",
+          });
         }
 
         // Guardar recetas localmente en Dexie si vienen
         if (payload.prescriptions && payload.prescriptions.length > 0) {
           // Eliminar anteriores
-          const oldRxs = await db.prescriptions.where("consultationUuid").equals(payload.uuid).toArray();
+          const oldRxs = await db.prescriptions
+            .where("consultationUuid")
+            .equals(payload.uuid)
+            .toArray();
           for (const rx of oldRxs) {
-            await db.prescriptionItems.where("prescriptionUuid").equals(rx.uuid).delete();
+            await db.prescriptionItems
+              .where("prescriptionUuid")
+              .equals(rx.uuid)
+              .delete();
             await db.prescriptions.delete(rx.uuid);
           }
 
@@ -152,7 +230,9 @@ export function useUpdateConsultation() {
             consultationUuid: existing.uuid,
             clinicBranchUuid: existing.clinicBranchUuid,
             date: dateStr,
-            expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+            expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+              .toISOString()
+              .split("T")[0],
             notes: payload.treatment_plan || "",
             status: "ACTIVE",
             updatedAt: dateStr,
@@ -195,13 +275,28 @@ export function useUpdateConsultation() {
         treatment_plan: payload.treatment_plan,
         status: payload.status,
         prescriptions: payload.prescriptions,
+        vitals: payload.vitals,
       });
       return data;
     },
     onSuccess: (data) => {
       const consultation = data?.data ?? data;
-      queryClient.invalidateQueries({ queryKey: ["active-consultation", consultation.appointment_id || consultation.appointment_uuid] });
+      queryClient.invalidateQueries({
+        queryKey: [
+          "active-consultation",
+          consultation.appointment_id || consultation.appointment_uuid,
+        ],
+      });
       queryClient.invalidateQueries({ queryKey: ["doctor-appointments"] });
+    },
+    onError: (error: any) => {
+      const serverMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Error al actualizar la consulta";
+      toast.error("Error al actualizar consulta", {
+        description: serverMessage,
+      });
     },
   });
 }

@@ -94,15 +94,24 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
       }
 
       // 3. Obtener consulta asociada a la cita (si existe)
-      const consDb = await db.consultations.where("appointmentUuid").equals(uuid).first();
+      const consDb = await db.consultations
+        .where("appointmentUuid")
+        .equals(uuid)
+        .first();
 
       // 4. Obtener signos vitales asociados a la consulta o los más recientes del paciente
       let vitalsDb = null;
       if (consDb) {
-        vitalsDb = await db.vitalSigns.where("consultationUuid").equals(consDb.uuid).first();
+        vitalsDb = await db.vitalSigns
+          .where("consultationUuid")
+          .equals(consDb.uuid)
+          .first();
       }
       if (!vitalsDb) {
-        const allVitals = await db.vitalSigns.where("patientUuid").equals(pat.uuid).toArray();
+        const allVitals = await db.vitalSigns
+          .where("patientUuid")
+          .equals(pat.uuid)
+          .toArray();
         allVitals.sort((a, b) => b.date.localeCompare(a.date));
         vitalsDb = allVitals[0] ?? null;
       }
@@ -116,9 +125,15 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
         notes?: string;
       }[] = [];
       if (consDb) {
-        const rxs = await db.prescriptions.where("consultationUuid").equals(consDb.uuid).toArray();
+        const rxs = await db.prescriptions
+          .where("consultationUuid")
+          .equals(consDb.uuid)
+          .toArray();
         for (const rx of rxs) {
-          const items = await db.prescriptionItems.where("prescriptionUuid").equals(rx.uuid).toArray();
+          const items = await db.prescriptionItems
+            .where("prescriptionUuid")
+            .equals(rx.uuid)
+            .toArray();
           for (const item of items) {
             offlinePrescriptions.push({
               medicationId: item.medicationUuid,
@@ -132,9 +147,14 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
       }
 
       // 6. Cargar historial clínico local (consultas anteriores del paciente)
-      const allConsultations = await db.consultations.where("patientUuid").equals(pat.uuid).toArray();
+      const allConsultations = await db.consultations
+        .where("patientUuid")
+        .equals(pat.uuid)
+        .toArray();
       // Filtrar la consulta activa actual para que no se muestre en su propio historial
-      const pastConsultations = allConsultations.filter((c) => c.appointmentUuid !== uuid);
+      const pastConsultations = allConsultations.filter(
+        (c) => c.appointmentUuid !== uuid,
+      );
       pastConsultations.sort((a, b) => b.date.localeCompare(a.date));
 
       const history = [];
@@ -152,18 +172,22 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
       const parseAllergies = (allergiesStr: string) => {
         if (!allergiesStr) return [];
         try {
-          return allergiesStr.includes("[") ? JSON.parse(allergiesStr) : allergiesStr.split(",").map(s => s.trim());
+          return allergiesStr.includes("[")
+            ? JSON.parse(allergiesStr)
+            : allergiesStr.split(",").map((s) => s.trim());
         } catch {
-          return allergiesStr.split(",").map(s => s.trim());
+          return allergiesStr.split(",").map((s) => s.trim());
         }
       };
 
       const parseChronic = (chronicStr: string) => {
         if (!chronicStr) return [];
         try {
-          return chronicStr.includes("[") ? JSON.parse(chronicStr) : chronicStr.split(",").map(s => s.trim());
+          return chronicStr.includes("[")
+            ? JSON.parse(chronicStr)
+            : chronicStr.split(",").map((s) => s.trim());
         } catch {
-          return chronicStr.split(",").map(s => s.trim());
+          return chronicStr.split(",").map((s) => s.trim());
         }
       };
 
@@ -186,6 +210,19 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
               treatment_plan: consDb.treatmentPlan || "",
               status: consDb.status,
               prescriptions: offlinePrescriptions,
+              vitals: vitalsDb
+                ? {
+                    weight: vitalsDb.weight?.toString() || "",
+                    height: vitalsDb.height?.toString() || "",
+                    systolic_bp: vitalsDb.systolicBp?.toString() || "",
+                    diastolic_bp: vitalsDb.diastolicBp?.toString() || "",
+                    heart_rate: vitalsDb.heartRate?.toString() || "",
+                    respiratory_rate:
+                      vitalsDb.respiratoryRate?.toString() || "",
+                    temperature: vitalsDb.temperature?.toString() || "",
+                    oxygen_sat: vitalsDb.oxygenSat?.toString() || "",
+                  }
+                : undefined,
             }
           : {
               motivoConsulta: apt.reason || "",
@@ -202,7 +239,9 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
           lastName: pat.lastName,
           documentId: pat.nationalId,
           birthDate: new Date(pat.birthDate),
-          biologicalSex: (pat.gender?.toUpperCase() as "MALE" | "FEMALE" | "OTHER") || "OTHER",
+          biologicalSex:
+            (pat.gender?.toUpperCase() as "MALE" | "FEMALE" | "OTHER") ||
+            "OTHER",
           phone: pat.phone,
           email: pat.email,
           address: pat.address,
@@ -233,7 +272,7 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
         history,
       };
     },
-    []
+    [],
   );
 
   return useQuery({
@@ -249,7 +288,9 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
 
       try {
         // 1. Obtener cita y consulta asociada
-        const { data: aptRes } = await apiClient.get(`/appointments/${appointmentUuid}`);
+        const { data: aptRes } = await apiClient.get(
+          `/appointments/${appointmentUuid}`,
+        );
         const apt = aptRes.data;
 
         // 2. Obtener historial clínico del paciente
@@ -258,7 +299,7 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
             patient_uuid: apt.patient?.uuid,
           },
         });
-        
+
         interface ApiHistoryConsultation {
           uuid: string;
           reason?: string;
@@ -270,8 +311,9 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
           };
         }
 
-        const consultations: ApiHistoryConsultation[] = histRes?.data?.data ?? histRes?.data ?? [];
-        
+        const consultations: ApiHistoryConsultation[] =
+          histRes?.data?.data ?? histRes?.data ?? [];
+
         // Mapear historial clínico
         const history = consultations
           .filter((c) => c.uuid !== apt.consultation?.uuid) // descartar la actual si ya existe
@@ -284,17 +326,21 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
           }));
 
         const patientData = apt.patient;
-        
+
         // Parsear arrays de alergias y crónicas
         const parseAllergies = (allergies: unknown) => {
           if (!allergies) return [];
           if (Array.isArray(allergies)) return allergies;
           try {
-            return typeof allergies === "string" && allergies.includes("[") 
-              ? JSON.parse(allergies) 
-              : String(allergies).split(",").map(s => s.trim());
+            return typeof allergies === "string" && allergies.includes("[")
+              ? JSON.parse(allergies)
+              : String(allergies)
+                  .split(",")
+                  .map((s) => s.trim());
           } catch {
-            return String(allergies).split(",").map(s => s.trim());
+            return String(allergies)
+              .split(",")
+              .map((s) => s.trim());
           }
         };
 
@@ -302,11 +348,15 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
           if (!chronic) return [];
           if (Array.isArray(chronic)) return chronic;
           try {
-            return typeof chronic === "string" && chronic.includes("[") 
-              ? JSON.parse(chronic) 
-              : String(chronic).split(",").map(s => s.trim());
+            return typeof chronic === "string" && chronic.includes("[")
+              ? JSON.parse(chronic)
+              : String(chronic)
+                  .split(",")
+                  .map((s) => s.trim());
           } catch {
-            return String(chronic).split(",").map(s => s.trim());
+            return String(chronic)
+              .split(",")
+              .map((s) => s.trim());
           }
         };
 
@@ -328,13 +378,67 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
                 diagnostico: apt.consultation.diagnosis || "",
                 treatment_plan: apt.consultation.treatment_plan || "",
                 status: apt.consultation.status,
-                prescriptions: apt.consultation.prescription?.items?.map((item: { medication?: { uuid?: string }; dose?: string; frequency?: string; duration?: string; notes?: string }) => ({
-                  medicationId: item.medication?.uuid || "",
-                  dose: item.dose || "",
-                  frequency: item.frequency || "",
-                  duration: item.duration || "",
-                  notes: item.notes || "",
-                })) || [],
+                prescriptions:
+                  apt.consultation.prescription?.items?.map(
+                    (item: {
+                      medication?: { uuid?: string };
+                      dose?: string;
+                      frequency?: string;
+                      duration?: string;
+                      notes?: string;
+                    }) => ({
+                      medicationId: item.medication?.uuid || "",
+                      dose: item.dose || "",
+                      frequency: item.frequency || "",
+                      duration: item.duration || "",
+                      notes: item.notes || "",
+                    }),
+                  ) || [],
+                vitals:
+                  apt.consultation.vital_sign || apt.consultation.vitalSign
+                    ? {
+                        weight:
+                          (
+                            apt.consultation.vital_sign ||
+                            apt.consultation.vitalSign
+                          ).weight?.toString() || "",
+                        height:
+                          (
+                            apt.consultation.vital_sign ||
+                            apt.consultation.vitalSign
+                          ).height?.toString() || "",
+                        systolic_bp:
+                          (
+                            apt.consultation.vital_sign ||
+                            apt.consultation.vitalSign
+                          ).systolic_bp?.toString() || "",
+                        diastolic_bp:
+                          (
+                            apt.consultation.vital_sign ||
+                            apt.consultation.vitalSign
+                          ).diastolic_bp?.toString() || "",
+                        heart_rate:
+                          (
+                            apt.consultation.vital_sign ||
+                            apt.consultation.vitalSign
+                          ).heart_rate?.toString() || "",
+                        respiratory_rate:
+                          (
+                            apt.consultation.vital_sign ||
+                            apt.consultation.vitalSign
+                          ).respiratory_rate?.toString() || "",
+                        temperature:
+                          (
+                            apt.consultation.vital_sign ||
+                            apt.consultation.vitalSign
+                          ).temperature?.toString() || "",
+                        oxygen_sat:
+                          (
+                            apt.consultation.vital_sign ||
+                            apt.consultation.vitalSign
+                          ).oxygen_sat?.toString() || "",
+                      }
+                    : undefined,
               }
             : {
                 motivoConsulta: apt.reason || "",
@@ -370,7 +474,10 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
           history,
         };
       } catch (err) {
-        console.warn("[useActiveConsultationQuery] Failed online query, falling back to Dexie", err);
+        console.warn(
+          "[useActiveConsultationQuery] Failed online query, falling back to Dexie",
+          err,
+        );
         return fetchOfflineActiveConsultation(appointmentUuid);
       }
     },

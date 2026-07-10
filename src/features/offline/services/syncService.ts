@@ -77,9 +77,12 @@ export const syncService = {
           await queueService.dequeue(queued.id);
 
           // Update sync status in local entity table if it exists in the schema
-          const tableExists = db.tables.some((t) => t.name === entity);
+          const tableName = entity.replace(/_([a-z])/g, (_, letter) =>
+            letter.toUpperCase(),
+          );
+          const tableExists = db.tables.some((t) => t.name === tableName);
           if (tableExists) {
-            const table = db.table(entity);
+            const table = db.table(tableName);
             if (await table.get(uuid)) {
               await table.update(uuid, { _syncStatus: "synced" });
             }
@@ -120,15 +123,18 @@ export const syncService = {
     for (const [entity, records] of Object.entries(pullData)) {
       if (!records || records.length === 0) continue;
 
-      const tableExists = db.tables.some((t) => t.name === entity);
+      const tableName = entity.replace(/_([a-z])/g, (_, letter) =>
+        letter.toUpperCase(),
+      );
+      const tableExists = db.tables.some((t) => t.name === tableName);
       if (!tableExists) {
         console.warn(
-          `[SyncService] Table ${entity} does not exist in local Dexie database. Skipping.`,
+          `[SyncService] Table ${entity} (mapped to ${tableName}) does not exist in local Dexie database. Skipping.`,
         );
         continue;
       }
 
-      const table = db.table(entity);
+      const table = db.table(tableName);
 
       for (const serverRecord of records) {
         const serverRecordObj = serverRecord as unknown as Record<

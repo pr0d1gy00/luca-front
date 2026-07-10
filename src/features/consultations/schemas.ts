@@ -52,6 +52,18 @@ export const consultationSchema = z.object({
   prescriptions: z
     .array(prescriptionItemSchema)
     .min(1, "Al menos un medicamento es requerido"),
+  vitals: z
+    .object({
+      weight: z.string().optional(),
+      height: z.string().optional(),
+      systolic_bp: z.string().optional(),
+      diastolic_bp: z.string().optional(),
+      heart_rate: z.string().optional(),
+      respiratory_rate: z.string().optional(),
+      temperature: z.string().optional(),
+      oxygen_sat: z.string().optional(),
+    })
+    .optional(),
 });
 
 export type Consultation = z.infer<typeof consultationSchema>;
@@ -84,6 +96,8 @@ export const vitalsSchema = z.object({
   bloodPressure: z.string().optional(),
   heartRate: z.string().optional(),
   temperature: z.string().optional(),
+  respiratoryRate: z.string().optional(),
+  oxygenSat: z.string().optional(),
 });
 
 export type Vitals = z.infer<typeof vitalsSchema>;

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   User,
   Mail,
@@ -36,6 +36,7 @@ import type { PatientAccount, UserProfile } from "@/features/auth/types";
 import { useGetCities } from "@/features/auth/hooks/useGetCities";
 import { db } from "@/features/offline/database/schema";
 import { syncService } from "@/features/offline/services/syncService";
+import { DoctorScheduleView } from "@/features/doctor-dashboard/components/DoctorScheduleView";
 
 // ── Schemas de Validación ──────────────────────────────────
 
@@ -1357,6 +1358,9 @@ export function ProfileView() {
     return true;
   });
   const hasFetched = useRef(false);
+  const [activeSubTab, setActiveSubTab] = useState<"profile" | "schedule">(
+    "profile",
+  );
 
   useEffect(() => {
     if (!userType || hasFetched.current) return;
@@ -1496,17 +1500,66 @@ export function ProfileView() {
         </p>
       </div>
 
-      {/* Tarjeta de Formulario Principal */}
-      <div className="bg-pharmako-surface rounded-xl ">
-        {isPatient ? (
-          <PatientFormInner initial={patient} />
-        ) : (
-          <UserProfileFormInner initial={user} />
-        )}
-      </div>
+      {/* Selector de pestañas (solo para médicos) */}
+      {!isPatient && user?.role === "DOCTOR" && (
+        <div className="flex items-center gap-1 p-1 rounded-xl w-fit">
+          <button
+            onClick={() => setActiveSubTab("profile")}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer ${
+              activeSubTab === "profile"
+                ? "bg-white text-pharmako-care border-b border-pharmako-care"
+                : "text-pharmako-text-secondary hover:text-pharmako-text-primary"
+            }`}
+          >
+            <User className="w-4 h-4" />
+            Perfil Profesional
+          </button>
+          <button
+            onClick={() => setActiveSubTab("schedule")}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer ${
+              activeSubTab === "schedule"
+                ? "bg-white text-pharmako-care border-b border-pharmako-care"
+                : "text-pharmako-text-secondary hover:text-pharmako-text-primary"
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
+            Horarios de Atención
+          </button>
+        </div>
+      )}
 
-      {/* Panel de Sincronización Local */}
-      <SyncStatusPanel />
+      {/* Contenido de la pestaña activa con animaciones */}
+      <AnimatePresence mode="wait">
+        {activeSubTab === "profile" ? (
+          <motion.div
+            key="profile-tab"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.22, ease: "easeInOut" }}
+            className="flex flex-col gap-6"
+          >
+            <div className="bg-pharmako-surface rounded-xl ">
+              {isPatient ? (
+                <PatientFormInner initial={patient} />
+              ) : (
+                <UserProfileFormInner initial={user} />
+              )}
+            </div>
+            <SyncStatusPanel />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="schedule-tab"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.22, ease: "easeInOut" }}
+          >
+            <DoctorScheduleView />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

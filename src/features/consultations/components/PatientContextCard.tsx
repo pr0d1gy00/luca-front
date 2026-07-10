@@ -1,6 +1,15 @@
 "use client";
 
-import { User } from "lucide-react";
+import {
+  User,
+  Weight,
+  Ruler,
+  Activity,
+  Heart,
+  Thermometer,
+  Wind,
+  Clock,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -39,7 +48,7 @@ export function PatientContextCard({
           {patient.avatarUrl ? (
             <AvatarImage src={patient.avatarUrl} alt={patient.firstName} />
           ) : (
-            <AvatarFallback className="bg-blue-700 text-white text-xl">
+            <AvatarFallback className="bg-pharmako-care text-white text-xl">
               {patient.firstName[0]}
               {patient.lastName[0]}
             </AvatarFallback>
@@ -111,35 +120,108 @@ export function PatientContextCard({
           </p>
           <div className="grid grid-cols-2 gap-3">
             {vitals.weight && (
-              <div className="flex flex-col gap-0.5 bg-slate-50 rounded-2xl p-3">
-                <span className="text-xs text-slate-500">Peso</span>
-                <span className="text-sm font-semibold text-slate-700">
-                  {vitals.weight}
-                </span>
+              <div className="flex items-center gap-3 border border-slate-100 rounded-xl p-3">
+                <div className="p-2 bg-blue-50 text-blue-600 rounded-xl shrink-0">
+                  <Weight className="size-4" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">
+                    Peso
+                  </span>
+                  <span className="text-xs font-semibold text-slate-700 truncate">
+                    {vitals.weight}
+                  </span>
+                </div>
+              </div>
+            )}
+            {vitals.height && (
+              <div className="flex items-center gap-3 border border-slate-100 rounded-xl p-3">
+                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl shrink-0">
+                  <Ruler className="size-4" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">
+                    Estatura
+                  </span>
+                  <span className="text-xs font-semibold text-slate-700 truncate">
+                    {vitals.height}
+                  </span>
+                </div>
               </div>
             )}
             {vitals.bloodPressure && (
-              <div className="flex flex-col gap-0.5 bg-slate-50 rounded-2xl p-3">
-                <span className="text-xs text-slate-500">Tensión</span>
-                <span className="text-sm font-semibold text-slate-700">
-                  {vitals.bloodPressure}
-                </span>
+              <div className="flex items-center gap-3 border border-slate-100 rounded-xl p-3 col-span-2">
+                <div className="p-2 bg-red-50 text-red-600 rounded-xl shrink-0">
+                  <Activity className="size-4" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">
+                    Tensión Arterial
+                  </span>
+                  <span className="text-xs font-semibold text-slate-700 truncate">
+                    {vitals.bloodPressure}
+                  </span>
+                </div>
               </div>
             )}
             {vitals.heartRate && (
-              <div className="flex flex-col gap-0.5 bg-slate-50 rounded-2xl p-3">
-                <span className="text-xs text-slate-500">FC</span>
-                <span className="text-sm font-semibold text-slate-700">
-                  {vitals.heartRate}
-                </span>
+              <div className="flex items-center gap-3 border border-slate-100 rounded-xl p-3">
+                <div className="p-2 bg-rose-50 text-rose-600 rounded-xl shrink-0">
+                  <Heart className="size-4 animate-pulse" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">
+                    Frec. Cardíaca
+                  </span>
+                  <span className="text-xs font-semibold text-slate-700 truncate">
+                    {vitals.heartRate}
+                  </span>
+                </div>
               </div>
             )}
             {vitals.temperature && (
-              <div className="flex flex-col gap-0.5 bg-slate-50 rounded-2xl p-3">
-                <span className="text-xs text-slate-500">Temp</span>
-                <span className="text-sm font-semibold text-slate-700">
-                  {vitals.temperature}
-                </span>
+              <div className="flex items-center gap-3 border border-slate-100 rounded-xl p-3">
+                <div className="p-2 bg-amber-50 text-amber-600 rounded-xl shrink-0">
+                  <Thermometer className="size-4" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">
+                    Temperatura
+                  </span>
+                  <span className="text-xs font-semibold text-slate-700 truncate">
+                    {vitals.temperature}
+                  </span>
+                </div>
+              </div>
+            )}
+            {vitals.respiratoryRate && (
+              <div className="flex items-center gap-3 border border-slate-100 rounded-xl p-3">
+                <div className="p-2 bg-teal-50 text-teal-600 rounded-xl shrink-0">
+                  <Clock className="size-4" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">
+                    Frec. Resp.
+                  </span>
+                  <span className="text-xs font-semibold text-slate-700 truncate">
+                    {vitals.respiratoryRate}
+                  </span>
+                </div>
+              </div>
+            )}
+            {vitals.oxygenSat && (
+              <div className="flex items-center gap-3 border border-slate-100 rounded-xl p-3">
+                <div className="p-2 bg-cyan-50 text-cyan-600 rounded-xl shrink-0">
+                  <Wind className="size-4" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">
+                    Saturación O₂
+                  </span>
+                  <span className="text-xs font-semibold text-slate-700 truncate">
+                    {vitals.oxygenSat}
+                  </span>
+                </div>
               </div>
             )}
           </div>

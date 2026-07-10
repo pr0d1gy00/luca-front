@@ -19,7 +19,12 @@ function getMedicationById(
   id: string,
   meds: Medication[],
 ): Medication | undefined {
-  return meds.find((m) => `${m.activePrinciple} ${m.concentration}` === id);
+  return meds.find(
+    (m: any) =>
+      m.uuid === id ||
+      m.id === id ||
+      `${m.activePrinciple} ${m.concentration}` === id,
+  );
 }
 
 function calculateAge(birthDate: Date): number {
@@ -142,7 +147,9 @@ export function DigitalPrescriptionCard({
                 <div className="flex flex-col">
                   <span className="text-lg font-bold text-slate-700">
                     {med
-                      ? `${med.activePrinciple} ${med.concentration}`
+                      ? med.commercialName
+                        ? `${med.commercialName} (${med.activePrinciple}) ${med.concentration}`
+                        : `${med.activePrinciple} ${med.concentration}`
                       : item.medicationId}
                   </span>
                   {med && (

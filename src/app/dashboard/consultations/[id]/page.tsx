@@ -6,11 +6,15 @@ import { motion } from "motion/react";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { fadeUpVariant } from "@/app/lib/animations";
 import { useActiveConsultationQuery } from "@/features/consultations/hooks/useActiveConsultationQuery";
-import { useStartConsultation, useUpdateConsultation } from "@/features/consultations/hooks/useConsultationMutations";
+import {
+  useStartConsultation,
+  useUpdateConsultation,
+} from "@/features/consultations/hooks/useConsultationMutations";
 import { useMedicationsCatalog } from "@/features/consultations/hooks/useMedicationsCatalog";
 import { PatientContextCard } from "@/features/consultations/components/PatientContextCard";
 import { ConsultationTabs } from "@/features/consultations/components/ConsultationTabs";
 import type { Consultation } from "@/features/consultations/schemas";
+import { toast } from "sonner";
 
 export default function ConsultationDetailPage({
   params,
@@ -44,7 +48,9 @@ export default function ConsultationDetailPage({
     }
   }, [detail, startConsultation]);
 
-  const isInitializing = isLoading || (detail && !detail.consultation.uuid && startConsultation.isPending);
+  const isInitializing =
+    isLoading ||
+    (detail && !detail.consultation.uuid && startConsultation.isPending);
 
   if (isInitializing) {
     return (
@@ -92,10 +98,20 @@ export default function ConsultationDetailPage({
         height: rawVitals.height ? `${rawVitals.height} m` : undefined,
         bloodPressure:
           rawVitals.systolic_bp && rawVitals.diastolic_bp
-            ? `${rawVitals.systolic_bp}/${rawVitals.diastolic_bp}`
+            ? `${rawVitals.systolic_bp}/${rawVitals.diastolic_bp} mmHg`
             : undefined,
-        heartRate: rawVitals.heart_rate ? `${rawVitals.heart_rate} bpm` : undefined,
-        temperature: rawVitals.temperature ? `${rawVitals.temperature}°C` : undefined,
+        heartRate: rawVitals.heart_rate
+          ? `${rawVitals.heart_rate} lpm`
+          : undefined,
+        temperature: rawVitals.temperature
+          ? `${rawVitals.temperature}°C`
+          : undefined,
+        respiratoryRate: rawVitals.respiratory_rate
+          ? `${rawVitals.respiratory_rate} rpm`
+          : undefined,
+        oxygenSat: rawVitals.oxygen_sat
+          ? `${rawVitals.oxygen_sat}%`
+          : undefined,
       }
     : undefined;
 
@@ -104,15 +120,20 @@ export default function ConsultationDetailPage({
     const activeUuid = consultation.uuid || startConsultation.data?.data?.uuid;
     if (!activeUuid) return;
 
-    await updateConsultation.mutateAsync({
-      uuid: activeUuid,
-      reason: data.motivoConsulta,
-      physical_exam: data.examenFisico,
-      diagnosis: data.diagnostico,
-      treatment_plan: data.treatment_plan || "",
-      status: "in-progress",
-      prescriptions: data.prescriptions,
-    });
+    try {
+      await updateConsultation.mutateAsync({
+        uuid: activeUuid,
+        reason: data.motivoConsulta,
+        physical_exam: data.examenFisico,
+        diagnosis: data.diagnostico,
+        treatment_plan: data.treatment_plan || "",
+        status: "in-progress",
+        prescriptions: data.prescriptions,
+      });
+      toast.success("¡Borrador guardado correctamente!");
+    } catch (err) {
+      console.error("Error al guardar borrador:", err);
+    }
   };
 
   // Lógica para finalizar definitivamente la consulta
@@ -120,31 +141,59 @@ export default function ConsultationDetailPage({
     const activeUuid = consultation.uuid || startConsultation.data?.data?.uuid;
     if (!activeUuid) return;
 
-    await updateConsultation.mutateAsync({
-      uuid: activeUuid,
-      reason: data.motivoConsulta,
-      physical_exam: data.examenFisico,
-      diagnosis: data.diagnostico,
-      treatment_plan: data.treatment_plan || "",
-      status: "completed",
-      prescriptions: data.prescriptions,
-    });
-
-    router.push("/dashboard/appointments");
+    try {
+      await updateConsultation.mutateAsync({
+        uuid: activeUuid,
+        reason: data.motivoConsulta,
+        physical_exam: data.examenFisico,
+        diagnosis: data.diagnostico,
+        treatment_plan: data.treatment_plan || "",
+        status: "completed",
+        prescriptions: data.prescriptions,
+        vitals: data.vitals,
+      });
+      toast.success("Consulta finalizada con éxito.");
+      router.push("/dashboard/appointments");
+    } catch (err) {
+      console.error("Error al finalizar consulta:", err);
+    }
   };
 
   // Preparar valores iniciales (si ya hay borrador guardado)
   const defaultFormValues = {
-    motivoConsulta: consultation.motivoConsulta || detail.appointment.reason || "",
+    motivoConsulta:
+      consultation.motivoConsulta || detail.appointment.reason || "",
     examenFisico: consultation.examenFisico || "",
     diagnostico: consultation.diagnostico || "",
-    prescriptions: consultation.uuid 
+    prescriptions: consultation.uuid
       ? detail.consultation?.prescriptions || [
-          { medicationId: "", dose: "", frequency: "", duration: "", notes: "" },
+          {
+            medicationId: "",
+            dose: "",
+            frequency: "",
+            duration: "",
+            notes: "",
+          },
         ]
       : [
-          { medicationId: "", dose: "", frequency: "", duration: "", notes: "" },
+          {
+            medicationId: "",
+            dose: "",
+            frequency: "",
+            duration: "",
+            notes: "",
+          },
         ],
+    vitals: detail.consultation?.vitals || {
+      weight: "",
+      height: "",
+      systolic_bp: "",
+      diastolic_bp: "",
+      heart_rate: "",
+      respiratory_rate: "",
+      temperature: "",
+      oxygen_sat: "",
+    },
   };
 
   return (
@@ -174,10 +223,7 @@ export default function ConsultationDetailPage({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Patient context */}
         <div className="lg:col-span-1">
-          <PatientContextCard
-            patient={patient}
-            vitals={formattedVitals}
-          />
+          <PatientContextCard patient={patient} vitals={formattedVitals} />
         </div>
 
         {/* Right: Consultation Tabs (Historial + Consulta Actual) */}

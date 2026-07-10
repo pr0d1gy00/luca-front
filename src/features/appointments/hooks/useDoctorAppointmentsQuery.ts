@@ -10,14 +10,21 @@ import { useCallback } from "react";
 export const doctorAppointmentKeys = {
   all: ["doctor-appointments"] as const,
   list: (page: number, timeframe: string, status: string, search: string) =>
-    [...doctorAppointmentKeys.all, "list", page, timeframe, status, search] as const,
+    [
+      ...doctorAppointmentKeys.all,
+      "list",
+      page,
+      timeframe,
+      status,
+      search,
+    ] as const,
 };
 
 export function useDoctorAppointmentsQuery(
   page: number = 1,
   timeframe: string = "today",
   status: string = "",
-  search: string = ""
+  search: string = "",
 ) {
   const { user } = useAuthStore();
   const doctorUuid = user?.uuid ?? user?.id ?? "";
@@ -42,14 +49,16 @@ export function useDoctorAppointmentsQuery(
         const allLocal = await db.appointments.toArray();
 
         // 2. Filtrar por el doctor actual
-        let doctorApts = allLocal.filter((apt) => apt.doctorUuid === doctorUuid);
+        let doctorApts = allLocal.filter(
+          (apt) => apt.doctorUuid === doctorUuid,
+        );
 
         // 3. Aplicar filtros locales de tiempo (timeframe)
         if (tf === "today") {
           doctorApts = doctorApts.filter((apt) => apt.date === todayStr);
         } else if (tf === "upcoming") {
           doctorApts = doctorApts.filter(
-            (apt) => apt.date > todayStr && apt.status !== "CANCELLED"
+            (apt) => apt.date > todayStr && apt.status !== "CANCELLED",
           );
         } else if (tf === "past") {
           doctorApts = doctorApts.filter((apt) => apt.date < todayStr);
@@ -57,7 +66,9 @@ export function useDoctorAppointmentsQuery(
 
         // 4. Aplicar filtros locales de estado (status)
         if (st) {
-          doctorApts = doctorApts.filter((apt) => apt.status.toLowerCase() === st.toLowerCase());
+          doctorApts = doctorApts.filter(
+            (apt) => apt.status.toLowerCase() === st.toLowerCase(),
+          );
         }
 
         // 5. Filtrar por búsqueda multicampo (search)
@@ -93,48 +104,75 @@ export function useDoctorAppointmentsQuery(
           }
 
           // Resolver relaciones locales para la UI
-          const clinicBranch = await db.clinicBranches.get(apt.clinicBranchUuid);
+          const clinicBranch = await db.clinicBranches.get(
+            apt.clinicBranchUuid,
+          );
 
           // Construir clinical_summary localmente
           let clinicalSummary = null;
           if (patient) {
             // 1. Estilo de vida
-            const lifestyleDb = await db.lifestyles.where("patientUuid").equals(patient.uuid).first();
-            const lifestyle = lifestyleDb ? {
-              smoking_status: lifestyleDb.smokingStatus,
-              alcohol_consumption: lifestyleDb.alcoholConsumption,
-              activity_level: lifestyleDb.activityLevel,
-              diet_type: lifestyleDb.dietType,
-            } : null;
+            const lifestyleDb = await db.lifestyles
+              .where("patientUuid")
+              .equals(patient.uuid)
+              .first();
+            const lifestyle = lifestyleDb
+              ? {
+                  smoking_status: lifestyleDb.smokingStatus,
+                  alcohol_consumption: lifestyleDb.alcoholConsumption,
+                  activity_level: lifestyleDb.activityLevel,
+                  diet_type: lifestyleDb.dietType,
+                }
+              : null;
 
             // 2. Antecedentes Quirúrgicos
-            const surgicalDb = await db.surgicalHistories.where("patientUuid").equals(patient.uuid).toArray();
+            const surgicalDb = await db.surgicalHistories
+              .where("patientUuid")
+              .equals(patient.uuid)
+              .toArray();
             const surgicalHistory = surgicalDb.map((item) => {
               const year = item.date ? item.date.split("-")[0] : null;
               return item.procedure + (year ? ` (${year})` : "");
             });
 
             // 3. Antecedentes Familiares
-            const familyDb = await db.familyHistories.where("patientUuid").equals(patient.uuid).toArray();
-            const familyHistory = familyDb.map((item) => `${item.condition} (${item.relationship.toLowerCase()})`);
+            const familyDb = await db.familyHistories
+              .where("patientUuid")
+              .equals(patient.uuid)
+              .toArray();
+            const familyHistory = familyDb.map(
+              (item) =>
+                `${item.condition} (${item.relationship.toLowerCase()})`,
+            );
 
             // 4. Medicamentos Activos (Recetas Activas)
             const prescriptionsDb = await db.prescriptions
               .where("patientUuid")
               .equals(patient.uuid)
               .toArray();
-            
+
             const activeMeds: string[] = [];
             const activeRxs = prescriptionsDb.filter(
-              (rx) => rx.status === "ACTIVE" && rx.expirationDate >= todayStr
+              (rx) => rx.status === "ACTIVE" && rx.expirationDate >= todayStr,
             );
 
             for (const rx of activeRxs) {
-              const items = await db.prescriptionItems.where("prescriptionUuid").equals(rx.uuid).toArray();
+              const items = await db.prescriptionItems
+                .where("prescriptionUuid")
+                .equals(rx.uuid)
+                .toArray();
               for (const item of items) {
                 const med = await db.medications.get(item.medicationUuid);
-                const medName = med?.commercialName || med?.name || "Medicamento";
-                activeMeds.push(`${medName} ${item.dose} - ${item.frequency} (${item.duration})`);
+                const medName =
+                  med?.commercialName && med?.activePrinciple
+                    ? `${med.commercialName} (${med.activePrinciple})`
+                    : med?.commercialName ||
+                      med?.activePrinciple ||
+                      med?.name ||
+                      "Medicamento";
+                activeMeds.push(
+                  `${medName} ${item.dose} - ${item.frequency} (${item.duration})`,
+                );
               }
             }
 
@@ -143,7 +181,7 @@ export function useDoctorAppointmentsQuery(
               .where("patientUuid")
               .equals(patient.uuid)
               .toArray();
-            
+
             consultationsDb.sort((a, b) => b.date.localeCompare(a.date));
             const recentConsultations = [];
             const topConsultations = consultationsDb.slice(0, 2);
@@ -231,7 +269,7 @@ export function useDoctorAppointmentsQuery(
         throw err;
       }
     },
-    [doctorUuid]
+    [doctorUuid],
   );
 
   return useQuery({
@@ -264,7 +302,10 @@ export function useDoctorAppointmentsQuery(
           data: formattedData,
         };
       } catch (err) {
-        console.warn("[useDoctorAppointmentsQuery] Server query failed, falling back to Dexie", err);
+        console.warn(
+          "[useDoctorAppointmentsQuery] Server query failed, falling back to Dexie",
+          err,
+        );
         return fetchOfflineAppointments(page, timeframe, status, search);
       }
     },
