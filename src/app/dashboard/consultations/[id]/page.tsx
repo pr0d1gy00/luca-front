@@ -22,7 +22,7 @@ export default function ConsultationDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { data: detail, isLoading, isError } = useActiveConsultationQuery(id);
+  const { data: detail, isPending, isError } = useActiveConsultationQuery(id);
   const startConsultation = useStartConsultation();
   const updateConsultation = useUpdateConsultation();
   const { data: medicationsCatalog } = useMedicationsCatalog();
@@ -49,7 +49,7 @@ export default function ConsultationDetailPage({
   }, [detail, startConsultation]);
 
   const isInitializing =
-    isLoading ||
+    isPending ||
     (detail && !detail.consultation.uuid && startConsultation.isPending);
 
   if (isInitializing) {
