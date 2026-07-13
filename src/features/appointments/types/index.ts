@@ -69,6 +69,7 @@ export interface BookingFormData {
 export const appointmentTypeLabels: Record<AppointmentType, string> = {
 	IN_PERSON: "Presencial",
 	ONLINE: "Online",
+	EXCEPTION: "Excepción",
 };
 
 export const appointmentStatusLabels: Record<AppointmentStatus, string> = {

@@ -179,17 +179,22 @@ export function usePatientLabResultsQuery(
 
             // Guardar también la solicitud de laboratorio
             if (requestObj) {
+              const reqObj = requestObj as any;
               await db.labRequests.put({
-                uuid: String(requestObj.uuid ?? requestObj.id ?? ""),
-                consultationUuid: String(requestObj.consultation_id ?? ""),
-                examsList: (requestObj.exams_list ??
-                  requestObj.examsList ??
+                uuid: String(reqObj.uuid ?? reqObj.id ?? ""),
+                patientUuid: String(reqObj.patient_uuid ?? reqObj.patient?.uuid ?? patientUuid),
+                doctorUuid: String(reqObj.doctor_uuid ?? reqObj.user?.uuid ?? ""),
+                consultationUuid: reqObj.consultation_id ? String(reqObj.consultation_id) : (reqObj.consultationUuid ? String(reqObj.consultationUuid) : null),
+                examsList: (reqObj.exams_list ??
+                  reqObj.examsList ??
                   []) as string[],
-                instructions: String(requestObj.instructions ?? ""),
+                instructions: String(reqObj.instructions ?? ""),
                 isCompleted:
-                  (requestObj.is_completed ?? requestObj.isCompleted ?? false)
+                  (reqObj.is_completed ?? reqObj.isCompleted ?? false)
                     ? true
                     : false,
+                updatedAt: String(reqObj.updated_at ?? reqObj.updatedAt ?? new Date().toISOString()),
+                createdAt: String(reqObj.created_at ?? reqObj.createdAt ?? new Date().toISOString()),
               });
             }
           }

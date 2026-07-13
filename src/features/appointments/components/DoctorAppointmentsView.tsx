@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { fadeUpVariant } from "@/app/lib/animations";
+import { ScheduleFollowUpModal } from "@/features/consultations/components/ScheduleFollowUpModal";
 
 type TimeframeType = "today" | "upcoming" | "past";
 
@@ -106,6 +107,7 @@ export function DoctorAppointmentsView() {
   const [searchVal, setSearchVal] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedApt, setSelectedApt] = useState<AppointmentRecord | null>(null);
+  const [isFollowUpOpen, setIsFollowUpOpen] = useState(false);
   const [, startTransition] = useTransition();
 
   // Debouncing de 350ms para búsqueda multicampo
@@ -609,13 +611,22 @@ export function DoctorAppointmentsView() {
                 {/* Botón de Acción Principal */}
                 <div className="pt-4 border-t border-pharmako-border-soft">
                   {selectedApt.status.toLowerCase() === "completed" ? (
-                    <Button
-                      onClick={() => router.push(`/dashboard/consultations/${selectedApt.uuid}`)}
-                      className="w-full bg-pharmako-canvas hover:bg-pharmako-border-soft text-pharmako-text-primary font-semibold rounded-lg text-sm h-9 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <FileText className="w-3.5 h-3.5" />
-                      Ver Consulta Atendida
-                    </Button>
+                    <div className="flex flex-col gap-2 w-full">
+                      <Button
+                        onClick={() => router.push(`/dashboard/consultations/${selectedApt.uuid}`)}
+                        className="w-full bg-pharmako-canvas hover:bg-pharmako-border-soft text-pharmako-text-primary font-semibold rounded-lg text-sm h-9 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        Ver Consulta Atendida
+                      </Button>
+                      <Button
+                        onClick={() => setIsFollowUpOpen(true)}
+                        className="w-full bg-teal-650 hover:bg-teal-700 text-white font-semibold rounded-lg text-sm h-9 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Calendar className="w-3.5 h-3.5" />
+                        Agendar Seguimiento
+                      </Button>
+                    </div>
                   ) : selectedApt.status.toLowerCase() === "cancelled" ? (
                     <Button
                       disabled
@@ -649,6 +660,15 @@ export function DoctorAppointmentsView() {
           </AnimatePresence>
         </div>
       </div>
+      
+      {selectedApt && (
+        <ScheduleFollowUpModal
+          isOpen={isFollowUpOpen}
+          onClose={() => setIsFollowUpOpen(false)}
+          patientUuid={selectedApt.patientUuid}
+          consultationUuid={selectedApt.uuid}
+        />
+      )}
     </div>
   );
 }

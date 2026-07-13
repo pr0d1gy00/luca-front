@@ -59,11 +59,11 @@ export function ConsultationTabs({
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="history" className="mt-6">
+      <TabsContent value="history" forceMount className="mt-6 data-[state=inactive]:hidden">
         <ClinicalHistoryTimeline entries={historyEntries} />
       </TabsContent>
 
-      <TabsContent value="consultation" className="mt-6">
+      <TabsContent value="consultation" forceMount className="mt-6 data-[state=inactive]:hidden">
         <ClinicalNotesForm
           onSubmit={onSubmit}
           onGeneratePrescription={onGeneratePrescription}

@@ -18,6 +18,8 @@ import {
   Calendar,
   MessageSquare,
   Hash,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,14 +33,22 @@ import {
 } from "../schemas";
 import { Separator } from "@/components/ui/separator";
 import { DigitalPrescriptionCard } from "./DigitalPrescriptionCard";
+import { DigitalLabRequestCard } from "./DigitalLabRequestCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Select, { components } from "react-select";
 import apiClient from "@/lib/api/client";
 import { db } from "@/features/offline/database/schema";
+import { useLabRequests, useDeleteLabRequest, useUpdateLabRequest } from "@/features/labs/hooks/useLabRequests";
+import { LabRequestModal } from "@/features/labs/components/LabRequestModal";
+import { Badge } from "@/components/ui/badge";
+import { Dna } from "lucide-react";
+import { toast } from "sonner";
+import { usePrescriptionTemplates } from "@/features/medications/hooks/usePrescriptionTemplates";
+import { useSearchParams } from "next/navigation";
 
 interface ClinicalNotesFormProps {
   onSubmit: (data: Consultation) => void;
-  onGeneratePrescription: (data: Consultation) => void;
+  onGeneratePrescription: (data: Consultation) => Promise<any>;
   patient?: Patient;
   doctor?: Doctor;
   medicationsCatalog?: {
@@ -46,14 +56,15 @@ interface ClinicalNotesFormProps {
     activePrinciple: string;
     concentration: string;
     presentation:
-      | "CAPSULA"
-      | "TABLETA"
-      | "JARABE"
-      | "GOTAS"
-      | "AMPOLLA"
-      | "CREMA";
+    | "CAPSULA"
+    | "TABLETA"
+    | "JARABE"
+    | "GOTAS"
+    | "AMPOLLA"
+    | "CREMA";
   }[];
   defaultValues?: {
+    uuid?: string;
     motivoConsulta: string;
     examenFisico: string;
     diagnostico: string;
@@ -64,6 +75,27 @@ interface ClinicalNotesFormProps {
       duration: string;
       notes?: string;
     }[];
+    vitals?: {
+      weight?: string;
+      height?: string;
+      systolic_bp?: string;
+      diastolic_bp?: string;
+      heart_rate?: string;
+      respiratory_rate?: string;
+      temperature?: string;
+      oxygen_sat?: string;
+    };
+    laboratorios?: {
+      uuid?: string;
+      examsList: string[];
+      instructions?: string;
+    }[];
+    followUp?: {
+      uuid?: string;
+      scheduledDate: string;
+      channel: "EMAIL" | "WHATSAPP" | "INTERNAL_CHAT" | "MANUAL_CALL";
+      messageTemplate?: string | null;
+    };
   };
   isSubmitting?: boolean;
 }
@@ -83,11 +115,11 @@ const DURATION_UNITS = [
 ];
 
 const inputClassName =
-  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 transition-colors outline-none focus:border-pharmako-care focus:ring-2 focus:ring-pharmako-care/20";
+  "w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 transition-colors outline-none focus:border-pharmako-care focus:ring-2 focus:ring-pharmako-care/20";
 const textAreaClassName =
-  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 transition-colors outline-none focus:border-pharmako-care focus:ring-2 focus:ring-pharmako-care/20 resize-none min-h-[100px]";
+  "w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 transition-colors outline-none focus:border-pharmako-care focus:ring-2 focus:ring-pharmako-care/20 resize-none min-h-[100px]";
 const selectClassName =
-  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 transition-colors outline-none focus:border-pharmako-care focus:ring-2 focus:ring-pharmako-care/20 cursor-pointer";
+  "w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 transition-colors outline-none focus:border-pharmako-care focus:ring-2 focus:ring-pharmako-care/20 cursor-pointer";
 
 // ---------------------------------------------------------------------------
 // Structured dose form fields (not in schema, just UI helpers)
@@ -109,6 +141,24 @@ export function ClinicalNotesForm({
   defaultValues,
   isSubmitting = false,
 }: ClinicalNotesFormProps) {
+  const searchParams = useSearchParams();
+  const activeTabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState("notes");
+  const [hasFollowUp, setHasFollowUp] = useState(false);
+
+  useEffect(() => {
+    if (activeTabParam && ["notes", "vitals", "prescription", "labs", "seguimiento"].includes(activeTabParam)) {
+      setActiveTab(activeTabParam);
+    }
+  }, [activeTabParam]);
+
+  const getDefaultMessage = (dateStr: string) => {
+    const patientName = patient ? `${patient.firstName} ${patient.lastName}` : "Paciente";
+    const doctorName = doctor ? doctor.name : "su médico";
+    const dx = watch("diagnostico") || "su tratamiento";
+    return `Hola ${patientName}, te saluda el equipo del Dr. ${doctorName}. Queremos recordar/dar seguimiento a tu evolución de "${dx}". ¿Cómo te has sentido?`;
+  };
+
   const [medsOptions, setMedsOptions] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -120,6 +170,62 @@ export function ClinicalNotesForm({
 
   const [showPrescription, setShowPrescription] = useState(false);
   const [submittedData, setSubmittedData] = useState<Consultation | null>(null);
+  const [isLabModalOpen, setIsLabModalOpen] = useState(false);
+  const [editingLabRequest, setEditingLabRequest] = useState<LabRequest | null>(null);
+  const { data: combosData } = usePrescriptionTemplates();
+
+  const parseQuantity = (doseStr: string): string => {
+    const match = doseStr.match(/^(\d+(\.\d+)?)/);
+    return match ? match[1] : "1";
+  };
+
+  const parseFrequency = (freqStr: string): string => {
+    const match = freqStr.match(/(\d+)/);
+    if (match) return match[1];
+    if (freqStr.toLowerCase().includes("diario")) return "24";
+    return "8";
+  };
+
+  const parseDuration = (durStr: string): { value: string; unit: string } => {
+    const numMatch = durStr.match(/(\d+)/);
+    const value = numMatch ? numMatch[1] : "7";
+    let unit = "días";
+    if (durStr.toLowerCase().includes("semana")) {
+      unit = "semanas";
+    } else if (durStr.toLowerCase().includes("mes")) {
+      unit = "meses";
+    }
+    return { value, unit };
+  };
+
+  const handleApplyCombo = (combo: any) => {
+    const newMedForms = [...medForms];
+    
+    combo.items.forEach((item: any) => {
+      const qty = parseQuantity(item.dose);
+      const freq = parseFrequency(item.frequency);
+      const { value: durVal, unit: durUnit } = parseDuration(item.duration);
+
+      append({
+        medicationId: item.medicationId,
+        dose: item.dose,
+        frequency: item.frequency,
+        duration: item.duration,
+        notes: item.notes || "",
+      });
+
+      newMedForms.push({
+        quantity: qty,
+        freqValue: freq,
+        freqPeriod: "horas",
+        durValue: durVal,
+        durUnit: durUnit,
+      });
+    });
+
+    setMedForms(newMedForms);
+    toast.success(`Combo "${combo.title}" aplicado correctamente.`);
+  };
 
   const fetchMedications = async (
     page: number,
@@ -425,6 +531,7 @@ export function ClinicalNotesForm({
   } = useForm<Consultation>({
     resolver: zodResolver(consultationSchema),
     defaultValues: defaultValues ?? {
+      uuid: "",
       motivoConsulta: "",
       examenFisico: "",
       diagnostico: "",
@@ -435,6 +542,59 @@ export function ClinicalNotesForm({
     mode: "onChange",
   });
 
+  const defaultUuid = defaultValues?.uuid || "";
+  useEffect(() => {
+    if (defaultUuid && !watch("uuid")) {
+      setValue("uuid", defaultUuid);
+    }
+  }, [defaultUuid, setValue, watch]);
+
+  const currentConsultationUuid = watch("uuid") || defaultUuid;
+  const { data: allLabRequests = [], isLoading: isLoadingLabs } = useLabRequests(patient?.uuid);
+  const consultationLabs = allLabRequests.filter(
+    (req) =>
+      (req.consultationUuid === currentConsultationUuid ||
+        (req as any).consultation?.uuid === currentConsultationUuid) &&
+      !req.deletedAt
+  );
+
+  // Initialize form laboratorios from database when loaded
+  useEffect(() => {
+    if (consultationLabs.length > 0 && (!watch("laboratorios") || watch("laboratorios")?.length === 0)) {
+      setValue(
+        "laboratorios",
+        consultationLabs.map((req) => ({
+          uuid: req.uuid,
+          examsList: req.examsList,
+          instructions: req.instructions,
+          _syncStatus: req._syncStatus,
+        }))
+      );
+    }
+  }, [consultationLabs, setValue]);
+
+  const handleDeleteLabRequest = (uuid: string) => {
+    if (confirm("¿Estás seguro de que quieres eliminar este pedido de laboratorio de la consulta?")) {
+      const currentLabs = watch("laboratorios") || [];
+      setValue(
+        "laboratorios",
+        currentLabs.filter((l) => l.uuid !== uuid)
+      );
+      toast.success("Pedido de laboratorio removido de la consulta.");
+    }
+  };
+
+  const handleEditLabRequest = (req: any) => {
+    setEditingLabRequest({
+      ...req,
+      patientUuid: patient?.uuid || "",
+      doctorUuid: doctor?.uuid || "",
+      consultationUuid: currentConsultationUuid,
+      isCompleted: false,
+    } as LabRequest);
+    setIsLabModalOpen(true);
+  };
+
   // Resetear el formulario reactivamente cuando lleguen los defaultValues por primera vez o si está limpio
   useEffect(() => {
     if (defaultValues) {
@@ -444,6 +604,11 @@ export function ClinicalNotesForm({
       if (shouldReset) {
         hasInitialized.current = true;
         reset(defaultValues);
+        if (defaultValues.followUp?.scheduledDate) {
+          setHasFollowUp(true);
+        } else {
+          setHasFollowUp(false);
+        }
 
         // Intentar re-popular las variables estructuradas medForms para cada récipe cargado
         if (
@@ -539,10 +704,18 @@ export function ClinicalNotesForm({
     }
   };
 
-  const handleFormSubmit = (data: Consultation) => {
+  const handleFormSubmit = async (data: Consultation) => {
     setSubmittedData(data);
     setShowPrescription(true);
-    onGeneratePrescription(data);
+    try {
+      const res = await onGeneratePrescription(data);
+      if (res && res.laboratorios) {
+        setValue("laboratorios", res.laboratorios);
+        setSubmittedData({ ...data, laboratorios: res.laboratorios });
+      }
+    } catch (err) {
+      console.error("Error al generar receta:", err);
+    }
   };
 
   const handleAddMed = () => {
@@ -582,37 +755,74 @@ export function ClinicalNotesForm({
       };
     });
 
+    const labs = submittedData.laboratorios || [];
+
     return (
-      <div className="flex flex-col gap-6">
-        <DigitalPrescriptionCard
-          doctor={doctor as Doctor}
-          patient={patient as Patient}
-          prescriptions={prescriptionItems}
-          medications={meds as unknown as Medication[]}
-          issuanceDate={new Date()}
-        />
-        <div className="flex justify-center gap-3">
+      <div className="flex flex-col gap-8 max-w-6xl mx-auto">
+        <div className="text-center space-y-1">
+          <h2 className="text-xl font-bold text-slate-800">
+            Confirmación de Récipes y Órdenes
+          </h2>
+          <p className="text-sm text-slate-500">
+            Revisá los récipe de medicamentos y órdenes de exámenes clínicos antes de finalizar.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <div className="space-y-4">
+            <h3 className="text-xs font-semibold text-slate-500 text-center uppercase tracking-wider">
+              Récipe de Medicamentos
+            </h3>
+            <DigitalPrescriptionCard
+              doctor={doctor as Doctor}
+              patient={patient as Patient}
+              prescriptions={prescriptionItems}
+              medications={meds as unknown as Medication[]}
+              issuanceDate={new Date()}
+            />
+          </div>
+
+          {labs.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-xs font-semibold text-slate-500 text-center uppercase tracking-wider">
+                Orden de Laboratorio
+              </h3>
+              {labs.map((lab, i) => (
+                <DigitalLabRequestCard
+                  key={i}
+                  doctor={doctor as Doctor}
+                  patient={patient as Patient}
+                  examsList={lab.examsList}
+                  instructions={lab.instructions}
+                  issuanceDate={new Date()}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-center gap-3 border-t border-slate-100 pt-6">
           <Button
             type="button"
             variant="outline"
             onClick={() => setShowPrescription(false)}
-            className="rounded-2xl border-slate-200"
+            className="rounded-2xl border-slate-200 h-12 px-6"
           >
-            ← Editar
+            ← Editar Consulta
           </Button>
           <Button
             type="button"
             disabled={isSubmitting}
             onClick={() => onSubmit(submittedData)}
-            className="rounded-2xl bg-blue-700 hover:bg-blue-800 text-white font-medium px-8 py-3 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-2xl bg-pharmako-care hover:bg-pharmako-care-hover text-white font-semibold px-8 h-12 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 className="size-5 animate-spin" />
                 Guardando...
               </>
             ) : (
-              "Confirmar y Enviar Récipe"
+              "Confirmar y Guardar Todo"
             )}
           </Button>
         </div>
@@ -625,7 +835,8 @@ export function ClinicalNotesForm({
       onSubmit={handleSubmit(handleFormSubmit)}
       className="flex flex-col gap-8"
     >
-      <Tabs defaultValue="notes" className="w-full">
+      <input type="hidden" {...register("uuid")} />
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full justify-start gap-1 border border-slate-200/50 p-1 rounded-2xl h-12 mb-6">
           <TabsTrigger
             value="notes"
@@ -647,6 +858,20 @@ export function ClinicalNotesForm({
           >
             <Pill className="size-4" />
             Tratamiento y Récipe
+          </TabsTrigger>
+          <TabsTrigger
+            value="labs"
+            className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-pharmako-care px-5 py-2 text-sm font-medium transition-all cursor-pointer flex items-center gap-2"
+          >
+            <Dna className="size-4" />
+            Exámenes de Laboratorio
+          </TabsTrigger>
+          <TabsTrigger
+            value="seguimiento"
+            className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-pharmako-care px-5 py-2 text-sm font-medium transition-all cursor-pointer flex items-center gap-2"
+          >
+            <Calendar className="size-4" />
+            Seguimiento Clínico
           </TabsTrigger>
         </TabsList>
 
@@ -912,13 +1137,13 @@ export function ClinicalNotesForm({
                           value={
                             selectedMedId
                               ? {
-                                  value: selectedMedId,
-                                  label: selectedMed
-                                    ? selectedMed.commercialName
-                                      ? `${selectedMed.commercialName} (${selectedMed.activePrinciple}) ${selectedMed.concentration}`
-                                      : `${selectedMed.activePrinciple} ${selectedMed.concentration}`
-                                    : "Seleccionado",
-                                }
+                                value: selectedMedId,
+                                label: selectedMed
+                                  ? selectedMed.commercialName
+                                    ? `${selectedMed.commercialName} (${selectedMed.activePrinciple}) ${selectedMed.concentration}`
+                                    : `${selectedMed.activePrinciple} ${selectedMed.concentration}`
+                                  : "Seleccionado",
+                              }
                               : null
                           }
                           onChange={(option: any) => {
@@ -982,14 +1207,14 @@ export function ClinicalNotesForm({
                           <span className="text-sm text-slate-500">
                             {selectedMed
                               ? presentationLabels[
-                                  selectedMed.presentation as
-                                    | "CAPSULA"
-                                    | "TABLETA"
-                                    | "JARABE"
-                                    | "GOTAS"
-                                    | "AMPOLLA"
-                                    | "CREMA"
-                                ].toLowerCase()
+                                selectedMed.presentation as
+                                | "CAPSULA"
+                                | "TABLETA"
+                                | "JARABE"
+                                | "GOTAS"
+                                | "AMPOLLA"
+                                | "CREMA"
+                              ].toLowerCase()
                               : "unidad"}
                           </span>
                         </div>
@@ -1091,16 +1316,40 @@ export function ClinicalNotesForm({
               })}
             </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleAddMed}
-              className="self-start rounded-2xl border-dashed border-slate-300 h-8 "
-            >
-              <Plus className="size-5" />
-              Agregar Medicamento
-            </Button>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddMed}
+                className="rounded-xl border-dashed border-slate-300 h-9 font-semibold text-xs"
+              >
+                <Plus className="size-4" />
+                Agregar Medicamento
+              </Button>
+
+              {combosData?.data && combosData.data.length > 0 && (
+                <div className="relative group">
+                  <select
+                    onChange={(e) => {
+                      const selected = combosData.data.find(c => c.uuid === e.target.value);
+                      if (selected) {
+                        handleApplyCombo(selected);
+                        e.target.value = ""; // Reset select
+                      }
+                    }}
+                    className="h-9 px-3 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 outline-none hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    <option value="">Aplicar Combo de Prescripción...</option>
+                    {combosData.data.map((c) => (
+                      <option key={c.uuid} value={c.uuid}>
+                        {c.title} ({c.items.length} fármacos)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
 
             {errors.prescriptions &&
               typeof errors.prescriptions.message === "string" && (
@@ -1110,7 +1359,259 @@ export function ClinicalNotesForm({
               )}
           </section>
         </TabsContent>
+
+        <TabsContent
+          value="labs"
+          className="focus-visible:outline-none"
+        >
+          {/* ── Exámenes de Laboratorio ──────────────────────── */}
+          <section className="flex flex-col gap-5">
+            <div className="flex items-center gap-3">
+              <Separator className="flex-1 bg-slate-100" />
+              <h3 className="text-md font-medium text-slate-700 whitespace-nowrap flex items-center gap-2">
+                <Dna className="size-6 text-pharmako-care" />
+                Exámenes de Laboratorio
+              </h3>
+              <Separator className="flex-1 bg-slate-100" />
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-slate-500">
+                  Agregá órdenes de exámenes clínicos a esta consulta.
+                </p>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setEditingLabRequest(null);
+                    setIsLabModalOpen(true);
+                  }}
+                  className="border border-pharmako-care bg-white hover:bg-pharmako-care-hover hover:text-white text-pharmako-care rounded-xl flex items-center gap-1.5 text-xs py-1.5 h-9"
+                >
+                  <Plus className="w-4 h-4" /> Generar Examen
+                </Button>
+              </div>
+
+              {isLoadingLabs ? (
+                <div className="text-center py-6 text-xs text-slate-400">
+                  Cargando exámenes...
+                </div>
+              ) : (watch("laboratorios") || []).length === 0 ? (
+                <div className="text-center py-8 border border-dashed border-slate-200 rounded-2xl text-sm text-slate-400">
+                  No se han solicitado exámenes en esta consulta.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {(watch("laboratorios") || []).map((req) => (
+                    <div
+                      key={req.uuid}
+                      className="p-4 border border-slate-200 rounded-xl bg-white flex items-center justify-between"
+                    >
+                      <div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {req.examsList.map((exam, i) => (
+                            <Badge
+                              key={i}
+                              variant="outline"
+                              className="border-slate-200 text-slate-700 text-sm rounded-md py-2 h-10"
+                            >
+                              {exam}
+                            </Badge>
+                          ))}
+                        </div>
+                        {req.instructions && (
+                          <p className="text-xs text-slate-500 mt-2 font-medium">
+                            <span className="font-bold text-slate-700">Indicaciones: </span>
+                            {req.instructions}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {req._syncStatus === "synced" ? (
+                          <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 text-sm rounded-md mr-2 py-1 h-7">
+                            Sincronizado
+                          </Badge>
+                        ) : req._syncStatus === "pending" ? (
+                          <Badge variant="secondary" className="bg-amber-50 text-amber-700 text-sm rounded-md mr-2 py-1 h-7">
+                            Pendiente Sinc.
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="bg-blue-50 text-blue-700 text-sm rounded-md mr-2 py-1 h-7">
+                            Por guardar
+                          </Badge>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleEditLabRequest(req)}
+                          className="p-1.5 text-slate-500 hover:text-teal-600 hover:bg-slate-100 rounded-lg transition-all"
+                          title="Editar"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteLabRequest(req.uuid)}
+                          className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-slate-100 rounded-lg transition-all"
+                          title="Eliminar"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        </TabsContent>
+
+        <TabsContent
+          value="seguimiento"
+          className="flex flex-col gap-6 focus-visible:outline-none"
+        >
+          <section className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col gap-6 shadow-sm">
+            <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+              <div className="bg-amber-50 rounded-xl p-2.5">
+                <Calendar className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Programar Seguimiento Médico</h3>
+                <p className="text-xs text-slate-500">Define cuándo y cómo volver a contactar al paciente después de esta consulta.</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="has_follow_up"
+                checked={hasFollowUp}
+                onChange={(e) => {
+                  setHasFollowUp(e.target.checked);
+                  if (e.target.checked) {
+                    const defaultDate = new Date();
+                    defaultDate.setDate(defaultDate.getDate() + 7);
+                    const formatted = defaultDate.toISOString().split("T")[0];
+                    setValue("followUp.scheduledDate", formatted);
+                    setValue("followUp.channel", "MANUAL_CALL");
+                    setValue("followUp.messageTemplate", getDefaultMessage(formatted));
+                  } else {
+                    setValue("followUp", undefined);
+                  }
+                }}
+                className="rounded border-slate-300 text-teal-600 focus:ring-teal-500 h-4.5 w-4.5"
+              />
+              <label htmlFor="has_follow_up" className="text-sm font-semibold text-slate-700 cursor-pointer select-none">
+                Activar seguimiento programado para este paciente
+              </label>
+            </div>
+
+            {hasFollowUp && (
+              <div className="flex flex-col gap-5 pt-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 animate-in fade-in duration-200" />
+                      Fecha de Contacto
+                    </label>
+                    <input
+                      type="date"
+                      {...register("followUp.scheduledDate", { required: hasFollowUp })}
+                      className="rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      Canal de Comunicación
+                    </label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        { value: "MANUAL_CALL", label: "Llamada" },
+                        { value: "WHATSAPP", label: "WhatsApp" },
+                        { value: "EMAIL", label: "Correo" },
+                        { value: "INTERNAL_CHAT", label: "Chat LUCA" },
+                      ].map((chan) => {
+                        const isSelected = watch("followUp.channel") === chan.value;
+                        return (
+                          <button
+                            key={chan.value}
+                            type="button"
+                            onClick={() => {
+                              setValue("followUp.channel", chan.value as any);
+                            }}
+                            className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all ${
+                              isSelected
+                                ? "border-teal-600 bg-teal-50/50 text-teal-600"
+                                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                            }`}
+                          >
+                            <span className="text-xs font-bold">{chan.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {watch("followUp.channel") !== "MANUAL_CALL" && (
+                  <div className="flex flex-col gap-1.5 animate-in fade-in duration-200">
+                    <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                      <FileText className="w-3.5 h-3.5" />
+                      Mensaje / Plantilla a Enviar
+                    </label>
+                    <textarea
+                      {...register("followUp.messageTemplate")}
+                      placeholder="Redactá el mensaje de control para el paciente..."
+                      className="rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 min-h-[100px]"
+                    />
+                    <p className="text-xxs text-slate-400">
+                      Podés usar tags como <code className="font-semibold text-slate-500">{"{{paciente}}"}</code>, <code className="font-semibold text-slate-500">{"{{doctor}}"}</code> o <code className="font-semibold text-slate-500">{"{{diagnostico}}"}</code> que se autocompletarán al enviar.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        </TabsContent>
       </Tabs>
+
+      <LabRequestModal
+        isOpen={isLabModalOpen}
+        onClose={() => {
+          setIsLabModalOpen(false);
+          setEditingLabRequest(null);
+        }}
+        patientUuid={patient?.uuid}
+        consultationUuid={currentConsultationUuid}
+        existingRequest={editingLabRequest}
+        onSave={(labData) => {
+          const currentLabs = watch("laboratorios") || [];
+          if (editingLabRequest) {
+            setValue(
+              "laboratorios",
+              currentLabs.map((l) =>
+                l.uuid === editingLabRequest.uuid
+                  ? { ...l, examsList: labData.examsList, instructions: labData.instructions }
+                  : l
+              )
+            );
+            toast.success("Pedido de laboratorio actualizado en la consulta.");
+          } else {
+            setValue("laboratorios", [
+              ...currentLabs,
+              {
+                uuid: labData.uuid || crypto.randomUUID(),
+                examsList: labData.examsList,
+                instructions: labData.instructions,
+              },
+            ]);
+            toast.success("Pedido de laboratorio agregado a la consulta.");
+          }
+          setIsLabModalOpen(false);
+          setEditingLabRequest(null);
+        }}
+      />
 
       {/* ── Action Bar ───────────────────────────────────── */}
       <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">

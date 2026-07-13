@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "motion/react";
 import { staggerChildrenVariant } from "@/app/lib/animations";
 import { Stethoscope, FlaskConical, MessageSquare } from "lucide-react";
 import { QuickActionButton } from "./QuickActionButton";
+import { AdHocConsultationModal } from "./AdHocConsultationModal";
 import type { QuickAction } from "../types";
 
 const QUICK_ACTIONS: QuickAction[] = [
@@ -33,16 +35,29 @@ const QUICK_ACTIONS: QuickAction[] = [
 ];
 
 export function QuickActions() {
+  const [isAdHocOpen, setIsAdHocOpen] = useState(false);
+
   return (
-    <motion.div
-      variants={staggerChildrenVariant}
-      initial="hidden"
-      animate="visible"
-      className="grid grid-cols-3 gap-3"
-    >
-      {QUICK_ACTIONS.map((action) => (
-        <QuickActionButton key={action.id} action={action} />
-      ))}
-    </motion.div>
+    <>
+      <motion.div
+        variants={staggerChildrenVariant}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-3 gap-3"
+      >
+        {QUICK_ACTIONS.map((action) => (
+          <QuickActionButton
+            key={action.id}
+            action={action}
+            onClick={action.id === "qa-1" ? () => setIsAdHocOpen(true) : undefined}
+          />
+        ))}
+      </motion.div>
+
+      <AdHocConsultationModal
+        isOpen={isAdHocOpen}
+        onClose={() => setIsAdHocOpen(false)}
+      />
+    </>
   );
 }

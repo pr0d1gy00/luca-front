@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { appointmentApi } from "../api/appointmentApi";
 import { appointmentOfflineService } from "../services/appointmentOfflineService";
 import { syncService } from "@/features/offline/services/syncService";
+import { getLocalTodayString } from "@/lib/utils";
 import type { CreateAppointmentDTO, UpdateAppointmentDTO } from "../types";
 
 // ─────────────────────────────────────────────────────────────
@@ -56,7 +57,7 @@ export function useUpcomingAppointments() {
 			try {
 				const response = await appointmentApi.getAll();
 				const upcoming = response.data.filter((a) => {
-					const today = new Date().toISOString().split("T")[0];
+					const today = getLocalTodayString();
 					return a.date >= today && a.status !== "CANCELLED";
 				});
 				return upcoming;

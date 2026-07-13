@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { appointmentApi } from "../api/appointmentApi";
 import { db } from "@/features/offline/database/schema";
 import { useAuthStore } from "@/store/auth";
+import { getLocalTodayString } from "@/lib/utils";
 import { useCallback } from "react";
 
 export const patientAppointmentKeys = {
@@ -41,7 +42,7 @@ export function usePatientAppointmentsQuery(
         );
 
         // 3. Aplicar filtros locales de estado
-        const todayStr = new Date().toISOString().split("T")[0];
+        const todayStr = getLocalTodayString();
         if (activeFilter === "upcoming") {
           patientApts = patientApts.filter(
             (apt) =>

@@ -35,10 +35,25 @@ const processQueue = (error: unknown) => {
 apiClient.interceptors.request.use(
   (config) => {
     // 1. Clave de idempotencia
-    if (config.method?.toLowerCase() === "post") {
+    const method = config.method?.toLowerCase();
+    if (method === "post" || method === "put" || method === "patch") {
       if (!config.headers["Idempotency-Key"]) {
-        config.headers["Idempotency-Key"] = uuidv4();
+        let key = "";
+        if (config.data) {
+          try {
+            const parsed = typeof config.data === "string" ? JSON.parse(config.data) : config.data;
+            key = parsed.uuid || parsed.id || parsed.appointmentUuid || parsed.appointment_uuid || parsed.patientUuid || parsed.patient_uuid || "";
+          } catch (e) {
+            // Ignorar errores de parsing
+          }
+        }
+        config.headers["Idempotency-Key"] = key || uuidv4();
       }
+    }
+
+    // 2. Zona Horaria del cliente
+    if (typeof window !== "undefined") {
+      config.headers["X-Timezone"] = Intl.DateTimeFormat().resolvedOptions().timeZone;
     }
 
     return config;

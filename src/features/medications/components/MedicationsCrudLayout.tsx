@@ -15,6 +15,9 @@ import {
   ArrowUpRight,
   Activity,
   Download,
+  ListChecks,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import {
   Dialog,
@@ -36,62 +39,22 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { MedicationTable } from "./MedicationTable";
 import { MedicationForm } from "./MedicationForm";
-import type { Medication } from "../schemas";
+import { ComboForm } from "./ComboForm";
+import type { Medication, PrescriptionTemplate } from "../schemas";
 import { presentationLabels, administrationRouteLabels } from "../schemas";
-
-interface MedicationsCrudLayoutProps {
-  medications?: Medication[];
-}
-
-const MOCK_MEDICATIONS: Medication[] = [
-  {
-    commercialName: "Amoxil",
-    activePrinciple: "Amoxicilina",
-    concentration: "500mg",
-    presentation: "CAPSULA",
-    administrationRoute: "ORAL",
-    requiresPrescription: true,
-    contraindications: "Hipersensibilidad a las penicilinas o cefalosporinas.",
-  },
-  {
-    commercialName: "Ibuprofeno MK",
-    activePrinciple: "Ibuprofeno",
-    concentration: "400mg",
-    presentation: "TABLETA",
-    administrationRoute: "ORAL",
-    requiresPrescription: false,
-    contraindications:
-      "Úlcera péptica activa, insuficiencia renal o hepática grave.",
-  },
-  {
-    commercialName: "Paracetamol Labs",
-    activePrinciple: "Paracetamol",
-    concentration: "120mg/5ml",
-    presentation: "JARABE",
-    administrationRoute: "ORAL",
-    requiresPrescription: false,
-    contraindications: "Insuficiencia hepatocelular grave, hipersensibilidad.",
-  },
-  {
-    commercialName: "Koldex Colirio",
-    activePrinciple: "Cloranfenicol",
-    concentration: "0.5%",
-    presentation: "GOTAS",
-    administrationRoute: "OFTALMICA",
-    requiresPrescription: true,
-    contraindications: "Antecedentes de insuficiencia medular, recién nacidos.",
-  },
-  {
-    commercialName: "Diprogenta",
-    activePrinciple: "Betametasona",
-    concentration: "0.05%",
-    presentation: "CREMA",
-    administrationRoute: "TOPICA",
-    requiresPrescription: true,
-    contraindications:
-      "Lesiones cutáneas tuberculosas o virales (herpes, varicela).",
-  },
-];
+import {
+  useMedications,
+  useCreateMedication,
+  useUpdateMedication,
+  useDeleteMedication,
+  useTopPrescribedMedications,
+} from "../hooks/useMedications";
+import {
+  usePrescriptionTemplates,
+  useCreatePrescriptionTemplate,
+  useUpdatePrescriptionTemplate,
+  useDeletePrescriptionTemplate,
+} from "../hooks/usePrescriptionTemplates";
 
 const TOP_PRESCRIBED = [
   { name: "Paracetamol Labs", count: 124, percentage: 85 },
@@ -99,17 +62,39 @@ const TOP_PRESCRIBED = [
   { name: "Amoxil", count: 85, percentage: 55 },
 ];
 
-type Mode = "view" | "create" | "edit";
+type Mode = "view" | "create" | "edit" | "create_combo" | "edit_combo";
 
-export function MedicationsCrudLayout({
-  medications = MOCK_MEDICATIONS,
-}: MedicationsCrudLayoutProps) {
-  const [medsList, setMedsList] = useState<Medication[]>(medications);
+export function MedicationsCrudLayout() {
+  const [activeTab, setActiveTab] = useState<"resumen" | "lista" | "combos">("resumen");
   const [mode, setMode] = useState<Mode | null>(null);
-  const [selectedMedication, setSelectedMedication] =
-    useState<Medication | null>(null);
+  const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
+  const [selectedCombo, setSelectedCombo] = useState<PrescriptionTemplate | null>(null);
+  
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"resumen" | "lista">("resumen");
+  const [deleteType, setDeleteType] = useState<"medication" | "combo">("medication");
+
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+
+  // React Query Hooks
+  const { data: medsData, isLoading: isLoadingMeds } = useMedications(search, page);
+  const { data: topPrescribedData, isLoading: isLoadingTop } = useTopPrescribedMedications();
+  const createMedication = useCreateMedication();
+  const updateMedication = useUpdateMedication();
+  const deleteMedication = useDeleteMedication();
+
+  const handleSearchChange = (val: string) => {
+    setSearch(val);
+    setPage(1);
+  };
+
+  const { data: combosData, isLoading: isLoadingCombos } = usePrescriptionTemplates();
+  const createCombo = useCreatePrescriptionTemplate();
+  const updateCombo = useUpdatePrescriptionTemplate();
+  const deleteCombo = useDeletePrescriptionTemplate();
+
+  const medsList = medsData?.data || [];
+  const combosList = combosData?.data || [];
 
   const handleCreate = () => {
     setSelectedMedication(null);
@@ -126,41 +111,75 @@ export function MedicationsCrudLayout({
     setMode("view");
   };
 
-  const handleDelete = (activePrinciple: string) => {
-    setDeleteConfirm(activePrinciple);
+  const handleDelete = (uuid: string) => {
+    setDeleteType("medication");
+    setDeleteConfirm(uuid);
+  };
+
+  const handleCreateCombo = () => {
+    setSelectedCombo(null);
+    setMode("create_combo");
+  };
+
+  const handleEditCombo = (combo: PrescriptionTemplate) => {
+    setSelectedCombo(combo);
+    setMode("edit_combo");
+  };
+
+  const handleDeleteCombo = (uuid: string) => {
+    setDeleteType("combo");
+    setDeleteConfirm(uuid);
   };
 
   const handleConfirmDelete = () => {
     if (deleteConfirm) {
-      setMedsList((prev) =>
-        prev.filter((m) => m.activePrinciple !== deleteConfirm),
-      );
+      if (deleteType === "combo") {
+        deleteCombo.mutate(deleteConfirm);
+      } else {
+        deleteMedication.mutate(deleteConfirm);
+      }
       setDeleteConfirm(null);
     }
   };
 
-  const handleSubmit = (data: Medication) => {
+  const handleSubmitMedication = (data: Medication) => {
     if (mode === "create") {
-      setMedsList((prev) => [...prev, data]);
-    } else if (mode === "edit" && selectedMedication) {
-      setMedsList((prev) =>
-        prev.map((m) =>
-          m.activePrinciple === selectedMedication.activePrinciple ? data : m,
-        ),
-      );
+      createMedication.mutate(data);
+    } else if (mode === "edit" && selectedMedication?.uuid) {
+      updateMedication.mutate({ uuid: selectedMedication.uuid, data });
     }
     setMode(null);
     setSelectedMedication(null);
+  };
+
+  const handleSubmitCombo = (data: PrescriptionTemplate) => {
+    if (mode === "create_combo") {
+      createCombo.mutate(data);
+    } else if (mode === "edit_combo" && selectedCombo?.uuid) {
+      updateCombo.mutate({ uuid: selectedCombo.uuid, data });
+    }
+    setMode(null);
+    setSelectedCombo(null);
   };
 
   const handleClose = () => {
     setMode(null);
     setSelectedMedication(null);
+    setSelectedCombo(null);
   };
+
+  if (isLoadingMeds || isLoadingCombos || isLoadingTop) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <Clock className="w-8 h-8 animate-spin text-pharmako-care" />
+        <span className="text-sm font-semibold text-slate-500">Cargando medicamentos y combos...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Page Header Outside Table */}
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
@@ -170,13 +189,23 @@ export function MedicationsCrudLayout({
             Gestioná el catálogo global y tus medicamentos personalizados.
           </p>
         </div>
-        <Button
-          onClick={handleCreate}
-          className="gap-2 rounded-xl bg-pharmako-primary text-white hover:bg-pharmako-primary-hover h-11 px-6 font-semibold transition-all duration-200 active:scale-[0.98] self-start sm:self-auto shrink-0"
-        >
-          <Plus className="size-5" />
-          Nuevo Medicamento
-        </Button>
+        {activeTab === "combos" ? (
+          <Button
+            onClick={handleCreateCombo}
+            className="gap-2 rounded-xl bg-pharmako-primary text-white hover:bg-pharmako-primary-hover h-11 px-6 font-semibold transition-all duration-200 active:scale-[0.98] self-start sm:self-auto shrink-0"
+          >
+            <Plus className="size-5" />
+            Nuevo Combo
+          </Button>
+        ) : (
+          <Button
+            onClick={handleCreate}
+            className="gap-2 rounded-xl bg-pharmako-primary text-white hover:bg-pharmako-primary-hover h-11 px-6 font-semibold transition-all duration-200 active:scale-[0.98] self-start sm:self-auto shrink-0"
+          >
+            <Plus className="size-5" />
+            Nuevo Medicamento
+          </Button>
+        )}
       </div>
 
       {/* Tab Switcher */}
@@ -202,6 +231,17 @@ export function MedicationsCrudLayout({
           )}
         >
           Lista
+        </button>
+        <button
+          onClick={() => setActiveTab("combos")}
+          className={cn(
+            "px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer",
+            activeTab === "combos"
+              ? "bg-slate-50 text-pharmako-care"
+              : "text-slate-400 hover:text-slate-650",
+          )}
+        >
+          Combos de Prescripción
         </button>
       </div>
 
@@ -231,19 +271,19 @@ export function MedicationsCrudLayout({
             </button>
 
             <button
-              onClick={() => setActiveTab("lista")}
+              onClick={() => setActiveTab("combos")}
               className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between text-left transition-all duration-200 hover:border-pharmako-care hover:bg-pharmako-care-light/5 hover:-translate-y-0.5 group cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <div className="bg-pharmako-care-light rounded-lg p-2 text-pharmako-care group-hover:scale-110 transition-transform">
-                  <Activity className="w-5 h-5" />
+                  <ListChecks className="w-5 h-5" />
                 </div>
                 <div>
                   <span className="block text-sm font-bold text-slate-900">
-                    Auditar Recetas
+                    Gestionar Combos
                   </span>
                   <span className="block text-xs text-slate-500 mt-0.5">
-                    Ver uso y alertas
+                    Plantillas de récipes
                   </span>
                 </div>
               </div>
@@ -252,7 +292,7 @@ export function MedicationsCrudLayout({
 
             <button
               onClick={() => {}}
-              className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between text-left transition-all duration-200 hover:border-pharmako-care hover:bg-pharmako-care-light/5 hover:-translate-y-0.5 group cursor-pointer"
+              className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between text-left transition-all duration-200 hover:border-pharmako-care hover:bg-pharmako-care-light/5 hover:-translate-y-0.5 group cursor-pointer animate-pulse"
             >
               <div className="flex items-center gap-3">
                 <div className="bg-pharmako-care-light rounded-lg p-2 text-pharmako-care group-hover:scale-110 transition-transform">
@@ -326,7 +366,7 @@ export function MedicationsCrudLayout({
               </div>
             </div>
 
-            {/* Card 3: Top Recetados */}
+            {/* Card 3: Más Recetados */}
             <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between min-h-[160px] transition-all duration-200 hover:-translate-y-0.5">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold text-slate-500 tracking-wider uppercase">
@@ -337,7 +377,7 @@ export function MedicationsCrudLayout({
                 </span>
               </div>
               <div className="space-y-2.5">
-                {TOP_PRESCRIBED.map((item, idx) => (
+                {(topPrescribedData || []).map((item: any, idx: number) => (
                   <div key={idx} className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-semibold text-slate-800 truncate max-w-[150px]">
@@ -358,6 +398,26 @@ export function MedicationsCrudLayout({
               </div>
             </div>
 
+            {/* Card 4: Combos de Prescripción */}
+            <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between min-h-[160px] transition-all duration-200 hover:-translate-y-0.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-500 tracking-wider uppercase">
+                  Combos Guardados
+                </span>
+                <div className="bg-pharmako-care-light rounded-lg p-2 text-pharmako-care">
+                  <ListChecks className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <span className="text-3xl font-bold text-slate-900 tracking-tight">
+                  {combosList.length}
+                </span>
+                <span className="block text-xs text-slate-400 mt-1">
+                  Plantillas para récipes rápidas
+                </span>
+              </div>
+            </div>
+
             {/* Card 4: Distribución por Vía */}
             <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between min-h-[160px] transition-all duration-200 hover:-translate-y-0.5">
               <div className="flex items-center justify-between mb-3">
@@ -371,10 +431,7 @@ export function MedicationsCrudLayout({
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="bg-slate-50 rounded-lg p-2">
                   <span className="block text-sm font-bold text-slate-800">
-                    {
-                      medsList.filter((m) => m.administrationRoute === "ORAL")
-                        .length
-                    }
+                    {medsList.filter((m) => m.administrationRoute === "ORAL").length}
                   </span>
                   <span className="text-[10px] text-slate-400">Oral</span>
                 </div>
@@ -405,8 +462,8 @@ export function MedicationsCrudLayout({
               </div>
             </div>
 
-            {/* Card 5: Medicamentos Recientes */}
-            <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between min-h-[160px] transition-all duration-200 hover:-translate-y-0.5 md:col-span-2 lg:col-span-2">
+            {/* Card 6: Medicamentos Recientes */}
+            <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between min-h-[160px] transition-all duration-200 hover:-translate-y-0.5">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-semibold text-slate-500 tracking-wider uppercase">
                   Ingresos Recientes
@@ -415,50 +472,117 @@ export function MedicationsCrudLayout({
                   <Clock className="w-4 h-4" />
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="flex flex-col gap-2">
                 {medsList
-                  .slice(-3)
+                  .slice(-2)
                   .reverse()
                   .map((med, idx) => (
                     <div
                       key={idx}
-                      className="bg-slate-50 rounded-lg p-3 border border-slate-100 flex flex-col justify-between"
+                      className="bg-slate-50 rounded-lg p-2.5 border border-slate-100 flex items-center justify-between gap-3"
                     >
-                      <div>
+                      <div className="min-w-0">
                         <span className="block text-xs font-bold text-slate-850 truncate">
                           {med.activePrinciple}
                         </span>
-                        <span className="block text-[10px] text-slate-450 truncate mt-0.5">
-                          {med.commercialName || "Genérico"}
+                        <span className="block text-[9px] text-slate-450 truncate mt-0.5">
+                          {med.commercialName || "Genérico"} — {med.concentration}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200/50">
-                        <span className="text-[9px] font-bold text-slate-400 tracking-wider">
-                          {med.concentration}
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className="text-[8px] px-1.5 py-0 bg-white border-slate-200 text-slate-500 rounded-full font-medium"
-                        >
-                          {med.administrationRoute.toLowerCase()}
-                        </Badge>
-                      </div>
+                      <Badge
+                        variant="outline"
+                        className="text-[8px] px-1.5 py-0 bg-white border-slate-200 text-slate-500 rounded-full font-medium"
+                      >
+                        {med.administrationRoute.toLowerCase()}
+                      </Badge>
                     </div>
                   ))}
               </div>
             </div>
           </div>
         </div>
-      ) : (
+      ) : activeTab === "lista" ? (
         <MedicationTable
           medications={medsList}
           onEdit={handleEdit}
           onView={handleView}
           onDelete={handleDelete}
+          search={search}
+          onSearchChange={handleSearchChange}
+          page={page}
+          onPageChange={setPage}
+          lastPage={medsData?.lastPage || 1}
         />
+      ) : (
+        /* Combos Tab Content */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {combosList.length === 0 ? (
+            <div className="col-span-full bg-white border border-slate-200 rounded-2xl p-16 text-center text-slate-400">
+              <ListChecks className="w-8 h-8 mx-auto mb-3 opacity-20 text-slate-500" />
+              <span className="block font-semibold">No tenés combos de prescripción guardados.</span>
+              <span className="block text-xs text-slate-500 mt-1">¡Creá uno nuevo para agilizar tus récipes de consulta!</span>
+            </div>
+          ) : (
+            combosList.map((combo) => (
+              <div
+                key={combo.uuid}
+                className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between min-h-[220px] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-slate-900 tracking-tight">{combo.title}</span>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditCombo(combo)}
+                        className="h-8 w-8 p-0 rounded-lg hover:bg-slate-100 text-slate-500"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteCombo(combo.uuid!)}
+                        className="h-8 w-8 p-0 rounded-lg hover:bg-slate-100 text-red-650"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 space-y-2 max-h-[140px] overflow-y-auto pr-1">
+                    {combo.items.map((item, idx) => {
+                      const med = medsList.find((m) => m.uuid === item.medicationId);
+                      return (
+                        <div
+                          key={idx}
+                          className="text-xs text-slate-650 flex items-start gap-1.5 py-1 border-b border-slate-50 last:border-0"
+                        >
+                          <span className="font-bold text-pharmako-care shrink-0">•</span>
+                          <div>
+                            <span className="font-semibold text-slate-800">
+                              {med ? `${med.activePrinciple} ${med.concentration}` : "Fármaco desconocido"}
+                            </span>
+                            <span className="block text-[10px] text-slate-500 mt-0.5">
+                              {item.dose} — {item.frequency} — {item.duration}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+                  <span>{combo.items.length} medicamento{combo.items.length === 1 ? "" : "s"}</span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       )}
 
-      {/* Create/Edit Sheet */}
+      {/* Create/Edit Medication Sheet */}
       <Sheet
         open={mode === "create" || mode === "edit"}
         onOpenChange={(open) => !open && handleClose()}
@@ -477,14 +601,41 @@ export function MedicationsCrudLayout({
           <div className="mt-6">
             <MedicationForm
               initialData={selectedMedication ?? undefined}
-              onSubmit={handleSubmit}
+              onSubmit={handleSubmitMedication}
               onCancel={handleClose}
             />
           </div>
         </SheetContent>
       </Sheet>
 
-      {/* View Sheet */}
+      {/* Create/Edit Combo Sheet */}
+      <Sheet
+        open={mode === "create_combo" || mode === "edit_combo"}
+        onOpenChange={(open) => !open && handleClose()}
+      >
+        <SheetContent className="w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl overflow-y-auto bg-white rounded-l-2xl border-l border-slate-200 p-8 md:p-10 lg:p-12">
+          <SheetHeader className="p-0 pb-5 border-b border-slate-100">
+            <SheetTitle className="text-slate-900 font-semibold text-lg">
+              {mode === "create_combo" ? "Nuevo Combo" : "Editar Combo"}
+            </SheetTitle>
+            <SheetDescription className="text-slate-500 text-sm">
+              {mode === "create_combo"
+                ? "Completá los datos de tu plantilla de prescripción."
+                : `Editando ${selectedCombo?.title}`}
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-6">
+            <ComboForm
+              medications={medsList}
+              initialData={selectedCombo ?? undefined}
+              onSubmit={handleSubmitCombo}
+              onCancel={handleClose}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* View Medication Sheet */}
       <Sheet
         open={mode === "view"}
         onOpenChange={(open) => !open && handleClose()}
@@ -593,11 +744,7 @@ export function MedicationsCrudLayout({
                         Vía de Admin.
                       </span>
                       <span className="block text-sm font-semibold text-slate-900 mt-1">
-                        {
-                          administrationRouteLabels[
-                            selectedMedication.administrationRoute
-                          ]
-                        }
+                        {administrationRouteLabels[selectedMedication.administrationRoute]}
                       </span>
                     </div>
                   </div>
@@ -678,7 +825,7 @@ export function MedicationsCrudLayout({
         </SheetContent>
       </Sheet>
 
-      {/* Delete Confirmation */}
+      {/* Delete Confirmation Dialog */}
       <Dialog
         open={!!deleteConfirm}
         onOpenChange={(open) => !open && setDeleteConfirm(null)}
@@ -686,10 +833,10 @@ export function MedicationsCrudLayout({
         <DialogContent className="rounded-2xl bg-white border border-slate-200 max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-slate-900 font-semibold">
-              ¿Eliminar medicamento?
+              {deleteType === "combo" ? "¿Eliminar combo?" : "¿Eliminar medicamento?"}
             </DialogTitle>
             <DialogDescription className="text-slate-500 text-sm mt-1">
-              Esta acción no se puede deshacer. Se removerá del catálogo.
+              Esta acción no se puede deshacer. Se removerá permanentemente de tu cuenta.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0 mt-4">

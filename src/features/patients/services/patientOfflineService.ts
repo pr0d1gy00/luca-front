@@ -4,7 +4,7 @@ import {
 	generateUUID,
 	getCurrentTimestamp,
 } from "@/features/offline/utils/uuid";
-import type { CreatePatientDTO, UpdatePatientDTO } from "../types";
+import type { CreatePatientDTO, UpdatePatientDTO, Patient } from "../types";
 import type { EntityType } from "@/features/offline/types/sync.types";
 
 const ENTITY: EntityType = "patients";
@@ -86,6 +86,34 @@ export const patientOfflineService = {
 
 	getPending: async (): Promise<PatientRecord[]> => {
 		return db.patients.where("_syncStatus").equals("pending").toArray();
+	},
+
+	saveLocalSynced: async (patient: Patient): Promise<void> => {
+		await db.patients.put({
+			uuid: patient.uuid,
+			firstName: patient.firstName,
+			lastName: patient.lastName,
+			nationalId: patient.nationalId,
+			birthDate: patient.birthDate,
+			gender: patient.gender,
+			phone: patient.phone,
+			email: patient.email,
+			address: patient.address,
+			cityId: patient.cityId ?? null,
+			bloodType: patient.bloodType ?? "",
+			allergies: patient.allergies ?? "",
+			chronicConditions: patient.chronicConditions ?? "",
+			privateNotes: patient.privateNotes ?? "",
+			emergencyContactName: patient.emergencyContactName ?? "",
+			emergencyContactPhone: patient.emergencyContactPhone ?? "",
+			updatedAt: patient.updatedAt ?? getCurrentTimestamp(),
+			createdAt: patient.createdAt ?? getCurrentTimestamp(),
+			_syncStatus: "synced",
+		});
+	},
+
+	deleteLocal: async (uuid: string): Promise<void> => {
+		await db.patients.delete(uuid);
 	},
 
 	markSynced: async (uuid: string): Promise<void> => {

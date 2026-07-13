@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Clock, X, Stethoscope, Pill, FileText } from "lucide-react";
+import { Clock, X, Stethoscope, Pill, FileText, Dna } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { HistoryEntry } from "../schemas";
+import apiClient from "@/lib/api/client";
+import { db } from "@/features/offline/database/schema";
 
 interface ClinicalHistoryTimelineProps {
   entries: HistoryEntry[];
@@ -74,7 +76,148 @@ export function ClinicalHistoryTimeline({
   entries,
 }: ClinicalHistoryTimelineProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const selectedData = selectedId ? MOCK_FULL_HISTORY[selectedId] : null;
+  const [previewData, setPreviewData] = useState<any | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+
+  useEffect(() => {
+    if (!selectedId) {
+      setPreviewData(null);
+      return;
+    }
+
+    if (selectedId.startsWith("hist-")) {
+      setPreviewData(MOCK_FULL_HISTORY[selectedId] ?? null);
+      return;
+    }
+
+    const fetchDetail = async () => {
+      setIsLoadingPreview(true);
+      try {
+        let detailData: any = null;
+
+        // 1. Intentar buscar en Dexie local
+        const localConsult = await db.consultations.where("uuid").equals(selectedId).first();
+        if (localConsult) {
+          const localVitals = await db.vitalSigns.where("consultationUuid").equals(selectedId).first();
+          const allPrescriptions = await db.prescriptions.toArray();
+          const localPrescriptions = allPrescriptions.filter(
+            (rx) => rx.consultationUuid === selectedId
+          );
+          const items: any[] = [];
+
+          for (const rx of localPrescriptions) {
+            const rxItems = await db.prescriptionItems.where("prescriptionUuid").equals(rx.uuid).toArray();
+            for (const item of rxItems) {
+              const med = await db.medications.where("uuid").equals(item.medicationUuid).first();
+              items.push({
+                name: med ? `${med.activePrinciple} (${med.commercialName})` : "Medicamento",
+                dose: item.dose || "",
+                freq: item.frequency || "",
+                dur: item.duration || "",
+              });
+            }
+          }
+
+          const vitalsList: { label: string; value: string }[] = [];
+          if (localVitals) {
+            if (localVitals.weight) vitalsList.push({ label: "Peso", value: `${localVitals.weight} kg` });
+            if (localVitals.height) vitalsList.push({ label: "Talla", value: `${localVitals.height} m` });
+            if (localVitals.systolicBp && localVitals.diastolicBp) {
+              vitalsList.push({ label: "Presión Arterial", value: `${localVitals.systolicBp}/${localVitals.diastolicBp} mmHg` });
+            }
+            if (localVitals.heartRate) vitalsList.push({ label: "Frecuencia Cardíaca", value: `${localVitals.heartRate} bpm` });
+            if (localVitals.temperature) vitalsList.push({ label: "Temperatura", value: `${localVitals.temperature} °C` });
+            if (localVitals.oxygenSat) vitalsList.push({ label: "Saturación O₂", value: `${localVitals.oxygenSat} %` });
+          }
+
+          const allLabRequests = await db.labRequests.toArray();
+          const localLabs = allLabRequests.filter(
+            (req) => req.consultationUuid === selectedId && !req.deletedAt
+          );
+          const labsList = localLabs.map((l) => ({
+            examsList: l.examsList || [],
+            instructions: l.instructions || "",
+          }));
+
+          detailData = {
+            motivo: localConsult.reason || "Sin motivo registrado",
+            examenFisico: localConsult.physicalExam || "Sin hallazgos registrados",
+            diagnostico: localConsult.diagnosis || "Sin diagnóstico registrado",
+            tratamiento: localConsult.treatmentPlan || "Sin indicaciones registradas",
+            medicamentos: items,
+            vitalSigns: vitalsList,
+            laboratorios: labsList,
+          };
+        }
+
+        // 2. Intentar buscar en la API online para tener los datos frescos
+        try {
+          const { data: res } = await apiClient.get(`/consultations/${selectedId}`);
+          const apiConsult = res.data;
+
+          if (apiConsult) {
+            const vitalsList: { label: string; value: string }[] = [];
+            const apiVitals = apiConsult.vital_sign;
+            if (apiVitals) {
+              if (apiVitals.weight) vitalsList.push({ label: "Peso", value: `${apiVitals.weight} kg` });
+              if (apiVitals.height) vitalsList.push({ label: "Talla", value: `${apiVitals.height} m` });
+              if (apiVitals.systolic_bp && apiVitals.diastolic_bp) {
+                vitalsList.push({ label: "Presión Arterial", value: `${apiVitals.systolic_bp}/${apiVitals.diastolic_bp} mmHg` });
+              }
+              if (apiVitals.heart_rate) vitalsList.push({ label: "Frecuencia Cardíaca", value: `${apiVitals.heart_rate} bpm` });
+              if (apiVitals.temperature) vitalsList.push({ label: "Temperatura", value: `${apiVitals.temperature} °C` });
+              if (apiVitals.oxygen_sat) vitalsList.push({ label: "Saturación O₂", value: `${apiVitals.oxygen_sat} %` });
+            }
+
+            const items: any[] = [];
+            const apiRx = apiConsult.prescription;
+            if (apiRx && apiRx.items) {
+              for (const item of apiRx.items) {
+                const med = item.medication;
+                items.push({
+                  name: med ? `${med.active_principle} (${med.commercial_name})` : "Medicamento",
+                  dose: item.dose || "",
+                  freq: item.frequency || "",
+                  dur: item.duration || "",
+                });
+              }
+            }
+
+            const labsList: { examsList: string[], instructions: string }[] = [];
+            const apiLab = apiConsult.lab_request;
+            if (apiLab) {
+              labsList.push({
+                examsList: apiLab.exams_list || [],
+                instructions: apiLab.instructions || "",
+              });
+            }
+
+            detailData = {
+              motivo: apiConsult.reason || "Sin motivo registrado",
+              examenFisico: apiConsult.physical_exam || "Sin hallazgos registrados",
+              diagnostico: apiConsult.diagnosis || "Sin diagnóstico registrado",
+              tratamiento: apiConsult.treatment_plan || "Sin indicaciones registradas",
+              medicamentos: items,
+              vitalSigns: vitalsList,
+              laboratorios: labsList,
+            };
+          }
+        } catch (apiErr) {
+          console.warn("Could not fetch consultation detail from API, using local/cached version:", apiErr);
+        }
+
+        if (detailData) {
+          setPreviewData(detailData);
+        }
+      } catch (err) {
+        console.error("Error fetching consultation detail:", err);
+      } finally {
+        setIsLoadingPreview(false);
+      }
+    };
+
+    fetchDetail();
+  }, [selectedId]);
 
   return (
     <>
@@ -133,16 +276,25 @@ export function ClinicalHistoryTimeline({
         onOpenChange={() => setSelectedId(null)}
       >
         <DialogContent
-          className="sm:max-w-[560px] p-0 border-slate-200"
+          className="sm:max-w-[560px] 2xl:max-w-[800px] p-0 border-slate-200 bg-white rounded-xl overflow-hidden"
           showCloseButton={false}
         >
           <AnimatePresence mode="wait">
-            {selectedData && (
+            {isLoadingPreview ? (
+              <div className="flex flex-col items-center justify-center p-16 gap-3 bg-white min-h-[300px]">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pharmako-care"></div>
+                <span className="text-xs text-slate-500 font-medium">Cargando detalles de consulta...</span>
+              </div>
+            ) : previewData ? (
               <ConsultationPreview
                 key={selectedId}
-                data={selectedData}
+                data={previewData}
                 onClose={() => setSelectedId(null)}
               />
+            ) : (
+              <div className="flex flex-col items-center justify-center p-16 gap-3 bg-white min-h-[300px]">
+                <span className="text-xs text-slate-400 font-medium">No se encontraron detalles para esta consulta.</span>
+              </div>
             )}
           </AnimatePresence>
         </DialogContent>
@@ -172,7 +324,7 @@ function ConsultationPreview({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 10 }}
-      className="flex flex-col max-h-[85vh]"
+      className="flex flex-col max-h-[85vh] w-full"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
@@ -193,8 +345,8 @@ function ConsultationPreview({
         {vitalSigns.length > 0 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center gap-2 mb-3">
-              <div className="bg-pharmako-care-light rounded-lg p-1.5">
-                <Stethoscope className="w-4 h-4 text-pharmako-care" />
+              <div className="rounded-lg p-1.5">
+                <Stethoscope className="w-6 h-6 text-pharmako-care" />
               </div>
               <h3 className="text-sm font-semibold text-slate-900">
                 Signos Vitales
@@ -216,8 +368,8 @@ function ConsultationPreview({
         {/* SOAP */}
         <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
           <div className="flex items-center gap-2">
-            <div className="bg-pharmako-care-light rounded-lg p-1.5">
-              <FileText className="w-4 h-4 text-pharmako-care" />
+            <div className="rounded-lg p-1.5">
+              <FileText className="w-6 h-6 text-pharmako-care" />
             </div>
             <h3 className="text-sm font-semibold text-slate-900">
               Notas Clínicas
@@ -234,8 +386,8 @@ function ConsultationPreview({
         {medicamentos.length > 0 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
             <div className="flex items-center gap-2">
-              <div className="bg-pharmako-care-light rounded-lg p-1.5">
-                <Pill className="w-4 h-4 text-pharmako-care" />
+              <div className="rounded-lg p-1.5">
+                <Pill className="w-6 h-6 text-pharmako-care" />
               </div>
               <h3 className="text-sm font-semibold text-slate-900">
                 Medicamentos Recetados
@@ -253,6 +405,43 @@ function ConsultationPreview({
                     <span>·</span>
                     <span>{m.dur}</span>
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Laboratorios */}
+        {data.laboratorios && data.laboratorios.length > 0 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="rounded-lg p-1.5">
+                <Dna className="w-6 h-6 text-pharmako-care" />
+              </div>
+              <h3 className="text-sm font-semibold text-slate-900">
+                Exámenes de Laboratorios Solicitados
+              </h3>
+            </div>
+
+            <div className="divide-y divide-slate-100">
+              {data.laboratorios.map((l: any, i: number) => (
+                <div key={i} className="py-3 first:pt-0 last:pb-0">
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {(l.examsList || []).map((exam: string, index: number) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-100"
+                      >
+                        {exam}
+                      </span>
+                    ))}
+                  </div>
+                  {l.instructions && (
+                    <p className="text-xs text-slate-500 mt-2">
+                      <span className="font-semibold text-slate-700">Indicaciones: </span>
+                      {l.instructions}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

@@ -15,6 +15,10 @@ import { PatientContextCard } from "@/features/consultations/components/PatientC
 import { ConsultationTabs } from "@/features/consultations/components/ConsultationTabs";
 import type { Consultation } from "@/features/consultations/schemas";
 import { toast } from "sonner";
+import { db } from "@/features/offline/database/schema";
+import { queueService } from "@/features/offline/services/queueService";
+import { labRequestOfflineService } from "@/features/labs/services/labRequestOfflineService";
+import { labRequestApi } from "@/features/labs/api/labRequestApi";
 
 export default function ConsultationDetailPage({
   params,
@@ -55,7 +59,7 @@ export default function ConsultationDetailPage({
   if (isInitializing) {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-3">
-        <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
+        <Loader2 className="w-8 h-8 text-pharmako-care animate-spin" />
         <p className="text-sm text-slate-500 font-medium">
           Inicializando expediente e historial clínico...
         </p>
@@ -94,26 +98,143 @@ export default function ConsultationDetailPage({
   const rawVitals = patient.latest_vital_signs;
   const formattedVitals = rawVitals
     ? {
-        weight: rawVitals.weight ? `${rawVitals.weight} kg` : undefined,
-        height: rawVitals.height ? `${rawVitals.height} m` : undefined,
-        bloodPressure:
-          rawVitals.systolic_bp && rawVitals.diastolic_bp
-            ? `${rawVitals.systolic_bp}/${rawVitals.diastolic_bp} mmHg`
-            : undefined,
-        heartRate: rawVitals.heart_rate
-          ? `${rawVitals.heart_rate} lpm`
+      weight: rawVitals.weight ? `${rawVitals.weight} kg` : undefined,
+      height: rawVitals.height ? `${rawVitals.height} m` : undefined,
+      bloodPressure:
+        rawVitals.systolic_bp && rawVitals.diastolic_bp
+          ? `${rawVitals.systolic_bp}/${rawVitals.diastolic_bp} mmHg`
           : undefined,
-        temperature: rawVitals.temperature
-          ? `${rawVitals.temperature}°C`
-          : undefined,
-        respiratoryRate: rawVitals.respiratory_rate
-          ? `${rawVitals.respiratory_rate} rpm`
-          : undefined,
-        oxygenSat: rawVitals.oxygen_sat
-          ? `${rawVitals.oxygen_sat}%`
-          : undefined,
-      }
+      heartRate: rawVitals.heart_rate
+        ? `${rawVitals.heart_rate} lpm`
+        : undefined,
+      temperature: rawVitals.temperature
+        ? `${rawVitals.temperature}°C`
+        : undefined,
+      respiratoryRate: rawVitals.respiratory_rate
+        ? `${rawVitals.respiratory_rate} rpm`
+        : undefined,
+      oxygenSat: rawVitals.oxygen_sat
+        ? `${rawVitals.oxygen_sat}%`
+        : undefined,
+    }
     : undefined;
+
+  const syncLabRequests = async (activeUuid: string, data: any) => {
+    const finalLabs = [...(data.laboratorios || [])];
+    const existingLabs = await db.labRequests
+      .where("consultationUuid")
+      .equals(activeUuid)
+      .toArray();
+
+    const isOnline = typeof window !== "undefined" ? window.navigator.onLine : false;
+
+    // Delete removed ones
+    const finalLabUuids = new Set(finalLabs.map((l: any) => l.uuid).filter(Boolean));
+    for (const ex of existingLabs) {
+      if (!finalLabUuids.has(ex.uuid)) {
+        if (isOnline) {
+          try {
+            await labRequestApi.delete(ex.uuid);
+            await labRequestOfflineService.deleteLocal(ex.uuid);
+          } catch {
+            await labRequestOfflineService.delete(ex.uuid);
+          }
+        } else {
+          await labRequestOfflineService.delete(ex.uuid);
+        }
+      }
+    }
+
+    // Create or update
+    for (let i = 0; i < finalLabs.length; i++) {
+      const lab = finalLabs[i];
+      if (lab.uuid) {
+        const ex = existingLabs.find((x) => x.uuid === lab.uuid);
+        if (ex) {
+          // Update
+          if (isOnline) {
+            try {
+              const res = await labRequestApi.update({
+                uuid: lab.uuid,
+                examsList: lab.examsList,
+                instructions: lab.instructions || "",
+              });
+              await labRequestOfflineService.saveLocalSynced(res.data);
+              finalLabs[i] = {
+                ...lab,
+                uuid: res.data.uuid,
+                _syncStatus: "synced",
+              };
+            } catch {
+              await labRequestOfflineService.update(lab.uuid, {
+                examsList: lab.examsList,
+                instructions: lab.instructions || "",
+              });
+            }
+          } else {
+            await labRequestOfflineService.update(lab.uuid, {
+              examsList: lab.examsList,
+              instructions: lab.instructions || "",
+            });
+          }
+        } else {
+          // Create
+          if (isOnline) {
+            try {
+              const res = await labRequestApi.create({
+                uuid: lab.uuid,
+                patientUuid: patient.uuid,
+                consultationUuid: activeUuid,
+                examsList: lab.examsList,
+                instructions: lab.instructions || "",
+                isCompleted: false,
+              });
+              await labRequestOfflineService.saveLocalSynced(res.data);
+              finalLabs[i] = {
+                ...lab,
+                uuid: res.data.uuid,
+                _syncStatus: "synced",
+              };
+            } catch {
+              const now = new Date().toISOString();
+              const labRecord = {
+                uuid: lab.uuid,
+                patientUuid: patient.uuid,
+                doctorUuid: doctor.uuid || "",
+                consultationUuid: activeUuid,
+                examsList: lab.examsList,
+                instructions: lab.instructions || "",
+                isCompleted: false,
+                createdAt: now,
+                updatedAt: now,
+                _syncStatus: "pending" as const,
+              };
+              await db.labRequests.put(labRecord);
+              await queueService.enqueue("lab_requests", "create", labRecord);
+            }
+          } else {
+            const now = new Date().toISOString();
+            const labRecord = {
+              uuid: lab.uuid,
+              patientUuid: patient.uuid,
+              doctorUuid: doctor.uuid || "",
+              consultationUuid: activeUuid,
+              examsList: lab.examsList,
+              instructions: lab.instructions || "",
+              isCompleted: false,
+              createdAt: now,
+              updatedAt: now,
+              _syncStatus: "pending" as const,
+            };
+            await db.labRequests.put(labRecord);
+            await queueService.enqueue("lab_requests", "create", labRecord);
+          }
+        }
+      }
+    }
+
+    return finalLabs;
+  };
 
   // Lógica para guardar la consulta como Borrador / Generar Récipe
   const handleGeneratePrescription = async (data: Consultation) => {
@@ -129,10 +250,21 @@ export default function ConsultationDetailPage({
         treatment_plan: data.treatment_plan || "",
         status: "in-progress",
         prescriptions: data.prescriptions,
+        follow_up: data.followUp
+          ? {
+              uuid: data.followUp.uuid,
+              scheduled_date: data.followUp.scheduledDate,
+              channel: data.followUp.channel,
+              message_template: data.followUp.messageTemplate || null,
+            }
+          : null,
       });
+      const updatedLabs = await syncLabRequests(activeUuid, data);
       toast.success("¡Borrador guardado correctamente!");
+      return { laboratorios: updatedLabs };
     } catch (err) {
       console.error("Error al guardar borrador:", err);
+      throw err;
     }
   };
 
@@ -151,7 +283,16 @@ export default function ConsultationDetailPage({
         status: "completed",
         prescriptions: data.prescriptions,
         vitals: data.vitals,
+        follow_up: data.followUp
+          ? {
+              uuid: data.followUp.uuid,
+              scheduled_date: data.followUp.scheduledDate,
+              channel: data.followUp.channel,
+              message_template: data.followUp.messageTemplate || null,
+            }
+          : null,
       });
+      await syncLabRequests(activeUuid, data);
       toast.success("Consulta finalizada con éxito.");
       router.push("/dashboard/appointments");
     } catch (err) {
@@ -161,29 +302,30 @@ export default function ConsultationDetailPage({
 
   // Preparar valores iniciales (si ya hay borrador guardado)
   const defaultFormValues = {
+    uuid: consultation.uuid || startConsultation.data?.data?.uuid || "",
     motivoConsulta:
       consultation.motivoConsulta || detail.appointment.reason || "",
     examenFisico: consultation.examenFisico || "",
     diagnostico: consultation.diagnostico || "",
     prescriptions: consultation.uuid
       ? detail.consultation?.prescriptions || [
-          {
-            medicationId: "",
-            dose: "",
-            frequency: "",
-            duration: "",
-            notes: "",
-          },
-        ]
+        {
+          medicationId: "",
+          dose: "",
+          frequency: "",
+          duration: "",
+          notes: "",
+        },
+      ]
       : [
-          {
-            medicationId: "",
-            dose: "",
-            frequency: "",
-            duration: "",
-            notes: "",
-          },
-        ],
+        {
+          medicationId: "",
+          dose: "",
+          frequency: "",
+          duration: "",
+          notes: "",
+        },
+      ],
     vitals: detail.consultation?.vitals || {
       weight: "",
       height: "",
@@ -194,6 +336,7 @@ export default function ConsultationDetailPage({
       temperature: "",
       oxygen_sat: "",
     },
+    followUp: detail.consultation?.followUp || undefined,
   };
 
   return (
@@ -201,7 +344,7 @@ export default function ConsultationDetailPage({
       variants={fadeUpVariant}
       initial="hidden"
       animate="visible"
-      className="flex flex-col gap-6 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-6"
+      className="flex flex-col gap-6 px-4 sm:px-6 lg:px-8 max-w-[1400px] mx-auto py-6"
     >
       {/* Header */}
       <div className="flex items-center gap-4">

@@ -46,6 +46,7 @@ export type PrescriptionItem = z.infer<typeof prescriptionItemSchema>;
 
 // ── Consultation ───────────────────────────────────────────
 export const consultationSchema = z.object({
+  uuid: z.string().optional(),
   motivoConsulta: z.string().min(1, "El motivo de consulta es requerido"),
   examenFisico: z.string().optional(),
   diagnostico: z.string().min(1, "El diagnóstico es requerido"),
@@ -62,6 +63,23 @@ export const consultationSchema = z.object({
       respiratory_rate: z.string().optional(),
       temperature: z.string().optional(),
       oxygen_sat: z.string().optional(),
+    })
+    .optional(),
+  laboratorios: z
+    .array(
+      z.object({
+        uuid: z.string().optional(),
+        examsList: z.array(z.string()),
+        instructions: z.string().optional(),
+      })
+    )
+    .optional(),
+  followUp: z
+    .object({
+      uuid: z.string().optional(),
+      scheduledDate: z.string(),
+      channel: z.enum(["EMAIL", "WHATSAPP", "INTERNAL_CHAT", "MANUAL_CALL"]),
+      messageTemplate: z.string().nullable().optional(),
     })
     .optional(),
 });

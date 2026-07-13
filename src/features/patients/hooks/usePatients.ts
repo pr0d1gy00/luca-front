@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { patientApi } from "../api/patientApi";
 import { patientOfflineService } from "../services/patientOfflineService";
+import { useOnlineStatus } from "@/features/offline/hooks/useOnlineStatus";
 import type { CreatePatientDTO, UpdatePatientDTO } from "../types";
 
 // ─────────────────────────────────────────────────────────────
@@ -31,7 +32,7 @@ export function usePatients() {
 				const response = await patientApi.getAll();
 				// Save to local IndexedDB for offline access
 				for (const patient of response.data) {
-					await patientOfflineService.markSynced(patient.uuid);
+					await patientOfflineService.saveLocalSynced(patient);
 				}
 				return response.data;
 			} catch {
@@ -52,7 +53,7 @@ export function usePatient(uuid: string) {
 		queryFn: async () => {
 			try {
 				const response = await patientApi.getByUUID(uuid);
-				await patientOfflineService.markSynced(response.data.uuid);
+				await patientOfflineService.saveLocalSynced(response.data);
 				return response.data;
 			} catch {
 				return patientOfflineService.getByUUID(uuid);
@@ -67,14 +68,22 @@ export function usePatient(uuid: string) {
 // ─────────────────────────────────────────────────────────────
 
 /**
- * Create patient — saves locally immediately, queues for sync
+ * Create patient — saves locally immediately, queues for sync if offline
  */
 export function useCreatePatient() {
 	const queryClient = useQueryClient();
+	const isOnline = useOnlineStatus();
 
 	return useMutation({
 		mutationFn: async (data: CreatePatientDTO) => {
-			return patientOfflineService.create(data);
+			if (!isOnline) {
+				return patientOfflineService.create(data);
+			} else {
+				const response = await patientApi.create(data);
+				const patient = response.data;
+				await patientOfflineService.saveLocalSynced(patient);
+				return patient;
+			}
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: patientKeys.lists() });
@@ -83,10 +92,11 @@ export function useCreatePatient() {
 }
 
 /**
- * Update patient — saves locally immediately, queues for sync
+ * Update patient — saves locally immediately, queues for sync if offline
  */
 export function useUpdatePatient() {
 	const queryClient = useQueryClient();
+	const isOnline = useOnlineStatus();
 
 	return useMutation({
 		mutationFn: async ({
@@ -96,7 +106,14 @@ export function useUpdatePatient() {
 			uuid: string;
 			data: UpdatePatientDTO;
 		}) => {
-			return patientOfflineService.update(uuid, data);
+			if (!isOnline) {
+				return patientOfflineService.update(uuid, data);
+			} else {
+				const response = await patientApi.update({ ...data, uuid });
+				const patient = response.data;
+				await patientOfflineService.saveLocalSynced(patient);
+				return patient;
+			}
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: patientKeys.lists() });
@@ -105,14 +122,21 @@ export function useUpdatePatient() {
 }
 
 /**
- * Delete patient — marks locally, queues for sync
+ * Delete patient — marks locally, queues for sync if offline
  */
 export function useDeletePatient() {
 	const queryClient = useQueryClient();
+	const isOnline = useOnlineStatus();
 
 	return useMutation({
 		mutationFn: async (uuid: string) => {
-			return patientOfflineService.delete(uuid);
+			if (!isOnline) {
+				return patientOfflineService.delete(uuid);
+			} else {
+				await patientApi.delete(uuid);
+				await patientOfflineService.deleteLocal(uuid);
+				return true;
+			}
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: patientKeys.lists() });

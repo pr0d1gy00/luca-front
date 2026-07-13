@@ -18,7 +18,26 @@ import {
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { patientSchema, type Patient } from "../schemas";
+import { z } from "zod";
+import type { Patient } from "../types";
+
+const patientFormSchema = z.object({
+  firstName: z.string().min(1, "El nombre es requerido"),
+  lastName: z.string().min(1, "El apellido es requerido"),
+  nationalId: z.string().min(1, "El documento es requerido"),
+  birthDate: z.date({ required_error: "La fecha de nacimiento es requerida" }),
+  gender: z.enum(["male", "female", "other"]),
+  phone: z.string().min(1, "El teléfono es requerido"),
+  email: z.string().email("Email inválido"),
+  address: z.string().min(1, "La dirección es requerida"),
+  bloodType: z.string().optional(),
+  allergies: z.array(z.string()).optional(),
+  chronicConditions: z.array(z.string()).optional(),
+  emergencyContactName: z.string().optional(),
+  emergencyContactPhone: z.string().optional(),
+});
+
+type PatientFormValues = z.infer<typeof patientFormSchema>;
 
 interface PatientFormProps {
   initialData?: Partial<Patient>;
@@ -38,8 +57,9 @@ const BLOOD_TYPES = [
 ];
 
 const SEX_OPTIONS = [
-  { value: "MALE", label: "Masculino" },
-  { value: "FEMALE", label: "Femenino" },
+  { value: "male", label: "Masculino" },
+  { value: "female", label: "Femenino" },
+  { value: "other", label: "Otro" },
 ];
 
 const inputClassName =
@@ -54,10 +74,18 @@ export function PatientForm({
   onCancel,
 }: PatientFormProps) {
   const [allergies, setAllergies] = useState<string[]>(
-    initialData?.allergies ?? [],
+    initialData?.allergies
+      ? (typeof initialData.allergies === "string"
+        ? initialData.allergies.split(",").map((s) => s.trim()).filter(Boolean)
+        : initialData.allergies)
+      : [],
   );
   const [chronicConditions, setChronicConditions] = useState<string[]>(
-    initialData?.chronicConditions ?? [],
+    initialData?.chronicConditions
+      ? (typeof initialData.chronicConditions === "string"
+        ? initialData.chronicConditions.split(",").map((s) => s.trim()).filter(Boolean)
+        : initialData.chronicConditions)
+      : [],
   );
   const [newAllergy, setNewAllergy] = useState("");
   const [newCondition, setNewCondition] = useState("");
@@ -67,22 +95,30 @@ export function PatientForm({
     handleSubmit,
     formState: { errors },
     setValue,
-  } = useForm<Patient>({
-    resolver: zodResolver(patientSchema),
+  } = useForm<PatientFormValues>({
+    resolver: zodResolver(patientFormSchema),
     defaultValues: {
       firstName: initialData?.firstName ?? "",
       lastName: initialData?.lastName ?? "",
-      documentId: initialData?.documentId ?? "",
+      nationalId: initialData?.nationalId ?? "",
       birthDate: initialData?.birthDate
         ? new Date(initialData.birthDate)
         : undefined,
-      biologicalSex: initialData?.biologicalSex ?? "MALE",
+      gender: (initialData?.gender as any) === "MALE" ? "male" : ((initialData?.gender as any) === "FEMALE" ? "female" : (initialData?.gender ?? "male")),
       phone: initialData?.phone ?? "",
       email: initialData?.email ?? "",
       address: initialData?.address ?? "",
       bloodType: initialData?.bloodType ?? "O_POSITIVE",
-      allergies: initialData?.allergies ?? [],
-      chronicConditions: initialData?.chronicConditions ?? [],
+      allergies: initialData?.allergies
+        ? (typeof initialData.allergies === "string"
+          ? initialData.allergies.split(",").map((s) => s.trim()).filter(Boolean)
+          : initialData.allergies)
+        : [],
+      chronicConditions: initialData?.chronicConditions
+        ? (typeof initialData.chronicConditions === "string"
+          ? initialData.chronicConditions.split(",").map((s) => s.trim()).filter(Boolean)
+          : initialData.chronicConditions)
+        : [],
       emergencyContactName: initialData?.emergencyContactName ?? "",
       emergencyContactPhone: initialData?.emergencyContactPhone ?? "",
     },
@@ -118,8 +154,23 @@ export function PatientForm({
     setValue("chronicConditions", updated);
   };
 
+  const onSubmitWrapper = (values: PatientFormValues) => {
+    const formatted: Patient = {
+      ...values,
+      uuid: initialData?.uuid ?? "",
+      birthDate: values.birthDate instanceof Date
+        ? values.birthDate.toISOString().split("T")[0]
+        : String(values.birthDate),
+      allergies: (values.allergies ?? []).join(", "),
+      chronicConditions: (values.chronicConditions ?? []).join(", "),
+      privateNotes: initialData?.privateNotes ?? "",
+      cityId: initialData?.cityId ?? null,
+    } as unknown as Patient;
+    onSubmit(formatted);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-10">
+    <form onSubmit={handleSubmit(onSubmitWrapper)} className="flex flex-col gap-10">
       {/* ── Identidad ─────────────────────────────────── */}
       <section className="space-y-6">
         <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6 pb-2 border-b border-slate-100">
@@ -180,7 +231,7 @@ export function PatientForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           <div className="flex flex-col gap-2">
             <label
-              htmlFor="documentId"
+              htmlFor="nationalId"
               className="text-sm font-semibold text-slate-800"
             >
               Cédula / DNI <span className="text-red-500">*</span>
@@ -188,17 +239,17 @@ export function PatientForm({
             <div className="relative group">
               <FileText className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
               <input
-                id="documentId"
+                id="nationalId"
                 type="text"
                 placeholder="12.345.678"
                 className={inputClassName}
-                aria-invalid={!!errors.documentId}
-                {...register("documentId")}
+                aria-invalid={!!errors.nationalId}
+                {...register("nationalId")}
               />
             </div>
-            {errors.documentId && (
+            {errors.nationalId && (
               <p className="text-xs text-red-500 mt-1">
-                {errors.documentId.message}
+                {errors.nationalId.message}
               </p>
             )}
           </div>
@@ -231,7 +282,7 @@ export function PatientForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           <div className="flex flex-col gap-2">
             <label
-              htmlFor="biologicalSex"
+              htmlFor="gender"
               className="text-sm font-semibold text-slate-800"
             >
               Sexo biológico <span className="text-red-500">*</span>
@@ -239,9 +290,9 @@ export function PatientForm({
             <div className="relative group">
               <UserCheck className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-pharmako-care transition-colors duration-200 pointer-events-none" />
               <select
-                id="biologicalSex"
+                id="gender"
                 className={selectClassName}
-                {...register("biologicalSex")}
+                {...register("gender")}
               >
                 {SEX_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -250,9 +301,9 @@ export function PatientForm({
                 ))}
               </select>
             </div>
-            {errors.biologicalSex && (
+            {errors.gender && (
               <p className="text-xs text-red-500 mt-1">
-                {errors.biologicalSex.message}
+                {errors.gender.message}
               </p>
             )}
           </div>

@@ -5,6 +5,7 @@ import apiClient from "@/lib/api/client";
 import { db } from "@/features/offline/database/schema";
 import { useAuthStore } from "@/store/auth";
 import { useOnlineStatus } from "@/features/offline/hooks/useOnlineStatus";
+import { getLocalTodayString } from "@/lib/utils";
 import { useCallback } from "react";
 
 export const doctorAppointmentKeys = {
@@ -43,7 +44,7 @@ export function useDoctorAppointmentsQuery(
       }
 
       try {
-        const todayStr = new Date().toISOString().split("T")[0];
+        const todayStr = getLocalTodayString();
 
         // 1. Obtener todas las citas locales
         const allLocal = await db.appointments.toArray();

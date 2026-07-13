@@ -1,21 +1,22 @@
 "use client";
 
-import { Pencil, Trash2, Eye, Search, Users, FileText } from "lucide-react";
+import { Pencil, Trash2, Eye, Search, Users, FileText, Calendar } from "lucide-react";
 import { useState } from "react";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { fadeUpVariant } from "@/app/lib/animations";
-import type { Patient } from "../schemas";
+import type { Patient } from "../types";
 import { bloodTypeLabels, biologicalSexLabels } from "../schemas";
 
 interface PatientTableProps {
   patients: Patient[];
   onEdit: (patient: Patient) => void;
-  onDelete: (patientId: string) => void;
+  onDelete: (uuid: string) => void;
   onView: (patient: Patient) => void;
   onCreate: () => void;
   onViewClinicalHistory?: (patient: Patient) => void;
+  onScheduleFollowUp?: (patient: Patient) => void;
 }
 
 function calculateAge(birthDate: Date): number {
@@ -43,6 +44,7 @@ export function PatientTable({
   onView,
   onCreate,
   onViewClinicalHistory,
+  onScheduleFollowUp,
 }: PatientTableProps) {
   const [search, setSearch] = useState("");
 
@@ -51,7 +53,7 @@ export function PatientTable({
     return (
       p.firstName.toLowerCase().includes(term) ||
       p.lastName.toLowerCase().includes(term) ||
-      p.documentId.includes(term) ||
+      p.nationalId.includes(term) ||
       p.email.toLowerCase().includes(term)
     );
   });
@@ -61,7 +63,7 @@ export function PatientTable({
       variants={fadeUpVariant}
       initial="hidden"
       animate="visible"
-      className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm"
+      className="bg-white rounded-xl border border-slate-200 overflow-hidden "
     >
       {/* Header con Buscador Unificado */}
       <div className="p-6 border-b border-slate-150 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -118,7 +120,7 @@ export function PatientTable({
             ) : (
               filtered.map((patient) => (
                 <tr
-                  key={patient.documentId}
+                  key={patient.uuid}
                   className="hover:bg-slate-50/50 transition-colors duration-150"
                 >
                   <td className={tableCellPrimaryClassName}>
@@ -127,11 +129,11 @@ export function PatientTable({
                         {patient.firstName} {patient.lastName}
                       </span>
                       <span className="block text-[10px] text-slate-400 font-semibold mt-0.5">
-                        {biologicalSexLabels[patient.biologicalSex]}
+                        {biologicalSexLabels[patient.gender]}
                       </span>
                     </div>
                   </td>
-                  <td className={tableCellClassName}>{patient.documentId}</td>
+                  <td className={tableCellClassName}>{patient.nationalId}</td>
                   <td className={tableCellClassName}>
                     {calculateAge(new Date(patient.birthDate))} años
                   </td>
@@ -166,6 +168,17 @@ export function PatientTable({
                           <FileText className="size-4.5" />
                         </Button>
                       )}
+                      {onScheduleFollowUp && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onScheduleFollowUp(patient)}
+                          title="Agendar Seguimiento"
+                          className="h-8 w-8 p-0 rounded-lg hover:bg-slate-100 text-teal-650 hover:text-teal-700 transition-colors"
+                        >
+                          <Calendar className="size-4.5" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -187,7 +200,7 @@ export function PatientTable({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => onDelete(patient.documentId)}
+                        onClick={() => onDelete(patient.uuid)}
                         title="Eliminar"
                         className="h-8 w-8 p-0 rounded-lg hover:bg-slate-100 text-red-650 hover:text-red-700 transition-colors"
                       >

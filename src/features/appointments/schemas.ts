@@ -3,7 +3,7 @@ import { z } from "zod";
 // ─────────────────────────────────────────────────────────────
 // ENUMS — English values (internal), Spanish labels (display)
 // ─────────────────────────────────────────────────────────────
-export const appointmentTypeEnum = z.enum(["IN_PERSON", "ONLINE"]);
+export const appointmentTypeEnum = z.enum(["IN_PERSON", "ONLINE", "EXCEPTION"]);
 export type AppointmentType = z.infer<typeof appointmentTypeEnum>;
 
 export const appointmentStatusEnum = z.enum([
@@ -40,6 +40,7 @@ export type Appointment = z.infer<typeof appointmentSchema>;
 export const appointmentTypeLabels: Record<AppointmentType, string> = {
 	IN_PERSON: "Presencial",
 	ONLINE: "Online",
+	EXCEPTION: "Excepción",
 };
 
 export const appointmentStatusLabels: Record<AppointmentStatus, string> = {

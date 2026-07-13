@@ -1,30 +1,17 @@
 "use client";
 
 import { useMemo } from "react";
-import { QrCode, Stethoscope } from "lucide-react";
+import { QrCode, Dna } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import type { Doctor, Patient, PrescriptionItem, Medication } from "../schemas";
-import { presentationLabels } from "../schemas";
+import type { Doctor, Patient } from "../schemas";
 
-interface DigitalPrescriptionCardProps {
+interface DigitalLabRequestCardProps {
   doctor: Doctor;
   patient: Patient;
-  prescriptions: PrescriptionItem[];
-  medications: Medication[];
+  examsList: string[];
+  instructions?: string;
   issuanceDate: Date;
-}
-
-function getMedicationById(
-  id: string,
-  meds: Medication[],
-): Medication | undefined {
-  return meds.find(
-    (m: any) =>
-      m.uuid === id ||
-      m.id === id ||
-      `${m.activePrinciple} ${m.concentration}` === id,
-  );
 }
 
 function calculateAge(birthDate: Date): number {
@@ -49,29 +36,28 @@ function formatDate(date: Date): string {
 }
 
 function formatId(documentId: string): string {
-  // Assuming Venezuelan ID format V- or E- followed by numbers
   if (documentId.includes("-")) return documentId;
   return `V-${documentId}`;
 }
 
-export function DigitalPrescriptionCard({
+export function DigitalLabRequestCard({
   doctor,
   patient,
-  prescriptions,
-  medications,
+  examsList,
+  instructions,
   issuanceDate,
-}: DigitalPrescriptionCardProps) {
+}: DigitalLabRequestCardProps) {
   const age = calculateAge(new Date(patient.birthDate));
-  const verificationCode = useMemo(() => "RX-A4F8K2M9", []);
+  const verificationCode = useMemo(() => "LAB-K8D9J2R4", []);
 
   return (
-    <div className="flex flex-col gap-6 bg-white rounded-xl border border-slate-200/80 p-8 max-w-2xl mx-auto">
+    <div className="flex flex-col gap-6 bg-white rounded-xl border border-slate-200/80 p-8 max-w-2xl mx-auto rounded-xl">
       {/* ── Header ─────────────────────────────────────────── */}
       <div className="flex items-start justify-between">
         {/* Doctor Info */}
         <div className="flex items-center gap-4">
           <div className="size-14 rounded-2xl flex items-center justify-center">
-            <Stethoscope className="size-7 text-pharmako-care" />
+            <Dna className="size-7 text-pharmako-care" />
           </div>
           <div className="flex flex-col gap-0.5">
             <h2 className="text-base font-semibold text-slate-700">
@@ -89,7 +75,7 @@ export function DigitalPrescriptionCard({
             variant="outline"
             className="rounded-full text-xs font-mono mt-1 border border-pharmako-care text-pharmako-care"
           >
-            Receta Digital
+            Orden de Laboratorio
           </Badge>
         </div>
       </div>
@@ -127,50 +113,38 @@ export function DigitalPrescriptionCard({
 
       <Separator className="bg-slate-100" />
 
-      {/* ── Rx Body ───────────────────────────────────────── */}
+      {/* ── Exams Body ────────────────────────────────────── */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
           <span className="text-3xl font-serif text-pharmako-care italic">
             Rp.
           </span>
           <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">
-            Recíbase
+            Exámenes Solicitados
           </span>
         </div>
 
-        <ol className="flex flex-col gap-4">
-          {prescriptions.map((item, index) => {
-            const med = getMedicationById(item.medicationId, medications);
-            return (
-              <li key={index} className="flex flex-col gap-2">
-                {/* Medication Name + Concentration */}
-                <div className="flex flex-col">
-                  <span className="text-lg font-bold text-slate-700">
-                    {med
-                      ? med.commercialName
-                        ? `${med.commercialName} (${med.activePrinciple}) ${med.concentration}`
-                        : `${med.activePrinciple} ${med.concentration}`
-                      : item.medicationId}
-                  </span>
-                  {med && (
-                    <span className="text-xs text-slate-500">
-                      {presentationLabels[med.presentation]} ·{" "}
-                      {med.administrationRoute}
-                    </span>
-                  )}
-                </div>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {examsList.map((exam, index) => (
+            <span
+              key={index}
+              className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-semibold text-pharmako-care border border-teal-100 h-10"
+            >
+              {exam}
+            </span>
+          ))}
+        </div>
 
-                {/* Instructions Box */}
-                <div className="p-4 border-t border-b border-slate-200/50">
-                  <p className="text-sm text-slate-700 leading-relaxed">
-                    <span className="font-bold text-slate-700">Indicaciones: </span>
-                    {item.dose}, {item.frequency}, {item.duration}
-                  </p>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+        {instructions && (
+          <div className="mt-4">
+            <span className="text-sm font-bold text-slate-700 block mb-1">Indicaciones / Preparación:</span>
+            <div className="p-4 border-b border-t border-slate-200/50">
+              <p className="text-sm text-slate-700 leading-relaxed">
+                {instructions}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       <Separator className="bg-slate-100" />
@@ -197,8 +171,8 @@ export function DigitalPrescriptionCard({
           <span className="text-xs text-slate-500 text-center">
             Verifica este récipe en
             <br />
-            <span className="font-medium text-pharmako-care">
-              luca.health/rx
+            <span className="font-medium text-teal-600">
+              luca.health/labs
             </span>
           </span>
         </div>

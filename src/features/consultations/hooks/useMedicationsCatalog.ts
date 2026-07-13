@@ -44,7 +44,7 @@ export function useMedicationsCatalog() {
         if (localMeds.length > 0) {
           return localMeds.map((m) => ({
             id: m.uuid,
-            activePrinciple: m.activePrinciple || m.name || "",
+            activePrinciple: m.activeIngredient || m.name || "",
             concentration: m.concentration || "—",
             presentation:
               (m.presentation?.toUpperCase() as MedicationCatalogItem["presentation"]) ||
@@ -81,7 +81,7 @@ export function useMedicationsCatalog() {
         if (localMeds.length > 0) {
           return localMeds.map((m) => ({
             id: m.uuid,
-            activePrinciple: m.activePrinciple || m.name || "",
+            activePrinciple: m.activeIngredient || m.name || "",
             concentration: m.concentration || "—",
             presentation:
               (m.presentation?.toUpperCase() as MedicationCatalogItem["presentation"]) ||

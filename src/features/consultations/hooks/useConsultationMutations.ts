@@ -38,6 +38,12 @@ interface UpdateConsultationPayload {
     temperature?: string;
     oxygen_sat?: string;
   };
+  follow_up?: {
+    uuid?: string;
+    scheduled_date: string;
+    channel: "EMAIL" | "WHATSAPP" | "INTERNAL_CHAT" | "MANUAL_CALL";
+    message_template?: string | null;
+  } | null;
 }
 
 export function useStartConsultation() {
@@ -206,6 +212,31 @@ export function useUpdateConsultation() {
           });
         }
 
+        // Guardar seguimiento localmente en Dexie si viene
+        if (payload.follow_up) {
+          await db.followUps
+            .where("consultationUuid")
+            .equals(payload.uuid)
+            .delete();
+          await db.followUps.add({
+            uuid: payload.follow_up.uuid || uuidv4(),
+            patientUuid: existing.patientUuid,
+            consultationUuid: payload.uuid,
+            scheduledDate: payload.follow_up.scheduled_date,
+            channel: payload.follow_up.channel,
+            messageTemplate: payload.follow_up.message_template || null,
+            status: "PENDING",
+            response: null,
+            updatedAt: dateStr,
+            _syncStatus: "created",
+          });
+        } else if (payload.follow_up === null) {
+          await db.followUps
+            .where("consultationUuid")
+            .equals(payload.uuid)
+            .delete();
+        }
+
         // Guardar recetas localmente en Dexie si vienen
         if (payload.prescriptions && payload.prescriptions.length > 0) {
           // Eliminar anteriores
@@ -276,6 +307,7 @@ export function useUpdateConsultation() {
         status: payload.status,
         prescriptions: payload.prescriptions,
         vitals: payload.vitals,
+        follow_up: payload.follow_up,
       });
       return data;
     },
@@ -297,6 +329,84 @@ export function useUpdateConsultation() {
       toast.error("Error al actualizar consulta", {
         description: serverMessage,
       });
+    },
+  });
+}
+
+export function useCreateFollowUp() {
+  const isOnline = useOnlineStatus();
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+
+  return useMutation({
+    mutationFn: async (payload: {
+      uuid?: string;
+      patientUuid: string;
+      consultationUuid?: string | null;
+      scheduledDate: string;
+      channel: "EMAIL" | "WHATSAPP" | "INTERNAL_CHAT" | "MANUAL_CALL";
+      messageTemplate?: string | null;
+    }) => {
+      const uuid = payload.uuid || uuidv4();
+      const dateStr = new Date().toISOString();
+      const doctorUuid = user?.uuid ?? user?.id ?? "";
+
+      if (!isOnline) {
+        // Modo Offline: Guardar en Dexie
+        await db.followUps.add({
+          uuid,
+          patientUuid: payload.patientUuid,
+          consultationUuid: payload.consultationUuid || "",
+          scheduledDate: payload.scheduledDate,
+          channel: payload.channel,
+          messageTemplate: payload.messageTemplate || null,
+          status: "PENDING",
+          response: null,
+          updatedAt: dateStr,
+          _syncStatus: "created",
+        });
+
+        // Encolar acción CREATE en syncQueue
+        await db.syncQueue.add({
+          id: uuidv4(),
+          entity: "follow_ups",
+          entityUuid: uuid,
+          action: "CREATE",
+          payload: JSON.stringify({
+            uuid,
+            patient_uuid: payload.patientUuid,
+            consultation_uuid: payload.consultationUuid || null,
+            scheduled_date: payload.scheduledDate,
+            channel: payload.channel,
+            message_template: payload.messageTemplate || null,
+            status: "PENDING",
+          }),
+          timestamp: Date.now(),
+        });
+
+        return { data: { uuid, status: "PENDING" }, offline: true };
+      }
+
+      // Modo Online: API del servidor
+      const { data } = await apiClient.post("/follow-ups", {
+        uuid,
+        patient_uuid: payload.patientUuid,
+        consultation_uuid: payload.consultationUuid || null,
+        scheduled_date: payload.scheduledDate,
+        channel: payload.channel,
+        message_template: payload.messageTemplate || null,
+        status: "PENDING",
+      });
+      return data;
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["doctor-dashboard-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["doctor-appointments"] });
+      toast.success("Seguimiento programado con éxito");
+    },
+    onError: (err: any) => {
+      console.error("[useCreateFollowUp] Error:", err);
+      toast.error("No se pudo agendar el seguimiento");
     },
   });
 }

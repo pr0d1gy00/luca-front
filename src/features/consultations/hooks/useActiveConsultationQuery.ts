@@ -31,6 +31,12 @@ export interface ActiveConsultationData {
       duration: string;
       notes?: string;
     }[];
+    followUp?: {
+      uuid?: string;
+      scheduledDate: string;
+      channel: "EMAIL" | "WHATSAPP" | "INTERNAL_CHAT" | "MANUAL_CALL";
+      messageTemplate?: string | null;
+    };
   };
   patient: {
     id: string;
@@ -146,6 +152,15 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
         }
       }
 
+      // 5b. Cargar seguimiento local vinculado a la consulta
+      let followUpDb = null;
+      if (consDb) {
+        followUpDb = await db.followUps
+          .where("consultationUuid")
+          .equals(consDb.uuid)
+          .first();
+      }
+
       // 6. Cargar historial clínico local (consultas anteriores del paciente)
       const allConsultations = await db.consultations
         .where("patientUuid")
@@ -221,6 +236,14 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
                       vitalsDb.respiratoryRate?.toString() || "",
                     temperature: vitalsDb.temperature?.toString() || "",
                     oxygen_sat: vitalsDb.oxygenSat?.toString() || "",
+                  }
+                : undefined,
+              followUp: followUpDb
+                ? {
+                    uuid: followUpDb.uuid,
+                    scheduledDate: followUpDb.scheduledDate,
+                    channel: followUpDb.channel,
+                    messageTemplate: followUpDb.messageTemplate,
                   }
                 : undefined,
             }
@@ -439,6 +462,14 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
                           ).oxygen_sat?.toString() || "",
                       }
                     : undefined,
+                followUp: (apt.consultation.follow_ups || apt.consultation.followUps)?.[0]
+                  ? {
+                      uuid: (apt.consultation.follow_ups || apt.consultation.followUps)[0].uuid,
+                      scheduledDate: (apt.consultation.follow_ups || apt.consultation.followUps)[0].scheduled_date,
+                      channel: (apt.consultation.follow_ups || apt.consultation.followUps)[0].channel,
+                      messageTemplate: (apt.consultation.follow_ups || apt.consultation.followUps)[0].message_template,
+                    }
+                  : undefined,
               }
             : {
                 motivoConsulta: apt.reason || "",

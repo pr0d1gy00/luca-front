@@ -481,7 +481,7 @@ export default function Sidebar({ inDrawer = false }: SidebarProps) {
         <div className="space-y-1.5 mt-auto pt-4 border-t">
           {/* Search */}
           <button
-            onClick={() => {}}
+            onClick={() => { }}
             className={cn(
               "flex items-center rounded-xl transition-all duration-200 w-full gap-3 px-3 py-2.5",
               "text-pharmako-text-muted hover:text-pharmako-text-primary hover:bg-slate-100",
@@ -713,7 +713,7 @@ export default function Sidebar({ inDrawer = false }: SidebarProps) {
         <div className="space-y-0.5">
           {/* Search */}
           <button
-            onClick={() => {}}
+            onClick={() => { }}
             className={cn(
               "flex items-center rounded-xl transition-all duration-200 w-full",
               "text-pharmako-text-muted hover:text-pharmako-text-primary hover:bg-slate-100",
@@ -872,7 +872,7 @@ export default function Sidebar({ inDrawer = false }: SidebarProps) {
                   transition={{ duration: 0.15, ease: "easeOut" }}
                   className="text-sm font-medium whitespace-nowrap overflow-hidden"
                 >
-                  Minimizar
+                  {effectiveExpanded ? "Minimizar" : "Maximizar"}
                 </motion.span>
               )}
             </AnimatePresence>

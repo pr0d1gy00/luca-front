@@ -1,4 +1,5 @@
 import apiClient from "@/lib/api/client";
+import { serverToClient, clientToServer } from "@/features/offline/utils/uuid";
 import type {
 	Patient,
 	PatientsResponse,
@@ -15,35 +16,43 @@ export const patientApi = {
 	 * Get all patients for current doctor
 	 */
 	getAll: async (): Promise<PatientsResponse> => {
-		const response = await apiClient.get<PatientsResponse>("/patients");
-		return response.data;
+		const response = await apiClient.get<{ data: any[] }>("/patients");
+		const mappedData = (response.data.data ?? response.data ?? []).map((p) =>
+			serverToClient<Patient>(p),
+		);
+		return { data: mappedData };
 	},
 
 	/**
 	 * Get single patient by UUID
 	 */
 	getByUUID: async (uuid: string): Promise<PatientResponse> => {
-		const response = await apiClient.get<PatientResponse>(`/patients/${uuid}`);
-		return response.data;
+		const response = await apiClient.get<{ data: any }>(`/patients/${uuid}`);
+		const mappedData = serverToClient<Patient>(response.data.data ?? response.data);
+		return { data: mappedData };
 	},
 
 	/**
 	 * Create new patient
 	 */
 	create: async (data: CreatePatientDTO): Promise<PatientResponse> => {
-		const response = await apiClient.post<PatientResponse>("/patients", data);
-		return response.data;
+		const serverData = clientToServer(data as unknown as Record<string, unknown>);
+		const response = await apiClient.post<{ data: any }>("/patients", serverData);
+		const mappedData = serverToClient<Patient>(response.data.data ?? response.data);
+		return { data: mappedData };
 	},
 
 	/**
 	 * Update existing patient
 	 */
 	update: async (data: UpdatePatientDTO): Promise<PatientResponse> => {
-		const response = await apiClient.put<PatientResponse>(
+		const serverData = clientToServer(data as unknown as Record<string, unknown>);
+		const response = await apiClient.put<{ data: any }>(
 			`/patients/${data.uuid}`,
-			data,
+			serverData,
 		);
-		return response.data;
+		const mappedData = serverToClient<Patient>(response.data.data ?? response.data);
+		return { data: mappedData };
 	},
 
 	/**

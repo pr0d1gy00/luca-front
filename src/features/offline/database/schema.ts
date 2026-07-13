@@ -224,7 +224,9 @@ export interface PrescriptionItem extends SyncableEntity {
 // LABS & RESULTS
 // ============================================
 export interface LabRequest extends SyncableEntity {
-  consultationUuid: string;
+  patientUuid: string;
+  doctorUuid: string;
+  consultationUuid: string | null;
   examsList: string[];
   instructions: string;
   isCompleted: boolean;
@@ -251,6 +253,8 @@ export interface FollowUp extends SyncableEntity {
   scheduledDate: string;
   status: "PENDING" | "SENT" | "RESPONDED";
   response: string | null;
+  channel: "EMAIL" | "WHATSAPP" | "INTERNAL_CHAT" | "MANUAL_CALL";
+  messageTemplate?: string | null;
 }
 
 // ============================================
@@ -440,6 +444,12 @@ class LucaDatabase extends Dexie {
     this.version(3).stores({
       consultations:
         "uuid, patientUuid, doctorUuid, appointmentUuid, date, status, updatedAt, _syncStatus",
+    });
+
+    // v4: Add patientUuid, doctorUuid, and _syncStatus indexes to labRequests for standalone lookup
+    this.version(4).stores({
+      labRequests:
+        "uuid, patientUuid, doctorUuid, consultationUuid, updatedAt, _syncStatus",
     });
   }
 }

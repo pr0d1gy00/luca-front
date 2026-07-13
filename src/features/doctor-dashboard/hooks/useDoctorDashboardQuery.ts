@@ -5,6 +5,7 @@ import { doctorDashboardApi } from "../api/doctorDashboardApi";
 import { db } from "@/features/offline/database/schema";
 import { useAuthStore } from "@/store/auth";
 import { useOnlineStatus } from "@/features/offline/hooks/useOnlineStatus";
+import { getLocalTodayString } from "@/lib/utils";
 
 export const doctorDashboardKeys = {
   all: ["doctor-dashboard"] as const,
@@ -31,7 +32,7 @@ export function useDoctorDashboardQuery() {
     }
 
     try {
-      const todayStr = new Date().toISOString().split("T")[0];
+      const todayStr = getLocalTodayString();
 
       // 1. Obtener todas las citas, recetas y laboratorios locales de Dexie
       const allLocalAppointments = await db.appointments.toArray();

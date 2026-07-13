@@ -44,9 +44,14 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { PatientTable } from "./PatientTable";
 import { PatientForm } from "./PatientForm";
-import type { Patient } from "../schemas";
+import type { Patient } from "../types";
+import { usePatients, useCreatePatient, useUpdatePatient, useDeletePatient } from "../hooks/usePatients";
+import { ScheduleFollowUpModal } from "@/features/consultations/components/ScheduleFollowUpModal";
 import { bloodTypeLabels, biologicalSexLabels } from "../schemas";
+import apiClient from "@/lib/api/client";
+import { db } from "@/features/offline/database/schema";
 import { ClinicalHistoryTimeline } from "@/features/consultations";
+import { ClinicGreeting } from "@/features/clinic-dashboard/components/ClinicGreeting";
 
 interface PatientCrudLayoutProps {
 	patients?: Patient[];
@@ -128,7 +133,7 @@ const MOCK_PATIENTS: Patient[] = [
 		emergencyContactName: "Esteban Martínez (Hijo)",
 		emergencyContactPhone: "+54 11 2222-3333",
 	},
-];
+] as any[] as Patient[];
 
 interface HistoryEntry {
 	id: string;
@@ -191,13 +196,73 @@ function calculateAge(birthDate: Date): number {
 }
 
 export function PatientCrudLayout({
-	patients = MOCK_PATIENTS,
+	patients: initialPatients,
 }: PatientCrudLayoutProps) {
-	const [list, setList] = useState<Patient[]>(patients);
+	const { data: serverPatients = [], isLoading } = usePatients();
+	const list = initialPatients ?? serverPatients;
+
+	const createPatient = useCreatePatient();
+	const updatePatient = useUpdatePatient();
+	const deletePatient = useDeletePatient();
+
 	const [mode, setMode] = useState<Mode | null>(null);
 	const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 	const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+	const [isFollowUpOpen, setIsFollowUpOpen] = useState(false);
+	const [selectedPatientForFollowUp, setSelectedPatientForFollowUp] = useState<Patient | null>(null);
 	const [activeTab, setActiveTab] = useState<"resumen" | "lista">("resumen");
+	const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
+	const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+	const loadHistory = async (patient: Patient) => {
+		setIsLoadingHistory(true);
+		try {
+			// 1. Obtener historia local de Dexie (offline)
+			const localConsultations = await db.consultations
+				.where("patientUuid")
+				.equals(patient.uuid)
+				.toArray();
+
+			const localEntries: HistoryEntry[] = localConsultations.map((c) => ({
+				id: c.uuid,
+				date: new Date(c.date),
+				motivo: c.reason || "Sin motivo registrado",
+				diagnostico: c.diagnosis || "Sin diagnóstico registrado",
+				doctorName: "Médico del Sistema (Local)",
+			}));
+
+			// 2. Intentar obtener historia del servidor (online)
+			let apiEntries: HistoryEntry[] = [];
+			try {
+				const response = await apiClient.get("/consultations", {
+					params: { patient_uuid: patient.uuid },
+				});
+				const consultations = response.data?.data?.data ?? response.data?.data ?? [];
+				apiEntries = consultations.map((c: any) => ({
+					id: c.uuid,
+					date: new Date(c.date ?? c.created_at ?? ""),
+					motivo: c.reason ?? "Sin motivo registrado",
+					diagnostico: c.diagnosis ?? "Sin diagnóstico registrado",
+					doctorName: c.user?.full_name ?? "Médico del Sistema",
+				}));
+			} catch (err) {
+				console.warn("No se pudo obtener la historia desde la API, usando local:", err);
+			}
+
+			// 3. Mezclar y dedupular por UUID
+			const allEntriesMap = new Map<string, HistoryEntry>();
+			localEntries.forEach((e) => allEntriesMap.set(e.id, e));
+			apiEntries.forEach((e) => allEntriesMap.set(e.id, e));
+
+			const sorted = Array.from(allEntriesMap.values()).sort(
+				(a, b) => b.date.getTime() - a.date.getTime(),
+			);
+			setHistoryEntries(sorted);
+		} catch (error) {
+			console.error("Error al cargar la historia clínica:", error);
+		} finally {
+			setIsLoadingHistory(false);
+		}
+	};
 
 	const handleCreate = () => {
 		setSelectedPatient(null);
@@ -217,37 +282,59 @@ export function PatientCrudLayout({
 	const handleViewHistory = (patient: Patient) => {
 		setSelectedPatient(patient);
 		setMode("history");
+		loadHistory(patient);
 	};
 
-	const handleDelete = (nationalId: string) => {
-		setDeleteConfirm(nationalId);
+	const handleDelete = (uuid: string) => {
+		setDeleteConfirm(uuid);
 	};
 
 	const handleConfirmDelete = () => {
 		if (deleteConfirm) {
-			setList((prev) => prev.filter((p) => p.nationalId !== deleteConfirm));
-			setDeleteConfirm(null);
+			deletePatient.mutate(deleteConfirm, {
+				onSuccess: () => {
+					setDeleteConfirm(null);
+				},
+			});
 		}
 	};
 
 	const handleSubmit = (data: Patient) => {
 		if (mode === "create") {
-			setList((prev) => [...prev, data]);
+			createPatient.mutate(data, {
+				onSuccess: () => {
+					setMode(null);
+					setSelectedPatient(null);
+				},
+			});
 		} else if (mode === "edit" && selectedPatient) {
-			setList((prev) =>
-				prev.map((p) =>
-					p.nationalId === selectedPatient.nationalId ? data : p,
-				),
+			updatePatient.mutate(
+				{
+					uuid: selectedPatient.uuid,
+					data,
+				},
+				{
+					onSuccess: () => {
+						setMode(null);
+						setSelectedPatient(null);
+					},
+				},
 			);
 		}
-		setMode(null);
-		setSelectedPatient(null);
 	};
 
 	const handleClose = () => {
 		setMode(null);
 		setSelectedPatient(null);
 	};
+
+	if (isLoading && !initialPatients) {
+		return (
+			<div className="flex items-center justify-center h-96">
+				<div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pharmako-primary"></div>
+			</div>
+		);
+	}
 
 	// ── Cálculos Dinámicos para el Panel Clínico ─────────────────
 	const totalPatients = list.length;
@@ -281,11 +368,11 @@ export function PatientCrudLayout({
 	const averageAge =
 		totalPatients > 0
 			? Math.round(
-					list.reduce(
-						(sum, p) => sum + calculateAge(new Date(p.birthDate)),
-						0,
-					) / totalPatients,
-				)
+				list.reduce(
+					(sum, p) => sum + calculateAge(new Date(p.birthDate)),
+					0,
+				) / totalPatients,
+			)
 			: 0;
 
 	// Pacientes complejos (Multipatología >= 2 condiciones crónicas)
@@ -356,7 +443,6 @@ export function PatientCrudLayout({
 		}))
 		.sort((a, b) => b.count - a.count)
 		.slice(0, 3);
-
 	return (
 		<div className="flex flex-col gap-6">
 			{/* Page Header Outside Table */}
@@ -451,7 +537,7 @@ export function PatientCrudLayout({
 						</button>
 
 						<button
-							onClick={() => {}}
+							onClick={() => { }}
 							className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between text-left transition-all duration-200 hover:border-pharmako-care hover:bg-pharmako-care-light/5 hover:-translate-y-0.5 group cursor-pointer"
 						>
 							<div className="flex items-center gap-3">
@@ -1002,10 +1088,12 @@ export function PatientCrudLayout({
 					onView={handleView}
 					onDelete={handleDelete}
 					onViewClinicalHistory={handleViewHistory}
+					onScheduleFollowUp={(patient) => {
+						setSelectedPatientForFollowUp(patient);
+						setIsFollowUpOpen(true);
+					}}
 				/>
 			)}
-
-			{/* Create/Edit Sheet */}
 			<Sheet
 				open={mode === "create" || mode === "edit"}
 				onOpenChange={(open) => !open && handleClose()}
@@ -1118,7 +1206,7 @@ export function PatientCrudLayout({
 												Sexo biológico
 											</span>
 											<span className="block text-sm font-semibold text-slate-900 mt-0.5">
-												{biologicalSexLabels[selectedPatient.gender]}
+												{biologicalSexLabels[selectedPatient.gender.toLowerCase() as keyof typeof biologicalSexLabels]}
 											</span>
 										</div>
 									</div>
@@ -1217,7 +1305,7 @@ export function PatientCrudLayout({
 										</div>
 										<div className="flex flex-wrap gap-1.5 mt-1">
 											{selectedPatient.allergies &&
-											selectedPatient.allergies.length > 0 ? (
+												selectedPatient.allergies.length > 0 ? (
 												selectedPatient.allergies
 													.split(",")
 													.map((a: string, i: number) => (
@@ -1249,7 +1337,7 @@ export function PatientCrudLayout({
 										</div>
 										<div className="flex flex-wrap gap-1.5 mt-1">
 											{selectedPatient.chronicConditions &&
-											selectedPatient.chronicConditions.length > 0 ? (
+												selectedPatient.chronicConditions.length > 0 ? (
 												selectedPatient.chronicConditions
 													.split(",")
 													.map((c: string, i: number) => (
@@ -1274,32 +1362,32 @@ export function PatientCrudLayout({
 							{/* Sección 4: Emergencia */}
 							{(selectedPatient.emergencyContactName ||
 								selectedPatient.emergencyContactPhone) && (
-								<div className="rounded-2xl p-6 space-y-5">
-									<h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 pb-2 border-b border-slate-200/60">
-										Contacto de Emergencia
-									</h3>
-									<div className="bg-white rounded-xl p-5 flex items-start gap-4 transition-all hover:border-slate-350">
-										<div className="bg-emerald-50 rounded-xl p-3 text-emerald-600 shrink-0">
-											<Heart className="size-6" />
-										</div>
-										<div className="min-w-0 flex-1">
-											<span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-												Familiar o Responsable
-											</span>
-											<p className="text-sm font-semibold text-slate-800 mt-2 bg-slate-50/50 border border-slate-200/50 rounded-xl p-3 flex flex-col gap-1">
-												<span>
-													<strong>Nombre:</strong>{" "}
-													{selectedPatient.emergencyContactName || "—"}
+									<div className="rounded-2xl p-6 space-y-5">
+										<h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 pb-2 border-b border-slate-200/60">
+											Contacto de Emergencia
+										</h3>
+										<div className="bg-white rounded-xl p-5 flex items-start gap-4 transition-all hover:border-slate-350">
+											<div className="bg-emerald-50 rounded-xl p-3 text-emerald-600 shrink-0">
+												<Heart className="size-6" />
+											</div>
+											<div className="min-w-0 flex-1">
+												<span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+													Familiar o Responsable
 												</span>
-												<span>
-													<strong>Teléfono:</strong>{" "}
-													{selectedPatient.emergencyContactPhone || "—"}
-												</span>
-											</p>
+												<p className="text-sm font-semibold text-slate-800 mt-2 bg-slate-50/50 border border-slate-200/50 rounded-xl p-3 flex flex-col gap-1">
+													<span>
+														<strong>Nombre:</strong>{" "}
+														{selectedPatient.emergencyContactName || "—"}
+													</span>
+													<span>
+														<strong>Teléfono:</strong>{" "}
+														{selectedPatient.emergencyContactPhone || "—"}
+													</span>
+												</p>
+											</div>
 										</div>
 									</div>
-								</div>
-							)}
+								)}
 
 							<div className="flex justify-end pt-3">
 								<Button
@@ -1369,11 +1457,18 @@ export function PatientCrudLayout({
 
 							{/* History Timeline Component */}
 							<div className="pt-2">
-								<ClinicalHistoryTimeline
-									entries={
-										MOCK_CLINICAL_HISTORY[selectedPatient.nationalId] || []
-									}
-								/>
+								{isLoadingHistory ? (
+									<div className="flex flex-col items-center justify-center py-16 gap-3">
+										<div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pharmako-care"></div>
+										<span className="text-xs text-slate-500 font-medium">Cargando consultas...</span>
+									</div>
+								) : historyEntries.length > 0 ? (
+									<ClinicalHistoryTimeline entries={historyEntries} />
+								) : (
+									<div className="text-center py-16 px-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs italic">
+										No se registran consultas médicas previas para este paciente.
+									</div>
+								)}
 							</div>
 
 							<div className="flex justify-end pt-4 border-t border-slate-100">
@@ -1424,6 +1519,15 @@ export function PatientCrudLayout({
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+
+			<ScheduleFollowUpModal
+				isOpen={isFollowUpOpen}
+				onClose={() => {
+					setIsFollowUpOpen(false);
+					setSelectedPatientForFollowUp(null);
+				}}
+				patientUuid={selectedPatientForFollowUp?.uuid}
+			/>
 		</div>
 	);
 }

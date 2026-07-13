@@ -752,10 +752,10 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [logoPreview, setLogoPreview] = useState<string | null>(
-    initial.logo_url ?? null,
+    initial.logoUrl ?? initial.logo_url ?? null,
   );
   const [sigPreview, setSigPreview] = useState<string | null>(
-    initial.signature_url ?? null,
+    initial.signatureUrl ?? initial.signature_url ?? null,
   );
 
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -770,12 +770,12 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
   } = useForm<UserForm>({
     resolver: zodResolver(userSchema),
     defaultValues: {
-      full_name: initial.full_name,
+      full_name: initial.fullName ?? initial.full_name ?? "",
       email: initial.email,
       phone: initial.phone ?? "",
-      city_id: initial.city_id ?? "",
-      logo_url: initial.logo_url ?? "",
-      signature_url: initial.signature_url ?? "",
+      city_id: initial.cityId ?? initial.city_id ?? "",
+      logo_url: initial.logoUrl ?? initial.logo_url ?? "",
+      signature_url: initial.signatureUrl ?? initial.signature_url ?? "",
     },
   });
 
@@ -831,11 +831,15 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
       const updatedUser: UserProfile = {
         ...initial,
         full_name: payload.full_name,
+        fullName: payload.full_name,
         email: payload.email,
         phone: payload.phone ?? initial.phone,
-        city_id: payload.city_id ?? initial.city_id,
-        logo_url: payload.logo_url ?? initial.logo_url,
-        signature_url: payload.signature_url ?? initial.signature_url,
+        city_id: payload.city_id ?? initial.cityId ?? initial.city_id,
+        cityId: payload.city_id ?? initial.cityId ?? initial.city_id,
+        logo_url: payload.logo_url ?? initial.logoUrl ?? initial.logo_url,
+        logoUrl: payload.logo_url ?? initial.logoUrl ?? initial.logo_url,
+        signature_url: payload.signature_url ?? initial.signatureUrl ?? initial.signature_url,
+        signatureUrl: payload.signature_url ?? initial.signatureUrl ?? initial.signature_url,
       };
 
       if (userType) {
@@ -913,7 +917,7 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
         </div>
         <div className="text-center sm:text-left space-y-1">
           <h2 className="text-lg font-bold text-pharmako-text-primary">
-            {initial.full_name}
+            {initial.fullName ?? initial.full_name}
           </h2>
           <p className="text-xs text-pharmako-text-secondary font-medium">
             Portal Profesional — Rol: {initial.role}

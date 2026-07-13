@@ -4,6 +4,7 @@ import {
 	generateUUID,
 	getCurrentTimestamp,
 } from "@/features/offline/utils/uuid";
+import { getLocalTodayString } from "@/lib/utils";
 import type { CreateAppointmentDTO, UpdateAppointmentDTO } from "../types";
 import type { EntityType } from "@/features/offline/types/sync.types";
 
@@ -30,7 +31,7 @@ export const appointmentOfflineService = {
 			time: data.time,
 			slotTime: data.slotTime ?? null,
 			type: data.type,
-			status: "PENDING",
+			status: data.type === "EXCEPTION" ? "IN_ROOM" : "PENDING",
 			notes: data.notes ?? "",
 			reason: data.reason ?? "",
 			updatedAt: now,
@@ -140,7 +141,7 @@ export const appointmentOfflineService = {
 	 * Get upcoming appointments (future dates)
 	 */
 	getUpcoming: async (): Promise<Appointment[]> => {
-		const today = new Date().toISOString().split("T")[0];
+		const today = getLocalTodayString();
 		const all = await db.appointments.toArray();
 		return all.filter((a) => {
 			return !a.deletedAt && a.status !== "CANCELLED" && a.date >= today;

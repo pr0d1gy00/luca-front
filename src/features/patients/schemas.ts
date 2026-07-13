@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const biologicalSexEnum = z.enum(["male", "female"]);
+export const biologicalSexEnum = z.enum(["male", "female", "other"]);
 export type BiologicalSex = z.infer<typeof biologicalSexEnum>;
 
 export const bloodTypeEnum = z.enum([
@@ -54,4 +54,5 @@ export const bloodTypeLabels: Record<string, string> = {
 export const biologicalSexLabels: Record<BiologicalSex, string> = {
 	male: "Masculino",
 	female: "Femenino",
+	other: "Otro",
 };

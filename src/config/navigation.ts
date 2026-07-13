@@ -102,4 +102,11 @@ export const navigationConfig: NavItem[] = [
     icon: PiFileTextBold,
     roles: ["doctor"],
   },
+  {
+    title: "Laboratorios",
+    name: "laboratorios",
+    href: "/dashboard/laboratorios",
+    icon: PiDnaBold,
+    roles: ["doctor"],
+  },
 ];
