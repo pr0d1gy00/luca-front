@@ -41,6 +41,7 @@ export const invoiceSchema = z.object({
   patientId: z.string().min(1, "El paciente es requerido"),
   consultationId: z.string().optional(),
   prescriptionId: z.string().optional(),
+  type: z.enum(["CLIENT", "INTERNAL"]).default("CLIENT"),
   subtotal: z.number().min(0),
   tax: z.number().min(0).default(0),
   discount: z.number().min(0).default(0),

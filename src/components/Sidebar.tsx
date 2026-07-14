@@ -407,8 +407,26 @@ export default function Sidebar({ inDrawer = false }: SidebarProps) {
     };
   }, []);
 
+  const { isVerified } = useAuthStore();
+
   // ── Derived data ───────────────────────────────────────────
-  const allowedLinks = navigationConfig.filter((i) => i.roles.includes(role));
+  const allowedLinks = navigationConfig.filter((i) => {
+    const hasRole = i.roles.includes(role);
+    if (role && role !== "patient" && !isVerified) {
+      return false;
+    }
+    return hasRole;
+  });
+
+  if (role && role !== "patient" && !isVerified) {
+    allowedLinks.push({
+      title: "Configuración",
+      name: "profile",
+      href: "/dashboard/profile",
+      icon: Settings,
+      roles: [role],
+    });
+  }
   const initials = name ? name[0].toUpperCase() : "U";
   const roleLabel = ROLE_LABELS[role] ?? "Médico";
 

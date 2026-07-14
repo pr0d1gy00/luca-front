@@ -44,6 +44,12 @@ interface UpdateConsultationPayload {
     channel: "EMAIL" | "WHATSAPP" | "INTERNAL_CHAT" | "MANUAL_CALL";
     message_template?: string | null;
   } | null;
+  services_performed?: {
+    providerServiceUuid: string;
+    price: number;
+    quantity: number;
+    notes?: string;
+  }[];
 }
 
 export function useStartConsultation() {
@@ -308,6 +314,7 @@ export function useUpdateConsultation() {
         prescriptions: payload.prescriptions,
         vitals: payload.vitals,
         follow_up: payload.follow_up,
+        services_performed: payload.services_performed,
       });
       return data;
     },

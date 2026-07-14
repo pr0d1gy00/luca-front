@@ -310,6 +310,36 @@ export interface Doctor extends SyncableEntity {
 }
 
 // ============================================
+// SERVICES & PROCEDURES (Fase 7)
+// ============================================
+export interface ServiceRecord extends SyncableEntity {
+  name: string;
+  category: "IMAGING" | "LAB" | "PROCEDURE" | "CONSULTATION" | "THERAPY" | "OTHER";
+  description: string;
+  basePrice: number;
+  code?: string;
+}
+
+export interface ProviderServiceRecord extends SyncableEntity {
+  serviceUuid: string;
+  providerUuid: string;
+  providerType: "DOCTOR" | "CLINIC";
+  price: number;
+  durationMinutes: number;
+  isStandaloneBookable: boolean;
+  isActive: boolean;
+  customName?: string;
+  customDescription?: string;
+}
+
+export interface ActiveDelayRecord {
+  doctorUuid: string;
+  doctorName: string;
+  delayMinutes: number;
+  updatedAt: string;
+}
+
+// ============================================
 // SYNC INFRASTRUCTURE
 // ============================================
 export interface SyncMeta {
@@ -382,6 +412,11 @@ class LucaDatabase extends Dexie {
     updatedAt: string;
   }>;
 
+  // Services & Delays
+  services!: Table<ServiceRecord>;
+  providerServices!: Table<ProviderServiceRecord>;
+  activeDelays!: Table<ActiveDelayRecord>;
+
   constructor() {
     super("LucaOfflineDB");
 
@@ -450,6 +485,13 @@ class LucaDatabase extends Dexie {
     this.version(4).stores({
       labRequests:
         "uuid, patientUuid, doctorUuid, consultationUuid, updatedAt, _syncStatus",
+    });
+
+    // v5: Add services, providerServices and activeDelays tables
+    this.version(5).stores({
+      services: "uuid, category, updatedAt",
+      providerServices: "uuid, providerUuid, serviceUuid, isActive, updatedAt",
+      activeDelays: "doctorUuid, delayMinutes, updatedAt",
     });
   }
 }

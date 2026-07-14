@@ -43,6 +43,7 @@ export function LoginForm() {
   const [otpStep, setOtpStep] = useState<OtpStep>("request");
   const [code, setCode] = useState("");
   const [timeLeft, setTimeLeft] = useState(0);
+  const [expiryTimestamp, setExpiryTimestamp] = useState<number | null>(null);
 
   // Mutations
   const loginUser = useLoginUserMutation();
@@ -50,14 +51,26 @@ export function LoginForm() {
   const sendOtp = useSendOtpMutation();
   const verifyOtp = useVerifyOtpMutation();
 
-  // Reloj de expiración de OTP
+  // Reloj de expiración de OTP robusto (basado en reloj del sistema para pestañas inactivas)
   useEffect(() => {
-    if (otpStep !== "verify" || timeLeft <= 0) return;
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [otpStep, timeLeft]);
+    if (otpStep !== "verify" || !expiryTimestamp) return;
+
+    const updateTimer = () => {
+      const remaining = Math.max(0, Math.floor((expiryTimestamp - Date.now()) / 1000));
+      setTimeLeft(remaining);
+    };
+
+    updateTimer();
+    const timer = setInterval(updateTimer, 1000);
+
+    const handleFocus = () => updateTimer();
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [otpStep, expiryTimestamp]);
 
   // Manejo de Login con Contraseña
   const handleSubmitPassword = async () => {
@@ -177,7 +190,9 @@ export function LoginForm() {
       const res = await sendOtp.mutateAsync(payload);
       toast.success(res.message || "Código enviado con éxito.");
       setOtpStep("verify");
-      setTimeLeft(res.otpExpirySeconds || 600);
+      const seconds = res.otpExpirySeconds || 300;
+      setTimeLeft(seconds);
+      setExpiryTimestamp(Date.now() + seconds * 1000);
       setCode("");
     } catch (err: unknown) {
       const error = err as {
@@ -210,8 +225,8 @@ export function LoginForm() {
 
   // Verificar OTP e Ingresar
   const handleVerifyOtp = async () => {
-    if (code.length !== 6) {
-      toast.error("El código debe tener 6 dígitos.");
+    if (code.length !== 8) {
+      toast.error("El código debe tener 8 dígitos.");
       return;
     }
     setLoading(true);
@@ -486,7 +501,7 @@ export function LoginForm() {
 
                 {/* Info */}
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm text-slate-600 space-y-1">
-                  <p>Enviamos un código de 6 dígitos a:</p>
+                  <p>Enviamos un código de 8 dígitos a:</p>
                   <p className="font-semibold text-slate-800">{identifier}</p>
                 </div>
 
@@ -494,8 +509,8 @@ export function LoginForm() {
                 <PharmakoInput
                   label="Código de Verificación"
                   type="text"
-                  maxLength={6}
-                  placeholder="123456"
+                  maxLength={8}
+                  placeholder="12345678"
                   value={code}
                   onChange={(val) => setCode(val.replace(/\D/g, ""))}
                 />

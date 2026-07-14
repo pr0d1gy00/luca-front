@@ -21,7 +21,7 @@ export type AppointmentStatus = z.infer<typeof appointmentStatusEnum>;
 // ─────────────────────────────────────────────────────────────
 export const appointmentSchema = z.object({
 	patientUuid: z.string().min(1),
-	doctorUuid: z.string().min(1),
+	doctorUuid: z.string().optional(),
 	clinicBranchUuid: z.string().optional(),
 	date: z.string(), // ISO date: YYYY-MM-DD
 	time: z.string().min(1), // HH:MM
@@ -30,6 +30,8 @@ export const appointmentSchema = z.object({
 	reason: z.string().optional(),
 	notes: z.string().optional(),
 	slotTime: z.string().optional(),
+	providerServiceUuid: z.string().optional(),
+	services: z.array(z.string()).optional().default([]),
 });
 
 export type Appointment = z.infer<typeof appointmentSchema>;

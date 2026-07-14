@@ -26,6 +26,9 @@ import {
   WifiOff,
   CheckCircle2,
   Trash2,
+  Clock,
+  UploadCloud,
+  AlertCircle,
 } from "lucide-react";
 import Select from "react-select";
 import { toast } from "sonner";
@@ -1347,24 +1350,329 @@ function SyncStatusPanel() {
   );
 }
 
+interface VerificationDoc {
+  uuid: string;
+  type: "MEDICAL_LICENSE" | "NATIONAL_ID" | "BUSINESS_RIF";
+  file_url: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  comments: string | null;
+  created_at: string;
+}
+
+function VerificationTab() {
+  const { user, isVerified, userType } = useAuthStore();
+  const [documents, setDocuments] = useState<VerificationDoc[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [selectedType, setSelectedType] = useState<"MEDICAL_LICENSE" | "NATIONAL_ID" | "BUSINESS_RIF">(
+    (user && "role" in user && user.role === "DOCTOR") ? "MEDICAL_LICENSE" : "BUSINESS_RIF"
+  );
+  const [file, setFile] = useState<File | null>(null);
+
+  const fetchDocuments = useCallback(async () => {
+    try {
+      const { data } = await apiClient.get<{ data: { data: VerificationDoc[] } }>(
+        "/verification-documents"
+      );
+      setDocuments(data.data.data || []);
+    } catch (err) {
+      console.error("Error fetching verification documents:", err);
+      toast.error("No se pudieron cargar los documentos de verificación.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDocuments();
+  }, [fetchDocuments]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        toast.error("El archivo debe pesar menos de 10MB.");
+        return;
+      }
+      setFile(selectedFile);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!file) {
+      toast.error("Por favor, selecciona un archivo.");
+      return;
+    }
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("type", selectedType);
+    formData.append("file", file);
+
+    try {
+      await apiClient.post("/verification-documents", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      toast.success("Documento cargado correctamente. El equipo de soporte lo revisará pronto.");
+      setFile(null);
+      await fetchDocuments();
+    } catch (err) {
+      console.error("Error uploading verification document:", err);
+      toast.error("Hubo un error al cargar el documento.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-pharmako-care" />
+      </div>
+    );
+  }
+
+  const latestDoc = documents[0];
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-xl border border-slate-200/80 p-6 shadow-xs">
+        <h3 className="text-base font-bold text-slate-800 mb-2">Estado de Verificación de Cuenta</h3>
+        <p className="text-xs text-slate-500 mb-4">
+          Para habilitar todas las funcionalidades de la plataforma, necesitamos verificar tus credenciales profesionales.
+        </p>
+
+        {isVerified ? (
+          <div className="flex items-start gap-3 bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-emerald-800">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-bold">Cuenta Verificada</p>
+              <p className="text-xs text-emerald-600/90 mt-0.5">
+                ¡Felicidades! Tu cuenta está completamente verificada y activa. Tenés acceso completo a todas las funcionalidades.
+              </p>
+            </div>
+          </div>
+        ) : latestDoc?.status === "PENDING" ? (
+          <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-xl p-4 text-amber-800">
+            <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5 animate-pulse" />
+            <div>
+              <p className="text-sm font-bold">Documentación en Revisión</p>
+              <p className="text-xs text-amber-600/90 mt-0.5">
+                Hemos recibido tu documento y se encuentra bajo revisión manual por nuestro equipo. Este proceso suele tomar menos de 24 horas hábiles.
+              </p>
+            </div>
+          </div>
+        ) : latestDoc?.status === "REJECTED" ? (
+          <div className="flex items-start gap-3 bg-rose-50 border border-rose-100 rounded-xl p-4 text-rose-800">
+            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-bold">Documentación Rechazada</p>
+              <p className="text-xs text-rose-600/90 mt-0.5 font-medium">
+                Motivo: {latestDoc.comments || "No especificado por el administrador."}
+              </p>
+              <p className="text-xs text-rose-500/80 mt-2">
+                Por favor, subí un nuevo documento válido abajo para volver a solicitar la verificación.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-start gap-3 bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-700">
+            <AlertCircle className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-bold">Sin Documentos Cargados</p>
+              <p className="text-xs text-slate-500/95 mt-0.5">
+                Aún no has subido tu documento de verificación. Subilo abajo para comenzar el proceso.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {(!latestDoc || latestDoc.status === "REJECTED") && (
+        <Card title="Cargar Documento de Verificación" icon={UploadCloud}>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-4">
+              <Field label="Tipo de Documento" icon={FileText}>
+                <div className="flex gap-4">
+                  {(user && "role" in user && user.role === "DOCTOR") ? (
+                    <>
+                      <label className="flex items-center gap-2 text-sm text-slate-700 font-semibold cursor-pointer">
+                        <input
+                          type="radio"
+                          name="doc_type"
+                          value="MEDICAL_LICENSE"
+                          checked={selectedType === "MEDICAL_LICENSE"}
+                          onChange={() => setSelectedType("MEDICAL_LICENSE")}
+                          className="accent-[#23dce1]"
+                        />
+                        Licencia Médica / Título
+                      </label>
+                      <label className="flex items-center gap-2 text-sm text-slate-700 font-semibold cursor-pointer">
+                        <input
+                          type="radio"
+                          name="doc_type"
+                          value="NATIONAL_ID"
+                          checked={selectedType === "NATIONAL_ID"}
+                          onChange={() => setSelectedType("NATIONAL_ID")}
+                          className="accent-[#23dce1]"
+                        />
+                        Cédula de Identidad
+                      </label>
+                    </>
+                  ) : (
+                    <>
+                      <label className="flex items-center gap-2 text-sm text-slate-700 font-semibold cursor-pointer">
+                        <input
+                          type="radio"
+                          name="doc_type"
+                          value="BUSINESS_RIF"
+                          checked={selectedType === "BUSINESS_RIF"}
+                          onChange={() => setSelectedType("BUSINESS_RIF")}
+                          className="accent-[#23dce1]"
+                        />
+                        Registro Mercantil / RIF Comercial
+                      </label>
+                      <label className="flex items-center gap-2 text-sm text-slate-700 font-semibold cursor-pointer">
+                        <input
+                          type="radio"
+                          name="doc_type"
+                          value="NATIONAL_ID"
+                          checked={selectedType === "NATIONAL_ID"}
+                          onChange={() => setSelectedType("NATIONAL_ID")}
+                          className="accent-[#23dce1]"
+                        />
+                        Identificación del Representante
+                      </label>
+                    </>
+                  )}
+                </div>
+              </Field>
+
+              <Field label="Archivo de Respaldo" icon={UploadCloud}>
+                <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 hover:border-[#23dce1]/50 rounded-2xl p-6 bg-slate-50/50 transition-colors relative group">
+                  <input
+                    type="file"
+                    onChange={handleFileChange}
+                    accept="image/*,application/pdf"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                  <UploadCloud className="w-8 h-8 text-slate-400 group-hover:text-[#23dce1] transition-colors mb-2" />
+                  {file ? (
+                    <div className="text-center">
+                      <p className="text-xs font-bold text-slate-700 truncate max-w-[280px]">
+                        {file.name}
+                      </p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        {(file.size / (1024 * 1024)).toFixed(2)} MB
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <p className="text-xs font-semibold text-slate-500">
+                        Arrastrá tu archivo aquí o hacé click para buscar
+                      </p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Formatos soportados: PDF, JPG, PNG. Máximo 10MB.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </Field>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button
+                type="submit"
+                disabled={!file || uploading}
+                className="bg-[#23dce1] hover:bg-[#1fc8cd] text-white font-bold rounded-xl px-6 py-2.5 h-auto"
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Cargando documento...
+                  </>
+                ) : (
+                  "Enviar Documento"
+                )}
+              </Button>
+            </div>
+          </form>
+        </Card>
+      )}
+
+      {documents.length > 0 && (
+        <Card title="Historial de Documentos Cargados" icon={FileText}>
+          <div className="divide-y divide-slate-100 max-h-72 overflow-y-auto pr-1">
+            {documents.map((doc) => (
+              <div key={doc.uuid} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                <div>
+                  <p className="text-xs font-bold text-slate-800">
+                    {doc.type === "MEDICAL_LICENSE"
+                      ? "Licencia Médica"
+                      : doc.type === "BUSINESS_RIF"
+                      ? "RIF Comercial"
+                      : "Cédula de Identidad"}
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">
+                    Subido el {new Date(doc.created_at).toLocaleDateString()} a las {new Date(doc.created_at).toLocaleTimeString()}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <a
+                    href={doc.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] font-bold text-[#23dce1] hover:underline"
+                  >
+                    Ver archivo
+                  </a>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                      doc.status === "APPROVED"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                        : doc.status === "PENDING"
+                        ? "bg-amber-50 text-amber-700 border-amber-100"
+                        : "bg-rose-50 text-rose-700 border-rose-100"
+                    }`}
+                  >
+                    {doc.status === "APPROVED"
+                      ? "Aprobado"
+                      : doc.status === "PENDING"
+                      ? "Pendiente"
+                      : "Rechazado"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+}
+
 // ── ProfileView Principal ───────────────────────────────────
 
 export function ProfileView() {
-  const { userType } = useAuthStore();
+  const { userType, isVerified } = useAuthStore();
   const isPatient = userType === "patient";
 
   const [profileData, setProfileData] = useState<
     PatientAccount | UserProfile | null
   >(null);
   const [loading, setLoading] = useState(() => {
-    // Si no estamos en el navegador, iniciamos en true
     if (typeof window === "undefined") return true;
     return true;
   });
   const hasFetched = useRef(false);
-  const [activeSubTab, setActiveSubTab] = useState<"profile" | "schedule">(
-    "profile",
-  );
+  const [activeSubTab, setActiveSubTab] = useState<"profile" | "schedule" | "verification">(() => {
+    if (!isVerified && userType === "user") return "verification";
+    return "profile";
+  });
 
   useEffect(() => {
     if (!userType || hasFetched.current) return;
@@ -1375,7 +1683,6 @@ export function ProfileView() {
 
     const loadProfile = async () => {
       try {
-        // 1. Buscamos primero si hay un perfil editado offline en IndexedDB
         const pending = await db.pendingProfileUpdates.get(profileId);
 
         if (pending) {
@@ -1424,19 +1731,16 @@ export function ProfileView() {
             } as UserProfile);
           }
 
-          // Si estamos offline, no llamamos a la API y quitamos el loading overlay
           if (!navigator.onLine) {
             setLoading(false);
             return;
           }
         }
 
-        // 2. Si estamos online, consultamos los datos frescos del servidor
         const { data } = await apiClient.get<{
           user: PatientAccount | UserProfile;
         }>(endpoint);
 
-        // Mezclamos la respuesta del backend con el cambio local pendiente si existe
         if (pending) {
           const parsed = JSON.parse(pending.payload);
           if (isPatient) {
@@ -1463,7 +1767,6 @@ export function ProfileView() {
           setProfileData(data.user);
         }
       } catch (err) {
-        // Si falló pero al menos tenemos datos locales renderizados, no molestamos con alertas
         const hasLocal = await db.pendingProfileUpdates.get(profileId);
         if (!hasLocal) {
           toast.error("No se pudo cargar el perfil del usuario.");
@@ -1493,7 +1796,6 @@ export function ProfileView() {
       }}
       className="flex flex-col gap-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-6"
     >
-      {/* Título de la Página */}
       <div className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight text-pharmako-text-primary">
           Mi Perfil
@@ -1504,37 +1806,50 @@ export function ProfileView() {
         </p>
       </div>
 
-      {/* Selector de pestañas (solo para médicos) */}
-      {!isPatient && user?.role === "DOCTOR" && (
-        <div className="flex items-center gap-1 p-1 rounded-xl w-fit">
+      {!isPatient && (
+        <div className="flex items-center gap-1 p-1 rounded-xl w-fit bg-slate-50 border border-slate-200/60">
           <button
             onClick={() => setActiveSubTab("profile")}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 rounded-lg cursor-pointer ${
               activeSubTab === "profile"
-                ? "bg-white text-pharmako-care border-b border-pharmako-care"
+                ? "bg-white text-pharmako-care shadow-xs"
                 : "text-pharmako-text-secondary hover:text-pharmako-text-primary"
             }`}
           >
             <User className="w-4 h-4" />
             Perfil Profesional
           </button>
+          
+          {(user && "role" in user && user.role === "DOCTOR") && (
+            <button
+              onClick={() => setActiveSubTab("schedule")}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 rounded-lg cursor-pointer ${
+                activeSubTab === "schedule"
+                  ? "bg-white text-pharmako-care shadow-xs"
+                  : "text-pharmako-text-secondary hover:text-pharmako-text-primary"
+              }`}
+            >
+              <Calendar className="w-4 h-4" />
+              Horarios de Atención
+            </button>
+          )}
+
           <button
-            onClick={() => setActiveSubTab("schedule")}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer ${
-              activeSubTab === "schedule"
-                ? "bg-white text-pharmako-care border-b border-pharmako-care"
+            onClick={() => setActiveSubTab("verification")}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 rounded-lg cursor-pointer ${
+              activeSubTab === "verification"
+                ? "bg-white text-pharmako-care shadow-xs"
                 : "text-pharmako-text-secondary hover:text-pharmako-text-primary"
             }`}
           >
-            <Calendar className="w-4 h-4" />
-            Horarios de Atención
+            <ShieldCheck className="w-4 h-4" />
+            Verificación
           </button>
         </div>
       )}
 
-      {/* Contenido de la pestaña activa con animaciones */}
       <AnimatePresence mode="wait">
-        {activeSubTab === "profile" ? (
+        {activeSubTab === "profile" && (
           <motion.div
             key="profile-tab"
             initial={{ opacity: 0, y: 12 }}
@@ -1552,7 +1867,9 @@ export function ProfileView() {
             </div>
             <SyncStatusPanel />
           </motion.div>
-        ) : (
+        )}
+
+        {activeSubTab === "schedule" && (
           <motion.div
             key="schedule-tab"
             initial={{ opacity: 0, y: 12 }}
@@ -1561,6 +1878,18 @@ export function ProfileView() {
             transition={{ duration: 0.22, ease: "easeInOut" }}
           >
             <DoctorScheduleView />
+          </motion.div>
+        )}
+
+        {activeSubTab === "verification" && (
+          <motion.div
+            key="verification-tab"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.22, ease: "easeInOut" }}
+          >
+            <VerificationTab />
           </motion.div>
         )}
       </AnimatePresence>

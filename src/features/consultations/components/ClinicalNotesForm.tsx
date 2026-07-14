@@ -41,10 +41,12 @@ import { db } from "@/features/offline/database/schema";
 import { useLabRequests, useDeleteLabRequest, useUpdateLabRequest } from "@/features/labs/hooks/useLabRequests";
 import { LabRequestModal } from "@/features/labs/components/LabRequestModal";
 import { Badge } from "@/components/ui/badge";
-import { Dna } from "lucide-react";
+import { Dna, Layers } from "lucide-react";
 import { toast } from "sonner";
 import { usePrescriptionTemplates } from "@/features/medications/hooks/usePrescriptionTemplates";
 import { useSearchParams } from "next/navigation";
+import { useAuthStore } from "@/store/auth";
+import { useProviderServices, useGlobalServices } from "@/features/services";
 
 interface ClinicalNotesFormProps {
   onSubmit: (data: Consultation) => void;
@@ -146,8 +148,17 @@ export function ClinicalNotesForm({
   const [activeTab, setActiveTab] = useState("notes");
   const [hasFollowUp, setHasFollowUp] = useState(false);
 
+  // Servicios extra states
+  const { user } = useAuthStore();
+  const doctorUuid = user?.uuid ?? user?.id ?? "doc-default";
+  const { data: myServices = [] } = useProviderServices(doctorUuid);
+  const { data: globalServices = [] } = useGlobalServices();
+  const [selectedServiceUuid, setSelectedServiceUuid] = useState("");
+  const [serviceNotes, setServiceNotes] = useState("");
+  const [serviceQty, setServiceQty] = useState(1);
+
   useEffect(() => {
-    if (activeTabParam && ["notes", "vitals", "prescription", "labs", "seguimiento"].includes(activeTabParam)) {
+    if (activeTabParam && ["notes", "vitals", "prescription", "labs", "seguimiento", "procedures"].includes(activeTabParam)) {
       setActiveTab(activeTabParam);
     }
   }, [activeTabParam]);
@@ -538,8 +549,18 @@ export function ClinicalNotesForm({
       prescriptions: [
         { medicationId: "", dose: "", frequency: "", duration: "", notes: "" },
       ],
+      servicesPerformed: [],
     },
     mode: "onChange",
+  });
+
+  const {
+    fields: serviceFields,
+    append: appendService,
+    remove: removeService,
+  } = useFieldArray({
+    control,
+    name: "servicesPerformed",
   });
 
   const defaultUuid = defaultValues?.uuid || "";
@@ -768,8 +789,8 @@ export function ClinicalNotesForm({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <div className="space-y-4 lg:col-span-1">
             <h3 className="text-xs font-semibold text-slate-500 text-center uppercase tracking-wider">
               Récipe de Medicamentos
             </h3>
@@ -782,23 +803,77 @@ export function ClinicalNotesForm({
             />
           </div>
 
-          {labs.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-xs font-semibold text-slate-500 text-center uppercase tracking-wider">
-                Orden de Laboratorio
-              </h3>
-              {labs.map((lab, i) => (
-                <DigitalLabRequestCard
-                  key={i}
-                  doctor={doctor as Doctor}
-                  patient={patient as Patient}
-                  examsList={lab.examsList}
-                  instructions={lab.instructions}
-                  issuanceDate={new Date()}
-                />
-              ))}
+          <div className="space-y-4 lg:col-span-1">
+            {labs.length > 0 ? (
+              <>
+                <h3 className="text-xs font-semibold text-slate-500 text-center uppercase tracking-wider">
+                  Orden de Laboratorio
+                </h3>
+                {labs.map((lab, i) => (
+                  <DigitalLabRequestCard
+                    key={i}
+                    doctor={doctor as Doctor}
+                    patient={patient as Patient}
+                    examsList={lab.examsList}
+                    instructions={lab.instructions}
+                    issuanceDate={new Date()}
+                  />
+                ))}
+              </>
+            ) : (
+              <div className="h-full flex flex-col justify-center items-center p-8 bg-slate-50 border border-slate-200/60 rounded-3xl text-slate-400 text-center select-none min-h-[250px]">
+                <Dna className="w-8 h-8 text-slate-300 mb-2" />
+                <p className="text-xs font-medium">Sin exámenes solicitados</p>
+                <p className="text-xxs text-slate-400 mt-1 max-w-[200px]">No se agregaron órdenes de laboratorio para esta consulta.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-4 lg:col-span-1">
+            <h3 className="text-xs font-semibold text-slate-500 text-center uppercase tracking-wider">
+              Facturación Administrativa
+            </h3>
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 flex flex-col gap-4 shadow-sm">
+              <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+                <Layers className="w-5 h-5 text-teal-600" />
+                <h3 className="text-sm font-bold text-slate-900">
+                  Pre-Factura Interna (LUCA)
+                </h3>
+              </div>
+              <div className="space-y-3 text-xs">
+                <div className="flex justify-between text-slate-600">
+                  <span>Consulta Médica General:</span>
+                  <span className="font-semibold text-slate-900">50.00 USD</span>
+                </div>
+                {submittedData.servicesPerformed && submittedData.servicesPerformed.map((val: any, idx: number) => {
+                  const pSvc = myServices.find((s) => s.uuid === val.providerServiceUuid);
+                  const baseSvc = pSvc ? globalServices.find((s) => s.uuid === pSvc.serviceUuid) : null;
+                  const name = pSvc?.customName || baseSvc?.name || "Servicio extra";
+                  return (
+                    <div key={idx} className="flex justify-between text-slate-600 pl-3 border-l-2 border-teal-500/30">
+                      <span className="truncate max-w-[150px]">{name} (x{val.quantity}):</span>
+                      <span className="font-semibold text-slate-900">{(val.price * val.quantity).toFixed(2)} USD</span>
+                    </div>
+                  );
+                })}
+                <div className="flex justify-between text-sm font-bold text-slate-900 border-t border-slate-100 pt-3 mt-2">
+                  <span>Total Honorarios:</span>
+                  <span className="text-teal-600">
+                    {(
+                      50 +
+                      (submittedData.servicesPerformed || []).reduce(
+                        (acc: number, val: any) => acc + val.price * val.quantity,
+                        0
+                      )
+                    ).toFixed(2)} USD
+                  </span>
+                </div>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xxs text-slate-400 mt-2 leading-relaxed">
+                * Este documento es un registro interno para la administración del profesional y la clínica. No representa una factura fiscal de cobro al paciente.
+              </div>
             </div>
-          )}
+          </div>
         </div>
 
         <div className="flex justify-center gap-3 border-t border-slate-100 pt-6">
@@ -872,6 +947,13 @@ export function ClinicalNotesForm({
           >
             <Calendar className="size-4" />
             Seguimiento Clínico
+          </TabsTrigger>
+          <TabsTrigger
+            value="procedures"
+            className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-pharmako-care px-5 py-2 text-sm font-medium transition-all cursor-pointer flex items-center gap-2"
+          >
+            <Layers className="size-4" />
+            Servicios y Procedimientos
           </TabsTrigger>
         </TabsList>
 
@@ -1572,6 +1654,205 @@ export function ClinicalNotesForm({
                 )}
               </div>
             )}
+          </section>
+        </TabsContent>
+
+        <TabsContent
+          value="procedures"
+          className="flex flex-col gap-6 focus-visible:outline-none"
+        >
+          <section className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col gap-6 shadow-sm">
+            <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+              <div className="bg-teal-50 rounded-xl p-2.5">
+                <Layers className="w-5 h-5 text-teal-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Servicios y Procedimientos Realizados</h3>
+                <p className="text-xs text-slate-500">
+                  Agregá los servicios o procedimientos adicionales realizados al paciente durante esta consulta.
+                </p>
+              </div>
+            </div>
+
+            {/* Selector de servicio y notas */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+              <div className="md:col-span-4 flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                  Seleccionar Servicio
+                </label>
+                <select
+                  value={selectedServiceUuid}
+                  onChange={(e) => setSelectedServiceUuid(e.target.value)}
+                  className="rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white"
+                >
+                  <option value="">-- Elegí un servicio --</option>
+                  {myServices.map((pSvc) => {
+                    const base = globalServices.find((s) => s.uuid === pSvc.serviceUuid);
+                    return (
+                      <option key={pSvc.uuid} value={pSvc.uuid}>
+                        {pSvc.customName || base?.name || "Servicio"} - {pSvc.price} USD ({pSvc.durationMinutes} min)
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              <div className="md:col-span-5 flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-slate-500">Notas sobre el Procedimiento</label>
+                <input
+                  type="text"
+                  placeholder="Ej: Se realiza sin complicaciones, sutura de 3 puntos..."
+                  value={serviceNotes}
+                  onChange={(e) => setServiceNotes(e.target.value)}
+                  className="rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                />
+              </div>
+
+              <div className="md:col-span-2 flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-slate-500">Cantidad</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={serviceQty}
+                  onChange={(e) => setServiceQty(parseInt(e.target.value) || 1)}
+                  className="rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                />
+              </div>
+
+              <div className="md:col-span-1">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (!selectedServiceUuid) {
+                      toast.error("Por favor selecciona un servicio.");
+                      return;
+                    }
+                    const selected = myServices.find((s) => s.uuid === selectedServiceUuid);
+                    if (!selected) return;
+
+                    appendService({
+                      providerServiceUuid: selected.uuid,
+                      price: selected.price,
+                      quantity: serviceQty,
+                      notes: serviceNotes || undefined,
+                    });
+
+                    // Si la duración es mayor a 0, notificar retraso estimado
+                    if (selected.durationMinutes > 0) {
+                      toast.info(
+                        `Se registrará un retraso estimado de ${selected.durationMinutes * serviceQty} minutos en tu agenda para los pacientes del día.`,
+                        { duration: 5000 }
+                      );
+
+                      // Guardar alerta en Dexie para DelayBanner
+                      db.activeDelays.get(doctorUuid).then((existingDelay) => {
+                        const currentDelay = existingDelay?.delayMinutes || 0;
+                        db.activeDelays.put({
+                          doctorUuid,
+                          doctorName: doctor?.name || "Dr. Ricardo García",
+                          delayMinutes: currentDelay + (selected.durationMinutes * serviceQty),
+                          updatedAt: new Date().toISOString(),
+                        }).catch((err) => {
+                          console.error("Error setting delay alert in Dexie", err);
+                        });
+                      });
+                    }
+
+                    // Reset local inputs
+                    setSelectedServiceUuid("");
+                    setServiceNotes("");
+                    setServiceQty(1);
+                    toast.success("Procedimiento agregado.");
+                  }}
+                  className="w-full bg-teal-600 hover:bg-teal-700 text-white rounded-xl h-11"
+                >
+                  <Plus className="w-5 h-5" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Listado de servicios agregados */}
+            <div className="mt-4">
+              <h4 className="text-sm font-semibold text-slate-700 mb-3">Servicios a registrar:</h4>
+              {serviceFields.length === 0 ? (
+                <p className="text-sm text-slate-400 italic">No se han registrado procedimientos extra en esta consulta.</p>
+              ) : (
+                <div className="space-y-3">
+                  {serviceFields.map((field, index) => {
+                    const val = watch(`servicesPerformed.${index}`);
+                    if (!val) return null;
+                    const pSvc = myServices.find((s) => s.uuid === val.providerServiceUuid);
+                    const baseSvc = pSvc ? globalServices.find((s) => s.uuid === pSvc.serviceUuid) : null;
+                    const name = pSvc?.customName || baseSvc?.name || "Servicio desconocido";
+
+                    return (
+                      <div 
+                        key={field.id} 
+                        className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100/50 transition-colors"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-800 text-sm">{name}</span>
+                            <Badge className="bg-slate-200 text-slate-700 hover:bg-slate-200 font-normal border-none rounded">
+                              Cant: {val.quantity}
+                            </Badge>
+                            {pSvc && (
+                              <Badge className="bg-teal-50 text-teal-700 hover:bg-teal-50 font-normal border-none rounded flex items-center gap-1">
+                                <Clock className="w-3 h-3" /> {pSvc.durationMinutes * val.quantity} min
+                              </Badge>
+                            )}
+                          </div>
+                          {val.notes && (
+                            <p className="text-xs text-slate-500 mt-1 italic">
+                              Nota: {val.notes}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="font-bold text-slate-900 text-sm">
+                            {val.price * val.quantity} USD
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeService(index)}
+                            className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Delay summary alert */}
+                  {(() => {
+                    const totalDuration = serviceFields.reduce((sum, _, index) => {
+                      const val = watch(`servicesPerformed.${index}`);
+                      if (!val) return sum;
+                      const pSvc = myServices.find((s) => s.uuid === val.providerServiceUuid);
+                      return sum + (pSvc ? pSvc.durationMinutes * val.quantity : 0);
+                    }, 0);
+
+                    if (totalDuration === 0) return null;
+
+                    return (
+                      <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl text-amber-800 text-xs flex items-start gap-2.5 mt-4">
+                        <Info className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="font-semibold">Aviso de extensión de consulta</p>
+                          <p className="mt-0.5 leading-relaxed text-amber-700">
+                            Has agregado procedimientos que incrementan el tiempo de esta consulta en **{totalDuration} minutos**.
+                            Al finalizar la consulta, el sistema enviará alertas de retraso a los pacientes agendados a continuación.
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
           </section>
         </TabsContent>
       </Tabs>

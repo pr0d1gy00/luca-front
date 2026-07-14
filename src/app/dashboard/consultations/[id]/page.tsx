@@ -258,6 +258,12 @@ export default function ConsultationDetailPage({
               message_template: data.followUp.messageTemplate || null,
             }
           : null,
+        services_performed: data.servicesPerformed?.map((s) => ({
+          providerServiceUuid: s.providerServiceUuid,
+          price: s.price,
+          quantity: s.quantity,
+          notes: s.notes,
+        })),
       });
       const updatedLabs = await syncLabRequests(activeUuid, data);
       toast.success("¡Borrador guardado correctamente!");
@@ -291,9 +297,20 @@ export default function ConsultationDetailPage({
               message_template: data.followUp.messageTemplate || null,
             }
           : null,
+        services_performed: data.servicesPerformed?.map((s) => ({
+          providerServiceUuid: s.providerServiceUuid,
+          price: s.price,
+          quantity: s.quantity,
+          notes: s.notes,
+        })),
       });
       await syncLabRequests(activeUuid, data);
-      toast.success("Consulta finalizada con éxito.");
+
+      const totalInvoice = 50 + (data.servicesPerformed || []).reduce((sum, item) => sum + item.price * item.quantity, 0);
+      toast.success("Consulta finalizada con éxito.", {
+        description: `Factura Interna Nº LUCA-${activeUuid.slice(0, 6).toUpperCase()} emitida (Total: ${totalInvoice.toFixed(2)} USD).`,
+        duration: 6000,
+      });
       router.push("/dashboard/appointments");
     } catch (err) {
       console.error("Error al finalizar consulta:", err);
@@ -337,6 +354,7 @@ export default function ConsultationDetailPage({
       oxygen_sat: "",
     },
     followUp: detail.consultation?.followUp || undefined,
+    servicesPerformed: (detail.consultation as any)?.servicesPerformed || [],
   };
 
   return (

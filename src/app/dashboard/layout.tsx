@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/auth";
 import Sidebar from "@/components/Sidebar";
 import {
   DrawerToggleContext,
@@ -19,6 +21,19 @@ export default function DashboardLayout({
   const openDrawer = useCallback(() => setDrawerOpen(true), []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
   const toggleDrawer = useCallback(() => setDrawerOpen((prev) => !prev), []);
+
+  const { isVerified, role } = useAuthStore();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (role && role !== "patient" && !isVerified) {
+      const allowedRoutes = ["/dashboard/pending-verification", "/dashboard/profile"];
+      if (!allowedRoutes.includes(pathname)) {
+        router.replace("/dashboard/pending-verification");
+      }
+    }
+  }, [isVerified, role, pathname, router]);
 
   const drawerContextValue = useMemo(
     () => ({

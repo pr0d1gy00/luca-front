@@ -82,6 +82,17 @@ export const consultationSchema = z.object({
       messageTemplate: z.string().nullable().optional(),
     })
     .optional(),
+  servicesPerformed: z
+    .array(
+      z.object({
+        providerServiceUuid: z.string().min(1, "El servicio es requerido"),
+        price: z.number().min(0),
+        quantity: z.number().int().min(1).default(1),
+        notes: z.string().optional(),
+      })
+    )
+    .optional()
+    .default([]),
 });
 
 export type Consultation = z.infer<typeof consultationSchema>;
