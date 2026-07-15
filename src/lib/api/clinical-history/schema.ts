@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { ClinicalHistorySchema } from "../../features/clinical-history-builder/types";
+import type { ClinicalHistorySchema } from "@/features/clinical-history-builder/types";
 import apiClient from "@/lib/api/client";
 
 const BASE = "/form-templates";
@@ -145,9 +145,10 @@ export interface PatientFormRequest {
     description: string;
     schema: ClinicalHistorySchema;
   };
-  doctor?: {
+  user?: {
     id: number;
-    full_name: string;
+    fullName?: string;
+    full_name?: string;
   };
   clinic?: {
     id: number;

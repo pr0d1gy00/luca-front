@@ -25,8 +25,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 
 interface PatientFormRequestsProps {
   hideIfEmpty?: boolean;
@@ -121,8 +119,10 @@ export function PatientFormRequests({
             req.user?.fullName ?? req.user?.full_name ?? "Médico";
           const clinicName = req.clinic?.name;
           const createdDate = req.created_at
-            ? format(new Date(req.created_at), "d 'de' MMMM, yyyy", {
-                locale: es,
+            ? new Date(req.created_at).toLocaleDateString("es-ES", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
               })
             : "Recientemente";
 
