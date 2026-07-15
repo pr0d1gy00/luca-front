@@ -5,23 +5,6 @@ const AUTH_COOKIE = "auth_token";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
-function decodeJwt(token: string) {
-  try {
-    const base64Url = token.split(".")[1];
-    if (!base64Url) return null;
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-        .join(""),
-    );
-    return JSON.parse(jsonPayload) as Record<string, unknown>;
-  } catch {
-    return null;
-  }
-}
-
 /**
  * Middleware / Guardián de rutas.
  *
@@ -84,9 +67,12 @@ export async function proxy(request: NextRequest) {
         const isPatient = user.role === "patient";
         const isVerified = user.isVerified ?? user.is_verified ?? false;
 
-        // Si no es paciente y no está verificado, redirigir a pending-verification
+        // Si no es paciente y no está verificado, redirigir a pending-verification (excepto a perfil para cargar docs)
         if (!isPatient && !isVerified) {
-          if (path !== "/dashboard/pending-verification") {
+          if (
+            path !== "/dashboard/pending-verification" &&
+            path !== "/dashboard/profile"
+          ) {
             return NextResponse.redirect(
               new URL("/dashboard/pending-verification", request.url),
             );
@@ -102,7 +88,10 @@ export async function proxy(request: NextRequest) {
           user?: { role?: string };
         };
         if (data.user?.role !== "patient") {
-          if (path !== "/dashboard/pending-verification") {
+          if (
+            path !== "/dashboard/pending-verification" &&
+            path !== "/dashboard/profile"
+          ) {
             return NextResponse.redirect(
               new URL("/dashboard/pending-verification", request.url),
             );
@@ -110,7 +99,10 @@ export async function proxy(request: NextRequest) {
         }
       } catch {
         // En caso de que no tenga JSON body
-        if (path !== "/dashboard/pending-verification") {
+        if (
+          path !== "/dashboard/pending-verification" &&
+          path !== "/dashboard/profile"
+        ) {
           return NextResponse.redirect(
             new URL("/dashboard/pending-verification", request.url),
           );

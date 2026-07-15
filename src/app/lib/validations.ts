@@ -19,9 +19,13 @@ export const baseAuthSchema = z.object({
 export const patientRegisterSchema = baseAuthSchema
   .extend({
     name: z.string().min(2, "Requerido"),
-    phone: z.string().min(10, "Número inválido"),
+    phone: z.string().min(7, "Número inválido"),
     cityId: z.string().optional(),
-    nationalId: z.string().optional(),
+    nationalId: z
+      .string()
+      .min(5, "DNI/Cédula inválido")
+      .optional()
+      .or(z.literal("")),
     username: z.string().optional(),
     confirmPassword: z.string(),
   })
@@ -34,7 +38,12 @@ export const patientRegisterSchema = baseAuthSchema
 export const doctorRegisterSchema = baseAuthSchema
   .extend({
     name: z.string().min(2, "Requerido"),
-    phone: z.string().min(10, "Número inválido"),
+    phone: z.string().min(7, "Número inválido"),
+    nationalId: z
+      .string()
+      .min(5, "DNI/Cédula inválido")
+      .optional()
+      .or(z.literal("")),
     cityId: z.string().optional(),
     specialtyIds: z
       .array(z.string())
@@ -57,7 +66,7 @@ export const institutionRegisterSchema = baseAuthSchema
     legalName: z.string().min(3, "La razón social es obligatoria"),
     commercialName: z.string().min(2, "El nombre comercial es obligatorio"),
     taxId: z.string().min(5, "El identificador fiscal (RIF) es obligatorio"),
-    phoneNumber: z.string().min(10, "Número de contacto inválido"),
+    phoneNumber: z.string().min(7, "Número de contacto inválido"),
     cityId: z.string().optional(),
     type: z.enum(["clinic", "pharmacy", "laboratory"], {
       message: "Selecciona un tipo de institución válido",

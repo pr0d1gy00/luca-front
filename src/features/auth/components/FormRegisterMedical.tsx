@@ -1,4 +1,5 @@
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm, useController } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,25 +9,13 @@ import { FileUp } from "lucide-react";
 import { doctorRegisterSchema } from "@/app/lib/validations";
 import { PharmakoInput, LoginButton } from "@/components/pharmako-login";
 import { useRegisterDoctorMutation } from "../hooks/useAuth";
-import { useGetCities } from "../hooks/useGetCities";
+import { useGetCountries, useGetCountryCities } from "../hooks/useGetCities";
 import { useGetSpecialties } from "../hooks/useGetSpecialties";
 import { useAuthStore } from "@/store/auth";
 import type { UserProfile } from "../types";
 import type { Control } from "react-hook-form";
 
 type IFormInput = z.infer<typeof doctorRegisterSchema>;
-
-const INPUTS = [
-  { name: "name" as const, placeholder: "Nombre Completo", type: "text" },
-  { name: "email" as const, placeholder: "Correo Electrónico", type: "email" },
-  { name: "phone" as const, placeholder: "Número de Teléfono", type: "tel" },
-  { name: "password" as const, placeholder: "Contraseña", type: "password" },
-  {
-    name: "confirmPassword" as const,
-    placeholder: "Repetir Contraseña",
-    type: "password",
-  },
-];
 
 function ControlledInput({
   control,
@@ -60,9 +49,17 @@ export default function FormRegisterMedical({
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
 
-  const { data: cities, isLoading: loadingCities } = useGetCities();
+  const [nationalIdPrefix, setNationalIdPrefix] = useState("V-");
+  const [phonePrefix, setPhonePrefix] = useState("+58");
+  const [selectedCountryUuid, setSelectedCountryUuid] = useState("");
+
+  const { data: countries, isLoading: loadingCountries } = useGetCountries();
+  const { data: cities, isLoading: loadingCities } =
+    useGetCountryCities(selectedCountryUuid);
   const { data: specialties, isLoading: loadingSpecs } = useGetSpecialties();
   const registerDoctor = useRegisterDoctorMutation();
+
+  const [specialtiesLimit, setSpecialtiesLimit] = useState(8);
 
   const { control, handleSubmit, setError } = useForm<IFormInput>({
     resolver: zodResolver(doctorRegisterSchema),
@@ -70,6 +67,7 @@ export default function FormRegisterMedical({
       name: "",
       email: "",
       phone: "",
+      nationalId: "",
       cityId: "",
       specialtyIds: [],
       medicalLicense: undefined,
@@ -78,7 +76,10 @@ export default function FormRegisterMedical({
     },
   });
 
-  const { field: cityField } = useController({ control, name: "cityId" });
+  const { field: cityField, fieldState: cityFieldState } = useController({
+    control,
+    name: "cityId",
+  });
   const { field: specField, fieldState: specFieldState } = useController({
     control,
     name: "specialtyIds",
@@ -103,18 +104,25 @@ export default function FormRegisterMedical({
       formData.append("fullName", data.name);
       formData.append("email", data.email);
       formData.append("password", data.password);
-      if (data.phone) formData.append("phone", data.phone);
-      if (data.cityId) formData.append("cityId", data.cityId);
 
-      // Formato array indexado de Laravel para campos múltiples
+      if (data.phone) {
+        formData.append("phone", `${phonePrefix}${data.phone}`);
+      }
+      if (data.nationalId) {
+        formData.append("nationalId", `${nationalIdPrefix}${data.nationalId}`);
+      }
+
+      if (data.cityId) {
+        formData.append("cityId", data.cityId);
+      }
+
       const selectedSpecs = (data.specialtyIds as string[]) || [];
       selectedSpecs.forEach((id, index) => {
         formData.append(`specialtyIds[${index}]`, id);
       });
 
-      // Archivo binario de la licencia médica
       formData.append("medicalLicense", data.medicalLicense);
-      console.log("formData", formData);
+
       const res = await registerDoctor.mutateAsync(formData);
       const user = res.user as UserProfile;
       setAuth("user", user);
@@ -135,6 +143,7 @@ export default function FormRegisterMedical({
           if (key === "fullName") formKey = "name";
           if (key === "medicalLicense") formKey = "medicalLicense";
           if (key.startsWith("specialtyIds")) formKey = "specialtyIds";
+          if (key === "nationalId") formKey = "nationalId";
 
           setError(formKey, {
             type: "server",
@@ -156,6 +165,8 @@ export default function FormRegisterMedical({
       ? [specField.value]
       : (specField.value as string[]) || [];
 
+  const visibleSpecialties = specialties?.slice(0, specialtiesLimit) || [];
+
   return (
     <motion.form
       encType="multipart/form-data"
@@ -165,39 +176,135 @@ export default function FormRegisterMedical({
       className="flex flex-col gap-3"
       onSubmit={handleSubmit(onSubmit)}
     >
-      {INPUTS.map(({ name, placeholder, type }) => (
-        <div key={name}>
-          <ControlledInput
-            control={control}
-            name={name}
-            placeholder={placeholder}
-            type={type}
-          />
-        </div>
-      ))}
+      <ControlledInput
+        control={control}
+        name="name"
+        placeholder="Nombre Completo"
+        type="text"
+      />
+      <ControlledInput
+        control={control}
+        name="email"
+        placeholder="Correo Electrónico"
+        type="email"
+      />
 
-      {/* Selector de Ciudad */}
-      <div className="space-y-1">
-        <select
-          value={cityField.value || ""}
-          onChange={(e) => cityField.onChange(e.target.value)}
-          disabled={loadingCities}
-          className="w-full px-4 py-3 sm:py-3.5 rounded-xl bg-white border border-pharmako-border 
-                     text-base text-pharmako-text-primary placeholder:text-pharmako-text-muted 
-                     focus:border-2 focus:border-pharmako-primary transition-all duration-200 outline-none"
-        >
-          <option value="">Selecciona tu Ciudad (Opcional)</option>
-          {cities?.map((city) => (
-            <option key={city.id} value={city.id}>
-              {city.name} ({city.state.name})
-            </option>
-          ))}
-        </select>
+      {/* DNI y Teléfono */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-pharmako-text-secondary">
+            Cédula / DNI
+          </label>
+          <div className="flex gap-1.5">
+            <select
+              value={nationalIdPrefix}
+              onChange={(e) => setNationalIdPrefix(e.target.value)}
+              className="px-3 py-3 rounded-xl bg-white border border-pharmako-border text-base text-pharmako-text-primary outline-none focus:border-pharmako-primary"
+            >
+              <option value="V-">V-</option>
+              <option value="E-">E-</option>
+              <option value="J-">J-</option>
+              <option value="G-">G-</option>
+            </select>
+            <div className="flex-1">
+              <ControlledInput
+                control={control}
+                name="nationalId"
+                placeholder="Número de Cédula"
+                type="text"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-pharmako-text-secondary">
+            Teléfono Celular
+          </label>
+          <div className="flex gap-1.5">
+            <select
+              value={phonePrefix}
+              onChange={(e) => setPhonePrefix(e.target.value)}
+              className="px-3 py-3 rounded-xl bg-white border border-pharmako-border text-base text-pharmako-text-primary outline-none focus:border-pharmako-primary"
+            >
+              <option value="+58">+58 (VE)</option>
+              <option value="+57">+57 (CO)</option>
+              <option value="+56">+56 (CL)</option>
+              <option value="+1">+1 (US/DO)</option>
+            </select>
+            <div className="flex-1">
+              <ControlledInput
+                control={control}
+                name="phone"
+                placeholder="Número de Teléfono"
+                type="tel"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Especialidades */}
+      {/* Selector de País -> Ciudad */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-pharmako-text-secondary">
+            País
+          </label>
+          <select
+            value={selectedCountryUuid}
+            onChange={(e) => {
+              setSelectedCountryUuid(e.target.value);
+              cityField.onChange("");
+            }}
+            disabled={loadingCountries}
+            className="w-full px-4 py-3 rounded-xl bg-white border border-pharmako-border 
+                       text-base text-pharmako-text-primary placeholder:text-pharmako-text-muted 
+                       focus:border-2 focus:border-pharmako-primary transition-all duration-200 outline-none"
+          >
+            <option value="">Selecciona tu País</option>
+            {countries?.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-pharmako-text-secondary">
+            Ciudad
+          </label>
+          <select
+            value={cityField.value || ""}
+            onChange={(e) => cityField.onChange(e.target.value)}
+            disabled={loadingCities || !selectedCountryUuid}
+            className="w-full px-4 py-3 rounded-xl bg-white border border-pharmako-border 
+                       text-base text-pharmako-text-primary placeholder:text-pharmako-text-muted 
+                       focus:border-2 focus:border-pharmako-primary transition-all duration-200 outline-none
+                       disabled:bg-slate-50 disabled:text-slate-400"
+          >
+            <option value="">
+              {!selectedCountryUuid
+                ? "Selecciona un país primero"
+                : "Selecciona tu Ciudad (Opcional)"}
+            </option>
+            {cities?.map((city) => (
+              <option key={city.id} value={city.id}>
+                {city.name}
+              </option>
+            ))}
+          </select>
+          {cityFieldState.error && (
+            <p className="text-sm text-red-500">
+              {cityFieldState.error.message}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Especialidades con scroll y paginación */}
       <div className="space-y-2 mt-1">
-        <label className="text-sm font-medium text-pharmako-text-secondary">
+        <label className="text-sm font-medium text-pharmako-text-secondary block">
           Especialidades Médicas (Mínimo una)
         </label>
         {loadingSpecs ? (
@@ -205,30 +312,54 @@ export default function FormRegisterMedical({
             Cargando especialidades...
           </p>
         ) : (
-          <div className="flex flex-wrap gap-2">
-            {specialties?.map((spec) => {
-              const active = selectedSpecialties.includes(String(spec.id));
-              return (
-                <button
-                  type="button"
-                  key={spec.id}
-                  onClick={() => handleToggleSpecialty(String(spec.id))}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
-                    active
-                      ? "bg-teal-600 text-white border-teal-600"
-                      : "bg-white text-slate-600 border-slate-200 hover:border-teal-500/50"
-                  }`}
-                >
-                  {spec.name}
-                </button>
-              );
-            })}
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto border border-pharmako-border-soft rounded-xl p-3 bg-slate-50/50">
+              {visibleSpecialties.map((spec) => {
+                const active = selectedSpecialties.includes(String(spec.id));
+                return (
+                  <button
+                    type="button"
+                    key={spec.id}
+                    onClick={() => handleToggleSpecialty(String(spec.id))}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
+                      active
+                        ? "bg-teal-600 text-white border-teal-600"
+                        : "bg-white text-slate-600 border-slate-200 hover:border-teal-500/50"
+                    }`}
+                  >
+                    {spec.name}
+                  </button>
+                );
+              })}
+            </div>
+            {specialties && specialties.length > specialtiesLimit && (
+              <button
+                type="button"
+                onClick={() => setSpecialtiesLimit((prev) => prev + 12)}
+                className="text-xs text-teal-600 font-bold hover:underline"
+              >
+                Cargar más especialidades (+12)
+              </button>
+            )}
           </div>
         )}
         {specFieldState.error && (
           <p className="text-sm text-red-500">{specFieldState.error.message}</p>
         )}
       </div>
+
+      <ControlledInput
+        control={control}
+        name="password"
+        placeholder="Contraseña"
+        type="password"
+      />
+      <ControlledInput
+        control={control}
+        name="confirmPassword"
+        placeholder="Repetir Contraseña"
+        type="password"
+      />
 
       {/* Carga del Título/Licencia Médica */}
       <div className="space-y-2 mt-1">

@@ -27,9 +27,22 @@ export default function DashboardLayout({
   const router = useRouter();
 
   useEffect(() => {
+    console.log("[DashboardLayout Guard] Status:", {
+      role,
+      isVerified,
+      pathname,
+    });
     if (role && role !== "patient" && !isVerified) {
-      const allowedRoutes = ["/dashboard/pending-verification", "/dashboard/profile"];
-      if (!allowedRoutes.includes(pathname)) {
+      const cleanPath = pathname.replace(/\/$/, "");
+      const allowedRoutes = [
+        "/dashboard/pending-verification",
+        "/dashboard/profile",
+      ];
+      if (!allowedRoutes.includes(cleanPath)) {
+        console.log(
+          "[DashboardLayout Guard] Redirecting to /dashboard/pending-verification from:",
+          cleanPath,
+        );
         router.replace("/dashboard/pending-verification");
       }
     }

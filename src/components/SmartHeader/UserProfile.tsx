@@ -15,6 +15,7 @@ import { SettingsIcon, LogOutIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useLogout } from "@/features/auth/hooks/useLogout";
+import Link from "next/link";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -32,7 +33,6 @@ const ROLE_LABELS: Record<Role, string> = {
 // ---------------------------------------------------------------------------
 
 export function UserProfile() {
-  const router = useRouter();
   const { name, email, avatar, role } = useAuthStore();
   const { logout } = useLogout();
   const roleLabel = ROLE_LABELS[role] ?? "Médico";
@@ -81,9 +81,14 @@ export function UserProfile() {
         <DropdownMenuSeparator />
 
         {/* Settings */}
-        <DropdownMenuItem role="menuitem">
-          <SettingsIcon className="size-4" />
-          <span>Configuración</span>
+        <DropdownMenuItem role="menuitem" asChild>
+          <Link
+            href="/dashboard/profile"
+            className="flex items-center gap-2 w-full cursor-pointer"
+          >
+            <SettingsIcon className="size-4" />
+            <span>Configuración</span>
+          </Link>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />

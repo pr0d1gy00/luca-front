@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Clock, RefreshCw, LogOut } from "lucide-react";
+import { Clock, RefreshCw, LogOut, Settings, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth";
 import { useLogout } from "@/features/auth/hooks/useLogout";
@@ -31,20 +31,39 @@ export default function PendingVerificationPage() {
         userType === "patient" ? "/auth/patients/me" : "/auth/users/me";
       const { data } = await apiClient.get(endpoint);
 
+      const actualUser =
+        data && typeof data === "object" && "user" in data
+          ? (data as { user: unknown }).user
+          : data;
+
       const isVerified =
         userType === "patient"
           ? true
-          : ((data as { isVerified?: boolean }).isVerified ??
-            (data as { is_verified?: boolean }).is_verified ??
+          : ((actualUser as { isVerified?: boolean; is_verified?: boolean })
+              ?.isVerified ??
+            (actualUser as { isVerified?: boolean; is_verified?: boolean })
+              ?.is_verified ??
             false);
 
-      setAuth(userType, data, isVerified);
+      setAuth(userType, actualUser, isVerified);
 
       if (isVerified) {
         toast.success("¡Tu cuenta ha sido aprobada! Redirigiendo…");
         router.push("/dashboard");
       } else {
-        toast.info("Tu documentación sigue en revisión.");
+        const verificationDocs =
+          (actualUser as { verificationDocuments?: { status?: string }[] })
+            ?.verificationDocuments ?? [];
+        const hasRejected = verificationDocs.some(
+          (d) => d.status === "REJECTED",
+        );
+        if (hasRejected) {
+          toast.warning(
+            "Algunos documentos fueron rechazados. Por favor, revisalos.",
+          );
+        } else {
+          toast.info("Tu documentación sigue en revisión.");
+        }
       }
     } catch (err: unknown) {
       const axiosError = err as { response?: { status?: number } };
@@ -61,6 +80,13 @@ export default function PendingVerificationPage() {
   };
 
   const userName = user?.fullName ?? user?.full_name ?? "Usuario";
+  const verificationDocs =
+    user && "verificationDocuments" in user
+      ? (user.verificationDocuments as { status?: string; comments?: string }[])
+      : [];
+  const rejectedDocs =
+    verificationDocs?.filter((doc) => doc.status === "REJECTED") ?? [];
+  const hasRejectedDocs = rejectedDocs.length > 0;
 
   return (
     <div className="min-h-dvh w-full flex flex-col lg:flex-row bg-white">
@@ -143,23 +169,114 @@ export default function PendingVerificationPage() {
             .
           </p>
 
+          {/* Alerta de Documentos Rechazados */}
+          {hasRejectedDocs && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 p-5 bg-rose-50/70 border border-rose-100 rounded-2xl flex flex-col gap-3"
+            >
+              <div className="flex items-start gap-3">
+                <div className="size-8 rounded-lg bg-rose-100 flex items-center justify-center text-rose-600 shrink-0 mt-0.5">
+                  <ShieldAlert className="size-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-rose-950">
+                    Documentación rechazada
+                  </h3>
+                  <p className="text-xs text-rose-800/80 mt-0.5 leading-relaxed">
+                    Alguno de los documentos cargados no cumple con los
+                    requisitos. Por favor, revisá los detalles y volvé a
+                    subirlos.
+                  </p>
+                </div>
+              </div>
+
+              <div className="divide-y divide-rose-100/60 mt-1">
+                {rejectedDocs.map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="py-2.5 first:pt-0 last:pb-0 text-xs"
+                  >
+                    <span className="font-semibold text-rose-950 block">
+                      {doc.type === "MEDICAL_LICENSE"
+                        ? "Licencia Médica"
+                        : doc.type}
+                    </span>
+                    {doc.comments && (
+                      <p className="text-rose-800/90 mt-1 italic bg-white/60 p-2.5 rounded-lg border border-rose-100/40 leading-relaxed">
+                        Motivo: &quot;{doc.comments}&quot;
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
           {/* Acciones */}
           <div className="space-y-3">
-            <button
-              onClick={handleRefresh}
-              disabled={loadingRefresh}
-              className="w-full bg-[#23dce1] hover:bg-[#1fc8cd] active:bg-[#1ab4b9]
-                         text-white py-3.5 rounded-xl font-semibold text-sm
-                         transition-all duration-200
-                         flex items-center justify-center gap-2
-                         disabled:opacity-50 disabled:cursor-not-allowed
-                         shadow-sm hover:shadow-md active:shadow-sm"
-            >
-              <RefreshCw
-                className={`size-4 shrink-0 ${loadingRefresh ? "animate-spin" : ""}`}
-              />
-              {loadingRefresh ? "Verificando…" : "Recargar Estado"}
-            </button>
+            {hasRejectedDocs ? (
+              <>
+                <button
+                  onClick={() => router.push("/dashboard/profile")}
+                  className="w-full bg-[#23dce1] hover:bg-[#1fc8cd] active:bg-[#1ab4b9]
+                             text-white py-3.5 rounded-xl font-semibold text-sm
+                             transition-all duration-200
+                             flex items-center justify-center gap-2
+                             shadow-sm hover:shadow-md active:shadow-sm"
+                >
+                  <Settings className="size-4 shrink-0" />
+                  Corregir y Subir Documentos
+                </button>
+
+                <button
+                  onClick={handleRefresh}
+                  disabled={loadingRefresh}
+                  className="w-full bg-slate-50 hover:bg-slate-100 active:bg-slate-200 border border-slate-200
+                             text-slate-700 py-3.5 rounded-xl font-semibold text-sm
+                             transition-all duration-200
+                             flex items-center justify-center gap-2
+                             disabled:opacity-50 disabled:cursor-not-allowed
+                             shadow-xs hover:shadow-sm"
+                >
+                  <RefreshCw
+                    className={`size-4 shrink-0 ${loadingRefresh ? "animate-spin" : ""}`}
+                  />
+                  {loadingRefresh ? "Verificando…" : "Recargar Estado"}
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={handleRefresh}
+                  disabled={loadingRefresh}
+                  className="w-full bg-[#23dce1] hover:bg-[#1fc8cd] active:bg-[#1ab4b9]
+                             text-white py-3.5 rounded-xl font-semibold text-sm
+                             transition-all duration-200
+                             flex items-center justify-center gap-2
+                             disabled:opacity-50 disabled:cursor-not-allowed
+                             shadow-sm hover:shadow-md active:shadow-sm"
+                >
+                  <RefreshCw
+                    className={`size-4 shrink-0 ${loadingRefresh ? "animate-spin" : ""}`}
+                  />
+                  {loadingRefresh ? "Verificando…" : "Recargar Estado"}
+                </button>
+
+                <button
+                  onClick={() => router.push("/dashboard/profile")}
+                  className="w-full bg-slate-50 hover:bg-slate-100 active:bg-slate-200 border border-slate-200
+                             text-slate-700 py-3.5 rounded-xl font-semibold text-sm
+                             transition-all duration-200
+                             flex items-center justify-center gap-2
+                             shadow-xs hover:shadow-sm"
+                >
+                  <Settings className="size-4 shrink-0" />
+                  Cargar Otros Documentos
+                </button>
+              </>
+            )}
 
             <button
               onClick={handleLogout}

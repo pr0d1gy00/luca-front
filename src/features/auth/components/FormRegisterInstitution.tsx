@@ -1,4 +1,5 @@
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm, useController } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,42 +9,12 @@ import { FileUp } from "lucide-react";
 import { institutionRegisterSchema } from "@/app/lib/validations";
 import { PharmakoInput, LoginButton } from "@/components/pharmako-login";
 import { useRegisterProviderMutation } from "../hooks/useAuth";
-import { useGetCities } from "../hooks/useGetCities";
+import { useGetCountries, useGetCountryCities } from "../hooks/useGetCities";
 import { useAuthStore } from "@/store/auth";
 import type { UserProfile } from "../types";
 import type { Control } from "react-hook-form";
 
 type IFormInput = z.infer<typeof institutionRegisterSchema>;
-
-const INPUTS = [
-  {
-    name: "legalName" as const,
-    placeholder: "Nombre Legal (Representante)",
-    type: "text",
-  },
-  {
-    name: "commercialName" as const,
-    placeholder: "Nombre Comercial",
-    type: "text",
-  },
-  {
-    name: "taxId" as const,
-    placeholder: "Identificador Fiscal (RIF)",
-    type: "text",
-  },
-  {
-    name: "phoneNumber" as const,
-    placeholder: "Número de Teléfono",
-    type: "tel",
-  },
-  { name: "email" as const, placeholder: "Correo Electrónico", type: "email" },
-  { name: "password" as const, placeholder: "Contraseña", type: "password" },
-  {
-    name: "confirmPassword" as const,
-    placeholder: "Repetir Contraseña",
-    type: "password",
-  },
-];
 
 function ControlledInput({
   control,
@@ -77,7 +48,13 @@ export default function FormRegisterInstitution({
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
 
-  const { data: cities, isLoading: loadingCities } = useGetCities();
+  const [taxIdPrefix, setTaxIdPrefix] = useState("J-");
+  const [phonePrefix, setPhonePrefix] = useState("+58");
+  const [selectedCountryUuid, setSelectedCountryUuid] = useState("");
+
+  const { data: countries, isLoading: loadingCountries } = useGetCountries();
+  const { data: cities, isLoading: loadingCities } =
+    useGetCountryCities(selectedCountryUuid);
   const registerProvider = useRegisterProviderMutation();
 
   const { control, handleSubmit, setError } = useForm<IFormInput>({
@@ -96,7 +73,10 @@ export default function FormRegisterInstitution({
     },
   });
 
-  const { field: cityField } = useController({ control, name: "cityId" });
+  const { field: cityField, fieldState: cityFieldState } = useController({
+    control,
+    name: "cityId",
+  });
   const { field: typeField, fieldState: typeFieldState } = useController({
     control,
     name: "type",
@@ -111,8 +91,11 @@ export default function FormRegisterInstitution({
       const formData = new FormData();
       formData.append("fullName", data.legalName);
       formData.append("commercialName", data.commercialName);
-      formData.append("rif", data.taxId);
-      formData.append("phone", data.phoneNumber);
+
+      // Concatenar los prefijos de RIF y Teléfono
+      formData.append("rif", `${taxIdPrefix}${data.taxId}`);
+      formData.append("phone", `${phonePrefix}${data.phoneNumber}`);
+
       formData.append("email", data.email);
       formData.append("password", data.password);
 
@@ -121,7 +104,6 @@ export default function FormRegisterInstitution({
       }
 
       // Convertimos a mayúsculas: pharmacy -> PHARMACY, laboratory -> LABORATORY
-      // El backend no soporta "clinic" para registro público, por ende solo mostramos farmacias y laboratorios
       const mappedType =
         data.type === "clinic" ? "PHARMACY" : data.type.toUpperCase();
       formData.append("providerType", mappedType);
@@ -195,35 +177,151 @@ export default function FormRegisterInstitution({
         )}
       </div>
 
-      {INPUTS.map(({ name, placeholder, type }) => (
-        <div key={name}>
-          <ControlledInput
-            control={control}
-            name={name}
-            placeholder={placeholder}
-            type={type}
-          />
-        </div>
-      ))}
+      <ControlledInput
+        control={control}
+        name="legalName"
+        placeholder="Nombre Legal (Representante)"
+        type="text"
+      />
+      <ControlledInput
+        control={control}
+        name="commercialName"
+        placeholder="Nombre Comercial"
+        type="text"
+      />
 
-      {/* Selector de Ciudad */}
-      <div className="space-y-1">
-        <select
-          value={cityField.value || ""}
-          onChange={(e) => cityField.onChange(e.target.value)}
-          disabled={loadingCities}
-          className="w-full px-4 py-3 sm:py-3.5 rounded-xl bg-white border border-pharmako-border 
-                     text-base text-pharmako-text-primary placeholder:text-pharmako-text-muted 
-                     focus:border-2 focus:border-pharmako-primary transition-all duration-200 outline-none"
-        >
-          <option value="">Selecciona tu Ciudad (Opcional)</option>
-          {cities?.map((city) => (
-            <option key={city.id} value={city.id}>
-              {city.name} ({city.state.name})
-            </option>
-          ))}
-        </select>
+      {/* RIF y Teléfono */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-pharmako-text-secondary">
+            RIF (Identificación Fiscal)
+          </label>
+          <div className="flex gap-1.5">
+            <select
+              value={taxIdPrefix}
+              onChange={(e) => setTaxIdPrefix(e.target.value)}
+              className="px-3 py-3 rounded-xl bg-white border border-pharmako-border text-base text-pharmako-text-primary outline-none focus:border-pharmako-primary"
+            >
+              <option value="V-">V-</option>
+              <option value="E-">E-</option>
+              <option value="J-">J-</option>
+              <option value="G-">G-</option>
+            </select>
+            <div className="flex-1">
+              <ControlledInput
+                control={control}
+                name="taxId"
+                placeholder="Número de RIF"
+                type="text"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-pharmako-text-secondary">
+            Teléfono Celular
+          </label>
+          <div className="flex gap-1.5">
+            <select
+              value={phonePrefix}
+              onChange={(e) => setPhonePrefix(e.target.value)}
+              className="px-3 py-3 rounded-xl bg-white border border-pharmako-border text-base text-pharmako-text-primary outline-none focus:border-pharmako-primary"
+            >
+              <option value="+58">+58 (VE)</option>
+              <option value="+57">+57 (CO)</option>
+              <option value="+56">+56 (CL)</option>
+              <option value="+1">+1 (US/DO)</option>
+            </select>
+            <div className="flex-1">
+              <ControlledInput
+                control={control}
+                name="phoneNumber"
+                placeholder="Número de Teléfono"
+                type="tel"
+              />
+            </div>
+          </div>
+        </div>
       </div>
+
+      <ControlledInput
+        control={control}
+        name="email"
+        placeholder="Correo Electrónico"
+        type="email"
+      />
+
+      {/* Selector de País -> Ciudad */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-pharmako-text-secondary">
+            País
+          </label>
+          <select
+            value={selectedCountryUuid}
+            onChange={(e) => {
+              setSelectedCountryUuid(e.target.value);
+              cityField.onChange("");
+            }}
+            disabled={loadingCountries}
+            className="w-full px-4 py-3 rounded-xl bg-white border border-pharmako-border 
+                       text-base text-pharmako-text-primary placeholder:text-pharmako-text-muted 
+                       focus:border-2 focus:border-pharmako-primary transition-all duration-200 outline-none"
+          >
+            <option value="">Selecciona tu País</option>
+            {countries?.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-pharmako-text-secondary">
+            Ciudad
+          </label>
+          <select
+            value={cityField.value || ""}
+            onChange={(e) => cityField.onChange(e.target.value)}
+            disabled={loadingCities || !selectedCountryUuid}
+            className="w-full px-4 py-3 rounded-xl bg-white border border-pharmako-border 
+                       text-base text-pharmako-text-primary placeholder:text-pharmako-text-muted 
+                       focus:border-2 focus:border-pharmako-primary transition-all duration-200 outline-none
+                       disabled:bg-slate-50 disabled:text-slate-400"
+          >
+            <option value="">
+              {!selectedCountryUuid
+                ? "Selecciona un país primero"
+                : "Selecciona tu Ciudad (Opcional)"}
+            </option>
+            {cities?.map((city) => (
+              <option key={city.id} value={city.id}>
+                {city.name}
+              </option>
+            ))}
+          </select>
+          {cityFieldState.error && (
+            <p className="text-sm text-red-500">
+              {cityFieldState.error.message}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <ControlledInput
+        control={control}
+        name="password"
+        placeholder="Contraseña"
+        type="password"
+      />
+      <ControlledInput
+        control={control}
+        name="confirmPassword"
+        placeholder="Repetir Contraseña"
+        type="password"
+      />
 
       {/* Carga de Documento de Registro */}
       <div className="space-y-2 mt-1">

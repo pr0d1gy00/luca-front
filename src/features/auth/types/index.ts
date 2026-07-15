@@ -87,6 +87,8 @@ export interface UserProfile {
   signature_url?: string | null;
   city_id?: string | null;
   cityId?: string | null;
+  nationalId?: string | null;
+  national_id?: string | null;
   provider_profile?: {
     id: string;
     user_id?: string;
@@ -102,6 +104,7 @@ export interface UserProfile {
     googleMapsUrl?: string | null;
     observations?: string | null;
   };
+  verificationDocuments?: VerificationDocPayload[];
 }
 
 // ── Auth Response (login / register) ───────────────────────────
@@ -150,4 +153,14 @@ export interface PatientAccount extends PatientProfile {
   emergency_contact_name?: string | null;
   emergencyContactPhone?: string | null;
   emergency_contact_phone?: string | null;
+}
+
+export interface VerificationDocPayload {
+  id: number;
+  uuid: string;
+  type: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  fileUrl: string;
+  comments: string | null;
+  createdAt: string;
 }
