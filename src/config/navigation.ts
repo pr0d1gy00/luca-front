@@ -100,7 +100,7 @@ export const navigationConfig: NavItem[] = [
     name: "clinical-history",
     href: "/dashboard/clinical-history",
     icon: PiFileTextBold,
-    roles: ["doctor"],
+    roles: ["doctor", "patient"],
   },
   {
     title: "Laboratorios",

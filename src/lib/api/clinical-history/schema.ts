@@ -125,3 +125,87 @@ export function useShareClinicalHistorySchema() {
     mutationFn: shareSchema,
   });
 }
+
+export interface PatientFormRequest {
+  id: number;
+  uuid: string;
+  patient_id: number;
+  user_id: number;
+  clinic_id: number | null;
+  form_template_id: number;
+  status: "pending" | "completed";
+  completed_at: string | null;
+  consultation_id: number | null;
+  created_at: string;
+  updated_at: string;
+  form_template?: {
+    id: number;
+    uuid: string;
+    name: string;
+    description: string;
+    schema: ClinicalHistorySchema;
+  };
+  doctor?: {
+    id: number;
+    full_name: string;
+  };
+  clinic?: {
+    id: number;
+    name: string;
+  };
+}
+
+async function fetchPatientFormRequests(): Promise<PatientFormRequest[]> {
+  const res = await apiClient.get<{ data: PatientFormRequest[] }>(
+    "/patients/me/form-requests",
+  );
+  return res.data.data;
+}
+
+async function fetchPatientFormRequest(
+  uuid: string,
+): Promise<PatientFormRequest> {
+  const res = await apiClient.get<{ data: PatientFormRequest }>(
+    `/patients/me/form-requests/${uuid}`,
+  );
+  return res.data.data;
+}
+
+async function submitPatientFormRequest({
+  uuid,
+  data,
+}: {
+  uuid: string;
+  data: Record<string, unknown>;
+}): Promise<unknown> {
+  const res = await apiClient.post(
+    `/patients/me/form-requests/${uuid}/submit`,
+    data,
+  );
+  return res.data;
+}
+
+export function usePatientFormRequests() {
+  return useQuery({
+    queryKey: ["patient-form-requests"],
+    queryFn: fetchPatientFormRequests,
+  });
+}
+
+export function usePatientFormRequest(uuid: string | null) {
+  return useQuery({
+    queryKey: ["patient-form-request", uuid],
+    queryFn: () => fetchPatientFormRequest(uuid!),
+    enabled: !!uuid,
+  });
+}
+
+export function useSubmitPatientFormRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: submitPatientFormRequest,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["patient-form-requests"] });
+    },
+  });
+}
