@@ -29,6 +29,7 @@ interface BaseBlock {
   locked?: boolean;
   hidden?: boolean;
   conditions?: BlockCondition[];
+  binding?: string;
 }
 
 // ------------------------------------------------------------
@@ -181,6 +182,14 @@ export interface HeaderBlock extends BaseBlock {
   style?: "simple" | "boxed" | "bordered";
 }
 
+export interface RepeaterBlock extends BaseBlock {
+  type: "repeater";
+  addButtonLabel?: string;
+  minRows?: number;
+  maxRows?: number;
+  children: CanvasElement[];
+}
+
 // ------------------------------------------------------------
 // SUPPORTED OPTIONS
 // ------------------------------------------------------------
@@ -212,7 +221,8 @@ export type CanvasElement =
   | SectionBlock
   | VisualSeparatorBlock
   | SectionTitleBlock
-  | HeaderBlock;
+  | HeaderBlock
+  | RepeaterBlock;
 
 // ------------------------------------------------------------
 // CANVAS STATE

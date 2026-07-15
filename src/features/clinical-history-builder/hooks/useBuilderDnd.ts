@@ -111,6 +111,13 @@ function getDefaultElementProps(elementType: string): Partial<CanvasElement> {
       level: 2,
       alignment: "left",
     },
+    repeater: {
+      title: "Tabla / Repetidor Dinámico",
+      addButtonLabel: "Agregar Fila",
+      minRows: 1,
+      maxRows: 10,
+      children: [],
+    },
   };
   return defaults[elementType] ?? { title: elementType };
 }

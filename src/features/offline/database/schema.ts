@@ -112,6 +112,7 @@ export interface Consultation extends SyncableEntity {
   diagnosis: string;
   treatmentPlan: string;
   dynamicData: Record<string, unknown>;
+  formSchemaSnapshot?: Record<string, unknown> | null;
 }
 
 // ============================================
@@ -314,7 +315,13 @@ export interface Doctor extends SyncableEntity {
 // ============================================
 export interface ServiceRecord extends SyncableEntity {
   name: string;
-  category: "IMAGING" | "LAB" | "PROCEDURE" | "CONSULTATION" | "THERAPY" | "OTHER";
+  category:
+    | "IMAGING"
+    | "LAB"
+    | "PROCEDURE"
+    | "CONSULTATION"
+    | "THERAPY"
+    | "OTHER";
   description: string;
   basePrice: number;
   code?: string;

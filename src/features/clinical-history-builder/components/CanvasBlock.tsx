@@ -241,6 +241,46 @@ export function CanvasBlock({
         return <div className="h-6 bg-slate-100 rounded w-2/3" />;
       case "visual-separator":
         return <div className="h-px bg-slate-200" />;
+      case "repeater":
+        return (
+          <div className="space-y-2 p-3 bg-slate-50 border border-slate-200 border-dashed rounded-xl">
+            <div className="flex items-center justify-between text-[11px] text-slate-400 pb-2 border-b border-dashed border-slate-200">
+              <span className="font-semibold uppercase tracking-wider">
+                Estructura del Repetidor:
+              </span>
+              <span className="font-semibold text-pharmako-care">
+                {el.addButtonLabel || "Agregar Fila"}
+              </span>
+            </div>
+            {el.children && el.children.length > 0 ? (
+              <div
+                className="grid gap-2"
+                style={{
+                  gridTemplateColumns: `repeat(${el.children.length}, minmax(0, 1fr))`,
+                }}
+              >
+                {el.children.map((child) => (
+                  <div
+                    key={child.id}
+                    className="p-2 bg-white rounded-lg border border-slate-200 text-center shadow-sm"
+                  >
+                    <p className="text-[10px] font-bold text-slate-700 truncate">
+                      {child.title}
+                    </p>
+                    <p className="text-[8px] text-slate-400 uppercase font-semibold mt-0.5">
+                      {child.type}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-4 text-center text-xs text-slate-400">
+                Sin columnas definidas aún. Agrega columnas en el panel de
+                propiedades.
+              </div>
+            )}
+          </div>
+        );
       default:
         return (
           <div className="h-8 bg-slate-50 rounded-lg border border-slate-100" />

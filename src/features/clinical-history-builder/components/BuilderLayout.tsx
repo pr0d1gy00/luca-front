@@ -44,6 +44,8 @@ import {
   Stethoscope,
   Paperclip,
   PanelTop,
+  Table,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -116,6 +118,12 @@ const TOOLBOX_BLOCKS = {
       label: "Sección / Acordeón",
       icon: FolderOpen,
       description: "Grupo collapsible de campos",
+    },
+    {
+      type: "repeater",
+      label: "Tabla / Repetidor",
+      icon: Table,
+      description: "Lista dinámica (+ Agregar)",
     },
     {
       type: "visual-separator",
@@ -407,7 +415,7 @@ function CanvasArea({
                         onUpdateChildren={(children) => {
                           // Wire: update children in the parent state
                         }}
-                        onDropOnColumn={(colIdx, el) => {}}
+                        onDropOnColumn={(_colIdx, _el) => {}}
                       />
                     );
                   }
@@ -646,6 +654,66 @@ function PropertiesPanel({
                 </select>
               </div>
 
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                  Vincular con Dato del Paciente
+                </label>
+                <select
+                  value={selectedElement.binding ?? ""}
+                  onChange={(e) =>
+                    onUpdate({ binding: e.target.value || undefined })
+                  }
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
+                             text-slate-900 bg-white
+                             focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
+                >
+                  <option value="">(Ninguno)</option>
+                  {selectedElement.type === "repeater" ? (
+                    <>
+                      <option value="surgical_histories">
+                        Cirugías Previas
+                      </option>
+                      <option value="family_histories">
+                        Antecedentes Familiares
+                      </option>
+                      <option value="vaccinations">Vacunas</option>
+                    </>
+                  ) : (
+                    <>
+                      <optgroup label="Datos del Paciente">
+                        <option value="patient.blood_type">
+                          Tipo de Sangre
+                        </option>
+                        <option value="patient.allergies">Alergias</option>
+                        <option value="patient.chronic_conditions">
+                          Condiciones Crónicas
+                        </option>
+                        <option value="patient.private_notes">
+                          Notas Privadas del Doctor
+                        </option>
+                      </optgroup>
+                      <optgroup label="Antecedentes Médicos">
+                        <option value="medical_background.has_diabetes">
+                          Tiene Diabetes (Sí/No)
+                        </option>
+                        <option value="medical_background.has_hypertension">
+                          Tiene Hipertensión (Sí/No)
+                        </option>
+                        <option value="medical_background.has_asthma">
+                          Tiene Asma (Sí/No)
+                        </option>
+                        <option value="medical_background.other_conditions">
+                          Otras Condiciones (Texto)
+                        </option>
+                        <option value="medical_background.past_hospitalizations">
+                          Hospitalizaciones Previas (Texto)
+                        </option>
+                      </optgroup>
+                    </>
+                  )}
+                </select>
+              </div>
+
               <div className="flex items-center justify-between py-2">
                 <label className="text-xs font-medium text-slate-600">
                   Oculto
@@ -749,6 +817,253 @@ function PropertiesPanel({
                       <option value="md">Medio</option>
                       <option value="lg">Grande</option>
                     </select>
+                  </div>
+                </div>
+              )}
+
+              {/* Settings for repeater */}
+              {selectedElement.type === "repeater" && (
+                <div className="border-t border-slate-100 pt-4 mt-4 space-y-4">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                    Propiedades del Repetidor
+                  </p>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                      Texto del Botón Agregar
+                    </label>
+                    <input
+                      type="text"
+                      value={repElement?.addButtonLabel ?? "Agregar Fila"}
+                      onChange={(e) =>
+                        onUpdate({
+                          addButtonLabel: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white
+                                 focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                        Filas Mínimas
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={20}
+                        value={repElement?.minRows ?? 1}
+                        onChange={(e) =>
+                          onUpdate({
+                            minRows: parseInt(e.target.value) || 0,
+                          })
+                        }
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white
+                                   focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                        Filas Máximas
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={100}
+                        value={repElement?.maxRows ?? 10}
+                        onChange={(e) =>
+                          onUpdate({
+                            maxRows: parseInt(e.target.value) || 10,
+                          })
+                        }
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white
+                                   focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-4 mt-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-semibold text-slate-600">
+                        Columnas de la Tabla
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newCol: CanvasElement = {
+                            id: `col-${Date.now()}`,
+                            type: "text-short",
+                            title: "Nueva Columna",
+                            required: false,
+                          };
+                          onUpdate({
+                            children: [...(repElement?.children || []), newCol],
+                          });
+                        }}
+                        className="text-xs font-bold text-pharmako-care bg-pharmako-care-light px-2 py-1 rounded-lg hover:bg-pharmako-care-light/80 transition-colors"
+                      >
+                        + Agregar Columna
+                      </button>
+                    </div>
+
+                    {!repElement?.children ||
+                    repElement.children.length === 0 ? (
+                      <p className="text-xs text-slate-400 text-center py-4 border border-dashed rounded-xl">
+                        Sin columnas definidas aún.
+                      </p>
+                    ) : (
+                      <div className="space-y-3">
+                        {(
+                          repElement.children as (CanvasElement & {
+                            title?: string;
+                            required?: boolean;
+                            binding?: string;
+                          })[]
+                        ).map((col, idx) => (
+                          <div
+                            key={col.id}
+                            className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <input
+                                type="text"
+                                value={col.title ?? ""}
+                                placeholder="Nombre de columna"
+                                onChange={(e) => {
+                                  const updatedChildren = [
+                                    ...repElement.children,
+                                  ];
+                                  updatedChildren[idx] = {
+                                    ...col,
+                                    title: e.target.value,
+                                  };
+                                  onUpdate({ children: updatedChildren });
+                                }}
+                                className="flex-1 px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:border-pharmako-care"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updatedChildren =
+                                    repElement.children.filter(
+                                      (c) => c.id !== col.id,
+                                    );
+                                  onUpdate({ children: updatedChildren });
+                                }}
+                                className="p-1 text-slate-400 hover:text-red-500 rounded hover:bg-slate-100 transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                              <select
+                                value={col.type}
+                                onChange={(e) => {
+                                  const updatedChildren = [
+                                    ...repElement.children,
+                                  ];
+                                  updatedChildren[idx] = {
+                                    ...col,
+                                    type: e.target
+                                      .value as CanvasElement["type"],
+                                  };
+                                  onUpdate({ children: updatedChildren });
+                                }}
+                                className="px-1.5 py-1 border border-slate-200 rounded-lg text-[11px] bg-white focus:outline-none"
+                              >
+                                <option value="text-short">Texto Corto</option>
+                                <option value="number">Número</option>
+                                <option value="dropdown">Desplegable</option>
+                                <option value="toggle">Sí / No</option>
+                                <option value="datetime">Fecha / Hora</option>
+                              </select>
+
+                              <div className="flex items-center gap-1.5 px-1 py-0.5">
+                                <input
+                                  type="checkbox"
+                                  id={`req-${col.id}`}
+                                  checked={col.required || false}
+                                  onChange={(e) => {
+                                    const updatedChildren = [
+                                      ...repElement.children,
+                                    ];
+                                    updatedChildren[idx] = {
+                                      ...col,
+                                      required: e.target.checked,
+                                    };
+                                    onUpdate({ children: updatedChildren });
+                                  }}
+                                  className="rounded border-slate-300 text-pharmako-care focus:ring-pharmako-care"
+                                />
+                                <label
+                                  htmlFor={`req-${col.id}`}
+                                  className="text-[11px] text-slate-500 select-none"
+                                >
+                                  Requerido
+                                </label>
+                              </div>
+                            </div>
+
+                            {repElement.binding && (
+                              <div className="flex items-center gap-1.5 pt-1.5 border-t border-slate-100">
+                                <span className="text-[10px] font-semibold text-slate-400 select-none">
+                                  Columna BD:
+                                </span>
+                                <select
+                                  value={col.binding ?? ""}
+                                  onChange={(e) => {
+                                    const updatedChildren = [
+                                      ...repElement.children,
+                                    ];
+                                    updatedChildren[idx] = {
+                                      ...col,
+                                      binding: e.target.value || undefined,
+                                    };
+                                    onUpdate({ children: updatedChildren });
+                                  }}
+                                  className="flex-1 px-1.5 py-0.5 border border-slate-200 rounded-lg text-[10px] bg-white focus:outline-none focus:border-pharmako-care"
+                                >
+                                  <option value="">(Ninguno)</option>
+                                  {repElement.binding ===
+                                    "surgical_histories" && (
+                                    <>
+                                      <option value="procedure">
+                                        Procedimiento
+                                      </option>
+                                      <option value="date">Fecha</option>
+                                      <option value="hospital">Hospital</option>
+                                      <option value="notes">Notas</option>
+                                    </>
+                                  )}
+                                  {repElement.binding ===
+                                    "family_histories" && (
+                                    <>
+                                      <option value="condition">
+                                        Condición/Enfermedad
+                                      </option>
+                                      <option value="relationship">
+                                        Parentesco
+                                      </option>
+                                      <option value="note">Nota</option>
+                                    </>
+                                  )}
+                                  {repElement.binding === "vaccinations" && (
+                                    <>
+                                      <option value="vaccine">Vacuna</option>
+                                      <option value="dose_number">
+                                        N° de Dosis
+                                      </option>
+                                      <option value="date">Fecha</option>
+                                    </>
+                                  )}
+                                </select>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1061,6 +1376,10 @@ export function ClinicalHistoryBuilder() {
 
   const selectedElement =
     canvasElements.find((e) => e.id === uiState.selectedElementId) ?? null;
+  const repElement =
+    selectedElement?.type === "repeater"
+      ? (selectedElement as RepeaterBlock)
+      : null;
 
   // Active schema with current status and metadata
   const activeSchema: ClinicalHistorySchema = {
