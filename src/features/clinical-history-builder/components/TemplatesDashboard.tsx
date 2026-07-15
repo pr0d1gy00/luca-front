@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   Plus,
   Search,
-  MoreHorizontal,
   Edit,
   Trash2,
   Eye,
@@ -13,12 +12,8 @@ import {
   Activity,
   Layers,
   CheckCircle,
-  FileEdit,
-  Sparkles,
-  ArrowUpRight,
   TrendingUp,
-  Download,
-  AlertCircle,
+  Share2,
 } from "lucide-react";
 import {
   useAllClinicalHistorySchemas,
@@ -28,12 +23,17 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { ShareTemplateModal } from "./ShareTemplateModal";
 
 export function TemplatesDashboard() {
   const { data, isLoading } = useAllClinicalHistorySchemas();
   const deleteMutation = useDeleteClinicalHistorySchema();
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [shareTemplateUuid, setShareTemplateUuid] = useState<string | null>(
+    null,
+  );
+  const [shareTemplateName, setShareTemplateName] = useState("");
 
   const schemas = data?.schemas ?? [];
 
@@ -315,6 +315,20 @@ export function TemplatesDashboard() {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex justify-end gap-1.5">
+                          {schema.status === "published" && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setShareTemplateUuid(schema.id);
+                                setShareTemplateName(schema.name);
+                              }}
+                              className="h-8 w-8 p-0 rounded-lg text-teal-600 hover:bg-slate-100 hover:text-teal-700"
+                              title="Compartir con Paciente"
+                            >
+                              <Share2 className="w-4 h-4" />
+                            </Button>
+                          )}
                           <Link
                             href={`/clinical-history/preview/${schema.id}`}
                             target="_blank"
@@ -411,6 +425,15 @@ export function TemplatesDashboard() {
           </div>
         </div>
       </div>
+
+      {shareTemplateUuid && (
+        <ShareTemplateModal
+          isOpen={!!shareTemplateUuid}
+          onClose={() => setShareTemplateUuid(null)}
+          templateUuid={shareTemplateUuid}
+          templateName={shareTemplateName}
+        />
+      )}
     </div>
   );
 }
