@@ -1,24 +1,48 @@
 "use client";
 
 import { useState } from "react";
-import { useLabRequests, useDeleteLabRequest, useUpdateLabRequest } from "../hooks/useLabRequests";
+import {
+  useLabRequests,
+  useDeleteLabRequest,
+  useUpdateLabRequest,
+} from "../hooks/useLabRequests";
 import { usePatients } from "@/features/patients/hooks/usePatients";
 import { LabRequestModal } from "./LabRequestModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Dna, Pencil, Trash2, CheckCircle, Clock, Cloud, CloudOff, Eye } from "lucide-react";
+import { Pagination } from "@/components/ui/pagination";
+import {
+  Search,
+  Plus,
+  Dna,
+  Pencil,
+  Trash2,
+  CheckCircle,
+  Clock,
+  Cloud,
+  CloudOff,
+} from "lucide-react";
 import { toast } from "sonner";
 import type { LabRequest } from "@/features/offline/database/schema";
 
 export function LabRequestsList() {
-  const { data: labRequests = [], isLoading } = useLabRequests();
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const perPage = 10;
+
+  const { data, isLoading } = useLabRequests(undefined, page, perPage);
+  const labRequests = data?.data ?? [];
+  const pagination = data?.pagination;
+
   const { data: patients = [] } = usePatients();
   const deleteMutation = useDeleteLabRequest();
   const updateMutation = useUpdateLabRequest();
 
   // Search & Filter State
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDING" | "COMPLETED">("ALL");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "PENDING" | "COMPLETED"
+  >("ALL");
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,7 +50,9 @@ export function LabRequestsList() {
 
   const getPatientData = (patientUuid: string) => {
     const p = patients.find((x) => x.uuid === patientUuid);
-    return p ? { name: `${p.firstName} ${p.lastName}`, nationalId: p.nationalId } : { name: "Paciente Desconocido", nationalId: "N/A" };
+    return p
+      ? { name: `${p.firstName} ${p.lastName}`, nationalId: p.nationalId }
+      : { name: "Paciente Desconocido", nationalId: "N/A" };
   };
 
   const handleEdit = (req: LabRequest) => {
@@ -35,7 +61,11 @@ export function LabRequestsList() {
   };
 
   const handleDelete = async (uuid: string) => {
-    if (!confirm("¿Estás seguro de que quieres eliminar este pedido de laboratorio?")) {
+    if (
+      !confirm(
+        "¿Estás seguro de que quieres eliminar este pedido de laboratorio?",
+      )
+    ) {
       return;
     }
     try {
@@ -52,7 +82,9 @@ export function LabRequestsList() {
         uuid: req.uuid,
         isCompleted: !req.isCompleted,
       });
-      toast.success(`Pedido marcado como ${!req.isCompleted ? "completado" : "pendiente"}.`);
+      toast.success(
+        `Pedido marcado como ${!req.isCompleted ? "completado" : "pendiente"}.`,
+      );
     } catch {
       toast.error("Error al actualizar el estado.");
     }
@@ -67,7 +99,9 @@ export function LabRequestsList() {
     const matchesSearch =
       patient.name.toLowerCase().includes(search.toLowerCase()) ||
       patient.nationalId.includes(search) ||
-      (req.examsList || []).some((e) => e.toLowerCase().includes(search.toLowerCase()));
+      (req.examsList || []).some((e) =>
+        e.toLowerCase().includes(search.toLowerCase()),
+      );
 
     // 3. Status filter
     if (statusFilter === "PENDING" && req.isCompleted) return false;
@@ -128,7 +162,10 @@ export function LabRequestsList() {
             type="text"
             placeholder="Buscar por paciente o examen..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             className="h-10 pl-9 pr-3 w-full rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 transition-all outline-none focus-visible:border-teal-600 focus-visible:ring-2 focus-visible:ring-teal-600/20"
           />
         </div>
@@ -136,25 +173,40 @@ export function LabRequestsList() {
         {/* Status filters */}
         <div className="flex bg-slate-100 p-1 rounded-xl">
           <button
-            onClick={() => setStatusFilter("ALL")}
+            onClick={() => {
+              setStatusFilter("ALL");
+              setPage(1);
+            }}
             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              statusFilter === "ALL" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"
+              statusFilter === "ALL"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-800"
             }`}
           >
             Todos
           </button>
           <button
-            onClick={() => setStatusFilter("PENDING")}
+            onClick={() => {
+              setStatusFilter("PENDING");
+              setPage(1);
+            }}
             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              statusFilter === "PENDING" ? "bg-white text-amber-600 shadow-sm" : "text-slate-500 hover:text-slate-800"
+              statusFilter === "PENDING"
+                ? "bg-white text-amber-600 shadow-sm"
+                : "text-slate-500 hover:text-slate-800"
             }`}
           >
             Pendientes
           </button>
           <button
-            onClick={() => setStatusFilter("COMPLETED")}
+            onClick={() => {
+              setStatusFilter("COMPLETED");
+              setPage(1);
+            }}
             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              statusFilter === "COMPLETED" ? "bg-white text-emerald-600 shadow-sm" : "text-slate-500 hover:text-slate-800"
+              statusFilter === "COMPLETED"
+                ? "bg-white text-emerald-600 shadow-sm"
+                : "text-slate-500 hover:text-slate-800"
             }`}
           >
             Completados
@@ -165,7 +217,9 @@ export function LabRequestsList() {
       {/* Main requests table card */}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
         {isLoading ? (
-          <div className="p-16 text-center text-sm text-slate-400">Cargando pedidos...</div>
+          <div className="p-16 text-center text-sm text-slate-400">
+            Cargando pedidos...
+          </div>
         ) : filteredRequests.length === 0 ? (
           <div className="px-6 py-16 text-center text-sm text-slate-450">
             <Dna className="w-10 h-10 mx-auto mb-3 opacity-20 text-slate-500" />
@@ -176,23 +230,42 @@ export function LabRequestsList() {
             <table className="w-full min-w-[800px] border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/50">
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Paciente</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Fecha de Orden</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Exámenes Solicitados</th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-400">Estado</th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-400">Sincronización</th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-400">Acciones</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Paciente
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Fecha de Orden
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Exámenes Solicitados
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Estado
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Sincronización
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredRequests.map((req) => {
                   const patient = getPatientData(req.patientUuid);
                   return (
-                    <tr key={req.uuid} className="hover:bg-slate-50/50 transition-colors">
+                    <tr
+                      key={req.uuid}
+                      className="hover:bg-slate-50/50 transition-colors"
+                    >
                       {/* Patient */}
                       <td className="px-6 py-4">
-                        <div className="font-bold text-slate-900">{patient.name}</div>
-                        <div className="text-[10px] font-semibold text-slate-400 mt-0.5">DNI: {patient.nationalId}</div>
+                        <div className="font-bold text-slate-900">
+                          {patient.name}
+                        </div>
+                        <div className="text-[10px] font-semibold text-slate-400 mt-0.5">
+                          DNI: {patient.nationalId}
+                        </div>
                       </td>
 
                       {/* Date */}
@@ -204,7 +277,11 @@ export function LabRequestsList() {
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1 max-w-sm">
                           {(req.examsList || []).slice(0, 3).map((exam, i) => (
-                            <Badge key={i} variant="outline" className="bg-slate-50 border-slate-200 text-slate-700 text-[10px] rounded-md py-0.5">
+                            <Badge
+                              key={i}
+                              variant="outline"
+                              className="bg-slate-50 border-slate-200 text-slate-700 text-[10px] rounded-md py-0.5"
+                            >
                               {exam}
                             </Badge>
                           ))}
@@ -274,6 +351,20 @@ export function LabRequestsList() {
           </div>
         )}
       </div>
+
+      {/* Standardized Pagination */}
+      {pagination && pagination.lastPage > 0 && (
+        <Pagination
+          currentPage={pagination.currentPage}
+          lastPage={pagination.lastPage}
+          perPage={pagination.perPage}
+          total={pagination.total}
+          from={pagination.from}
+          to={pagination.to}
+          onPageChange={(newPage) => setPage(newPage)}
+          variant="care"
+        />
+      )}
 
       <LabRequestModal
         isOpen={isModalOpen}
