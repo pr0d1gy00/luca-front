@@ -19,30 +19,39 @@ export const appointmentOfflineService = {
 	 * Create appointment locally and queue for sync
 	 */
 	create: async (data: CreateAppointmentDTO): Promise<Appointment> => {
-		const now = getCurrentTimestamp();
-		const uuid = generateUUID();
+		try {
+			if (!db.isOpen()) {
+				await db.open();
+			}
 
-		const appointment: Appointment = {
-			uuid,
-			patientUuid: data.patientUuid,
-			doctorUuid: data.doctorUuid,
-			clinicBranchUuid: data.clinicBranchUuid ?? "",
-			date: data.date,
-			time: data.time,
-			slotTime: data.slotTime ?? null,
-			type: data.type,
-			status: data.type === "EXCEPTION" ? "IN_ROOM" : "PENDING",
-			notes: data.notes ?? "",
-			reason: data.reason ?? "",
-			updatedAt: now,
-			createdAt: now,
-			_syncStatus: "pending",
-		};
+			const now = getCurrentTimestamp();
+			const uuid = generateUUID();
 
-		await db.appointments.add(appointment);
-		await queueService.enqueue(ENTITY, "create", appointment);
+			const appointment: Appointment = {
+				uuid,
+				patientUuid: data.patientUuid ?? "",
+				doctorUuid: data.doctorUuid ?? "",
+				clinicBranchUuid: data.clinicBranchUuid ?? "",
+				date: data.date,
+				time: data.time,
+				slotTime: data.slotTime ?? null,
+				type: data.type,
+				status: data.type === "EXCEPTION" ? "IN_ROOM" : "PENDING",
+				notes: data.notes ?? "",
+				reason: data.reason ?? "",
+				updatedAt: now,
+				createdAt: now,
+				_syncStatus: "pending",
+			};
 
-		return appointment;
+			await db.appointments.add(appointment);
+			await queueService.enqueue(ENTITY, "create", appointment);
+
+			return appointment;
+		} catch (err) {
+			console.warn("[appointmentOfflineService] IndexedDB unavailable or closed, throwing to trigger API fallback:", err);
+			throw err;
+		}
 	},
 
 	/**

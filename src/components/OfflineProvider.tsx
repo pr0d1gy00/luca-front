@@ -19,10 +19,12 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
   const { userType, setAuth } = useAuthStore();
 
   useEffect(() => {
-    // Open the database — triggers version 1 and 2 migrations
-    db.open().catch((err) => {
-      console.error("[OfflineProvider] IndexedDB open failed:", err);
-    });
+    // Open IndexedDB safely — non-blocking
+    if (typeof window !== "undefined" && "indexedDB" in window) {
+      db.open().catch((err) => {
+        console.warn("[OfflineProvider] IndexedDB open warning (app will use direct API fallback if closed):", err);
+      });
+    }
   }, []);
 
   // Background sync loop for offline-edited profiles (using Dexie IndexedDB)

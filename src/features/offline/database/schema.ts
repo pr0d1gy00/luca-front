@@ -46,12 +46,12 @@ export interface Appointment extends SyncableEntity {
   slotTime: string | null; // Normalized TIME slot
   type: "IN_PERSON" | "ONLINE";
   status:
-    | "PENDING"
-    | "CONFIRMED"
-    | "IN_ROOM"
-    | "COMPLETED"
-    | "CANCELLED"
-    | "NO_SHOW";
+  | "PENDING"
+  | "CONFIRMED"
+  | "IN_ROOM"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "NO_SHOW";
   notes: string;
   reason: string;
 }
@@ -226,6 +226,9 @@ export interface PrescriptionItem extends SyncableEntity {
 // ============================================
 export interface LabRequest extends SyncableEntity {
   patientUuid: string;
+  patient: {
+    uuid: string
+  }
   doctorUuid: string;
   consultationUuid: string | null;
   examsList: string[];
@@ -316,12 +319,12 @@ export interface Doctor extends SyncableEntity {
 export interface ServiceRecord extends SyncableEntity {
   name: string;
   category:
-    | "IMAGING"
-    | "LAB"
-    | "PROCEDURE"
-    | "CONSULTATION"
-    | "THERAPY"
-    | "OTHER";
+  | "IMAGING"
+  | "LAB"
+  | "PROCEDURE"
+  | "CONSULTATION"
+  | "THERAPY"
+  | "OTHER";
   description: string;
   basePrice: number;
   code?: string;
