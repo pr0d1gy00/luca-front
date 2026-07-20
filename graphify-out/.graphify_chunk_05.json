@@ -1,0 +1,766 @@
+{
+  "nodes": [
+    {
+      "id": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_init",
+      "label": "Pharmacy Dashboard Redesign Init",
+      "file_type": "document",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\init.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-06-08",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_proposal",
+      "label": "Pharmacy Dashboard Redesign Proposal",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\proposal.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-06-08",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_spec",
+      "label": "Pharmacy Dashboard Redesign Spec",
+      "file_type": "document",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\spec.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-06-08",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_tasks",
+      "label": "Pharmacy Dashboard Redesign Tasks",
+      "file_type": "document",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\tasks.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-06-08",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_notion_isomatic_design",
+      "label": "Notion-Isomatic Design System",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\proposal.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_pharmacy_dashboard_feature",
+      "label": "Pharmacy Dashboard Feature",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\init.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_pharmako_care_design_tokens",
+      "label": "Pharmako-Care Design Tokens",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\proposal.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_pharmacy_greeting_component",
+      "label": "PharmacyGreeting Component",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\proposal.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_use_pharmacy_quick_actions_hook",
+      "label": "usePharmacyQuickActions Hook",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\proposal.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_trend_direction_type",
+      "label": "TrendDirection Type",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\spec.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "openspec_changes_archive_2026-06-04-login-responsive_init",
+      "label": "Login Responsive SDD Init",
+      "file_type": "document",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\init.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-06-04",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "openspec_changes_archive_2026-06-04-login-responsive_proposal",
+      "label": "Login Responsive Proposal",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\proposal.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-06-04",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "openspec_changes_archive_2026-06-04-login-responsive_exploration",
+      "label": "Login Responsive Exploration",
+      "file_type": "document",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\exploration.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-06-04",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "openspec_changes_archive_2026-06-04-login-responsive_design",
+      "label": "Login Responsive Design",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-06-04",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "openspec_changes_archive_2026-06-04-login-responsive_tasks",
+      "label": "Login Responsive Tasks",
+      "file_type": "document",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\tasks.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-06-04",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "openspec_changes_archive_2026-06-04-login-responsive_apply-progress",
+      "label": "Login Responsive Apply Progress",
+      "file_type": "document",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\apply-progress.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-06-04",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "openspec_changes_archive_2026-06-04-login-responsive_verify-report",
+      "label": "Login Responsive Verify Report",
+      "file_type": "document",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\verify-report.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-06-04",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "openspec_changes_archive_2026-06-04-login-responsive_sync-report",
+      "label": "Login Responsive Sync Report",
+      "file_type": "document",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\sync-report.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-06-04",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "openspec_changes_archive_2026-06-04-login-responsive_archive-report",
+      "label": "Login Responsive Archive Report",
+      "file_type": "document",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\archive-report.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-06-04",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "openspec_changes_archive_2026-06-04-login-responsive_specs_auth-login_spec",
+      "label": "Auth-Login Spec (Change Archive)",
+      "file_type": "document",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\specs\\auth-login\\spec.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-06-04",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "openspec_config",
+      "label": "OpenSpec Config",
+      "file_type": "document",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\config.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-06-04",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "openspec_specs_auth-login_spec",
+      "label": "Auth-Login Canonical Spec",
+      "file_type": "document",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\specs\\auth-login\\spec.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-06-04",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_zero_shadow_aesthetic",
+      "label": "Zero Shadow / Notion-Esque Aesthetic",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\proposal.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_auth_login_domain",
+      "label": "Auth-Login Domain",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\specs\\auth-login\\spec.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_viewport_overflow_fix",
+      "label": "Viewport Overflow Fix",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\exploration.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_pharmako_primary_brand_color",
+      "label": "Pharmako-Primary Brand Color (#0057FF)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_sdd_workflow",
+      "label": "SDD Workflow (Spec-Driven Development)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\archive-report.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_init",
+      "target": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_proposal",
+      "relation": "precedes",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\init.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_proposal",
+      "target": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_spec",
+      "relation": "precedes",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\proposal.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_spec",
+      "target": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_tasks",
+      "relation": "precedes",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\spec.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_proposal",
+      "target": "concept_notion_isomatic_design",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\proposal.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_init",
+      "target": "concept_pharmacy_dashboard_feature",
+      "relation": "describes",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\init.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_proposal",
+      "target": "concept_pharmako_care_design_tokens",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\proposal.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_proposal",
+      "target": "concept_pharmacy_greeting_component",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\proposal.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_proposal",
+      "target": "concept_use_pharmacy_quick_actions_hook",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\proposal.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_spec",
+      "target": "concept_trend_direction_type",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\spec.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_tasks",
+      "target": "concept_pharmacy_greeting_component",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\tasks.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_tasks",
+      "target": "concept_use_pharmacy_quick_actions_hook",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\tasks.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_tasks",
+      "target": "concept_trend_direction_type",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\tasks.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_init",
+      "target": "openspec_config",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\init.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_init",
+      "target": "openspec_changes_archive_2026-06-04-login-responsive_proposal",
+      "relation": "precedes",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\init.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_exploration",
+      "target": "openspec_changes_archive_2026-06-04-login-responsive_proposal",
+      "relation": "informs",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\proposal.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_proposal",
+      "target": "openspec_changes_archive_2026-06-04-login-responsive_design",
+      "relation": "precedes",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\archive-report.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_design",
+      "target": "openspec_changes_archive_2026-06-04-login-responsive_tasks",
+      "relation": "informs",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\tasks.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_tasks",
+      "target": "openspec_changes_archive_2026-06-04-login-responsive_apply-progress",
+      "relation": "precedes",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\apply-progress.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_apply-progress",
+      "target": "openspec_changes_archive_2026-06-04-login-responsive_verify-report",
+      "relation": "precedes",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\verify-report.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_verify-report",
+      "target": "openspec_changes_archive_2026-06-04-login-responsive_sync-report",
+      "relation": "precedes",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\sync-report.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_sync-report",
+      "target": "openspec_changes_archive_2026-06-04-login-responsive_archive-report",
+      "relation": "precedes",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\archive-report.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_sync-report",
+      "target": "openspec_specs_auth-login_spec",
+      "relation": "creates",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\sync-report.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_specs_auth-login_spec",
+      "target": "openspec_specs_auth-login_spec",
+      "relation": "canonicalized_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\archive-report.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_specs_auth-login_spec",
+      "target": "concept_auth_login_domain",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\specs\\auth-login\\spec.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_exploration",
+      "target": "concept_viewport_overflow_fix",
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\exploration.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_proposal",
+      "target": "concept_zero_shadow_aesthetic",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\proposal.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_design",
+      "target": "concept_pharmako_primary_brand_color",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_archive-report",
+      "target": "concept_sdd_workflow",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\archive-report.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_config",
+      "target": "concept_sdd_workflow",
+      "relation": "configures",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\config.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "concept_notion_isomatic_design",
+      "target": "concept_zero_shadow_aesthetic",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\proposal.md",
+      "source_location": null,
+      "weight": 0.95
+    },
+    {
+      "source": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_proposal",
+      "target": "concept_zero_shadow_aesthetic",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\proposal.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_init",
+      "target": "concept_notion_isomatic_design",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\init.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "concept_pharmako_care_design_tokens",
+      "target": "concept_pharmako_primary_brand_color",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\proposal.md",
+      "source_location": null,
+      "weight": 0.75
+    },
+    {
+      "source": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_spec",
+      "target": "concept_zero_shadow_aesthetic",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\spec.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_verify-report",
+      "target": "openspec_changes_archive_2026-06-04-login-responsive_specs_auth-login_spec",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\verify-report.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_archive-report",
+      "target": "openspec_specs_auth-login_spec",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\archive-report.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_archive_2026-06-04-login-responsive_proposal",
+      "target": "concept_viewport_overflow_fix",
+      "relation": "describes",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\proposal.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_specs_auth-login_spec",
+      "target": "concept_zero_shadow_aesthetic",
+      "relation": "enforces",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\specs\\auth-login\\spec.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_specs_auth-login_spec",
+      "target": "concept_viewport_overflow_fix",
+      "relation": "specifies",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\specs\\auth-login\\spec.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_specs_auth-login_spec",
+      "target": "concept_pharmako_primary_brand_color",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\specs\\auth-login\\spec.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_tasks",
+      "target": "concept_notion_isomatic_design",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\tasks.md",
+      "source_location": null,
+      "weight": 0.85
+    },
+    {
+      "source": "concept_pharmacy_greeting_component",
+      "target": "concept_notion_isomatic_design",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\proposal.md",
+      "source_location": null,
+      "weight": 0.85
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "hyperedge_sdd_login_responsive_lifecycle",
+      "label": "SDD Login Responsive Full Lifecycle",
+      "members": [
+        "openspec_changes_archive_2026-06-04-login-responsive_proposal",
+        "openspec_changes_archive_2026-06-04-login-responsive_verify-report",
+        "openspec_specs_auth-login_spec"
+      ],
+      "relation": "forms_complete_sdd_change",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\archive\\2026-06-04-login-responsive\\archive-report.md"
+    },
+    {
+      "id": "hyperedge_pharmacy_redesign_planning",
+      "label": "Pharmacy Dashboard Redesign Planning Artifacts",
+      "members": [
+        "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_proposal",
+        "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_spec",
+        "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_tasks"
+      ],
+      "relation": "forms_sdd_planning_phase",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\tasks.md"
+    },
+    {
+      "id": "hyperedge_zero_shadow_cross_feature",
+      "label": "Zero Shadow Aesthetic Applied Across Features",
+      "members": [
+        "concept_zero_shadow_aesthetic",
+        "openspec_specs_auth-login_spec",
+        "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_spec"
+      ],
+      "relation": "shared_design_principle",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\mendo\\Downloads\\luca-front\\openspec\\changes\\2026-06-08_pharmacy-dashboard-redesign\\proposal.md"
+    }
+  ],
+  "input_tokens": 9200,
+  "output_tokens": 1800
+}

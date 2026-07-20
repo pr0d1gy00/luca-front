@@ -1,0 +1,2178 @@
+{
+  "communities": {
+    "0": [
+      "src_features_appointments_schemas_appointmentstatus",
+      "src_features_appointments_schemas_appointmenttype",
+      "src_features_appointments_types_index_appointment",
+      "src_features_appointments_types_index_bookingformdata",
+      "src_features_appointments_types_index_createappointmentdto",
+      "src_features_labs_api_labrequestapi_labrequestresponse",
+      "src_features_labs_api_labrequestapi_labrequestsresponse",
+      "src_features_offline_database_schema_appointment",
+      "src_features_offline_database_schema_city",
+      "src_features_offline_database_schema_clinic",
+      "src_features_offline_database_schema_clinicbranch",
+      "src_features_offline_database_schema_clinicschedule",
+      "src_features_offline_database_schema_consultation",
+      "src_features_offline_database_schema_country",
+      "src_features_offline_database_schema_doctor",
+      "src_features_offline_database_schema_doctorschedule",
+      "src_features_offline_database_schema_familyhistory",
+      "src_features_offline_database_schema_followup",
+      "src_features_offline_database_schema_labrequest",
+      "src_features_offline_database_schema_labresult",
+      "src_features_offline_database_schema_lifestyle",
+      "src_features_offline_database_schema_medicalbackground",
+      "src_features_offline_database_schema_medication",
+      "src_features_offline_database_schema_obstetrichistory",
+      "src_features_offline_database_schema_patientrecord",
+      "src_features_offline_database_schema_prescription",
+      "src_features_offline_database_schema_prescriptionitem",
+      "src_features_offline_database_schema_providerservicerecord",
+      "src_features_offline_database_schema_scheduleexception",
+      "src_features_offline_database_schema_servicerecord",
+      "src_features_offline_database_schema_specialty",
+      "src_features_offline_database_schema_state",
+      "src_features_offline_database_schema_surgicalhistory",
+      "src_features_offline_database_schema_vaccination",
+      "src_features_offline_database_schema_vitalsigns",
+      "src_features_offline_types_sync_types_syncableentity",
+      "src_features_patients_types_index_patient"
+    ],
+    "1": [
+      "concept_clinic_dashboard_feature",
+      "concept_consultations_module",
+      "concept_doctor_dashboard_token_migration",
+      "concept_feature_based_architecture",
+      "concept_framer_motion_stagger",
+      "concept_luca_token_to_pharmako_migration",
+      "concept_mock_data_hooks_pattern",
+      "concept_patient_dashboard_feature",
+      "concept_pharmako_care_token",
+      "concept_role_based_dashboard_routing",
+      "concept_tanstack_query_readiness",
+      "concept_zero_shadow_constraint",
+      "openspec_changes_2026_06_07_patient_dashboard_design",
+      "openspec_changes_2026_06_07_patient_dashboard_explore",
+      "openspec_changes_2026_06_07_patient_dashboard_proposal",
+      "openspec_changes_2026_06_07_patient_dashboard_spec",
+      "openspec_changes_2026_06_07_patient_dashboard_tasks",
+      "openspec_changes_2026_06_08_clinic_dashboard_design",
+      "openspec_changes_2026_06_08_clinic_dashboard_explore",
+      "openspec_changes_2026_06_08_clinic_dashboard_proposal",
+      "openspec_changes_2026_06_08_clinic_dashboard_spec",
+      "openspec_changes_2026_06_08_clinic_dashboard_tasks",
+      "openspec_changes_2026_06_08_consultations_module_init",
+      "openspec_changes_2026_06_08_consultations_module_proposal",
+      "openspec_changes_2026_06_08_consultations_module_spec",
+      "openspec_changes_2026_06_08_consultations_module_tasks",
+      "openspec_changes_2026_06_08_doctor_dashboard_redesign_design"
+    ],
+    "2": [
+      "openspec_changes_2026_06_08_doctor_dashboard_redesign_explore_explore",
+      "openspec_changes_2026_06_08_doctor_dashboard_redesign_init_init",
+      "openspec_changes_2026_06_08_doctor_dashboard_redesign_proposal_notion_isomatic_style",
+      "openspec_changes_2026_06_08_doctor_dashboard_redesign_proposal_proposal",
+      "openspec_changes_2026_06_08_doctor_dashboard_redesign_spec_spec",
+      "openspec_changes_2026_06_08_doctor_dashboard_redesign_tasks_tasks",
+      "openspec_changes_2026_06_08_doctor_followup_view_design_design",
+      "openspec_changes_2026_06_08_doctor_followup_view_init_init",
+      "openspec_changes_2026_06_08_doctor_followup_view_proposal_proposal",
+      "openspec_changes_2026_06_08_doctor_followup_view_proposal_redundant_greeting_removal",
+      "openspec_changes_2026_06_08_doctor_followup_view_spec_spec",
+      "openspec_changes_2026_06_08_doctor_followup_view_tasks_tasks",
+      "openspec_changes_2026_06_08_doctor_patientflow_view_design_design",
+      "openspec_changes_2026_06_08_doctor_patientflow_view_init_init",
+      "openspec_changes_2026_06_08_doctor_patientflow_view_proposal_proposal",
+      "openspec_changes_2026_06_08_doctor_patientflow_view_spec_spec",
+      "openspec_changes_2026_06_08_doctor_patientflow_view_tasks_tasks",
+      "openspec_changes_2026_06_08_doctor_resumen_view_design_design",
+      "openspec_changes_2026_06_08_doctor_resumen_view_init_init",
+      "openspec_changes_2026_06_08_doctor_resumen_view_proposal_proposal",
+      "openspec_changes_2026_06_08_doctor_resumen_view_spec_spec",
+      "openspec_changes_2026_06_08_doctor_resumen_view_tasks_tasks",
+      "openspec_changes_2026_06_08_pharmacy_dashboard_redesign_design_design",
+      "openspec_changes_2026_06_08_pharmacy_dashboard_redesign_design_trend_direction_refactor",
+      "openspec_changes_2026_06_08_pharmacy_dashboard_redesign_explore_explore"
+    ],
+    "3": [
+      "agents_md",
+      "architecture_md",
+      "auth_middleware_proxy",
+      "claude_md",
+      "clean_elevated_design",
+      "clinical_history_builder_feature",
+      "docs_luca_palette_md",
+      "doctor_dashboard_feature",
+      "feature_based_architecture",
+      "luca_brand_palette",
+      "luca_health_os",
+      "notion_isomatic_design",
+      "patient_dashboard_feature",
+      "pharmacy_dashboard_feature",
+      "pharmako_token_system",
+      "responsive_agents_md",
+      "responsive_design_rules",
+      "role_based_routing",
+      "sdd_workflow",
+      "server_components_first",
+      "tanstack_query_pattern",
+      "workflow_md",
+      "zustand_auth_store"
+    ],
+    "4": [
+      "database_diagrams_md",
+      "database_md",
+      "db_table_auditlog",
+      "db_table_invoice",
+      "db_table_labrequest",
+      "db_table_labresult",
+      "db_table_medication",
+      "db_table_patient",
+      "db_table_patientaccount",
+      "db_table_pharmacyinventory",
+      "db_table_prescription",
+      "db_table_providerprofile",
+      "db_table_quoteoffer",
+      "db_table_quotequest",
+      "db_table_verificationdocument",
+      "docs_backend_architecture_plan_md",
+      "docs_backend_phase3_schema_md",
+      "docs_backend_phase4_schema_md",
+      "hipaa_compliance",
+      "marketplace_b2b2c",
+      "prescription_public_token",
+      "rls_multitenancy",
+      "uuid_vs_varchar_decision"
+    ],
+    "5": [
+      "concept_hipaa_audit_log",
+      "concept_idempotency_key_pattern",
+      "concept_jwt_auth_model",
+      "concept_kyc_verification",
+      "concept_luca_health_os",
+      "concept_marketplace_b2b2c",
+      "concept_multisede_branches",
+      "concept_offline_first_sync",
+      "concept_patient_portal_phase5",
+      "concept_prescription_qr_token",
+      "concept_public_catalog_phase6",
+      "docs_history_2026-06-16_medications-page_implementation-summary",
+      "docs_integration-back_api_auth_documentation",
+      "docs_integration-back_api_phase2_documentation",
+      "docs_integration-back_api_phase3_documentation",
+      "docs_integration-back_api_phase4_documentation",
+      "docs_integration-back_api_phase5_spec",
+      "docs_integration-back_frontend-implementation-guide-of-backend",
+      "docs_integration-back_frontend_implementation_guide",
+      "docs_offline_api_offline_sync_spec",
+      "docs_offline_offline_sync_frontend_guide",
+      "docs_public_api_phase6_public_catalog"
+    ],
+    "6": [
+      "concept_auth_login_domain",
+      "concept_pharmako_primary_brand_color",
+      "concept_sdd_workflow",
+      "concept_viewport_overflow_fix",
+      "openspec_changes_2026-06-04_login-responsive_archive-report",
+      "openspec_changes_archive_2026-06-04-login-responsive_apply-progress",
+      "openspec_changes_archive_2026-06-04-login-responsive_archive-report",
+      "openspec_changes_archive_2026-06-04-login-responsive_design",
+      "openspec_changes_archive_2026-06-04-login-responsive_exploration",
+      "openspec_changes_archive_2026-06-04-login-responsive_init",
+      "openspec_changes_archive_2026-06-04-login-responsive_proposal",
+      "openspec_changes_archive_2026-06-04-login-responsive_specs_auth-login_spec",
+      "openspec_changes_archive_2026-06-04-login-responsive_sync-report",
+      "openspec_changes_archive_2026-06-04-login-responsive_tasks",
+      "openspec_changes_archive_2026-06-04-login-responsive_verify-report",
+      "openspec_config",
+      "openspec_specs_auth-login_spec"
+    ],
+    "7": [
+      "db_table_clinicbranch",
+      "db_table_clinicbranchmember",
+      "db_table_clinicschedule",
+      "db_table_consultation",
+      "db_table_formtemplate",
+      "db_table_providerbranch",
+      "db_table_vitalsign",
+      "docs_backend_phase1_schema_md",
+      "docs_backend_phase2_schema_md",
+      "docs_database_architecture_md",
+      "docs_database_complete_schema_md",
+      "geographic_normalization",
+      "hybrid_jsonb_schema",
+      "organisation_sede_model",
+      "soap_note_pattern"
+    ],
+    "8": [
+      "api_offline_sync_spec_md",
+      "db_table_appointment",
+      "db_table_doctorschedule",
+      "db_table_scheduleexception",
+      "db_table_user",
+      "docs_api_phase6_public_catalog_md",
+      "docs_api_phase6_scheduling_system_md",
+      "offline_first_architecture",
+      "offline_sync_conflict_resolution",
+      "public_catalog_api",
+      "scheduling_system"
+    ],
+    "9": [
+      "concept_notion_isomatic_design",
+      "concept_pharmacy_dashboard_feature",
+      "concept_pharmacy_greeting_component",
+      "concept_pharmako_care_design_tokens",
+      "concept_trend_direction_type",
+      "concept_use_pharmacy_quick_actions_hook",
+      "concept_zero_shadow_aesthetic",
+      "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_init",
+      "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_proposal",
+      "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_spec",
+      "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_tasks"
+    ],
+    "10": [
+      "concept_macos_sidebar",
+      "concept_pharmako_design_system",
+      "openspec_2026-06-04_auth-tabs-redesign_design",
+      "openspec_2026-06-04_auth-tabs-redesign_proposal",
+      "openspec_2026-06-04_auth-tabs-redesign_tasks",
+      "openspec_changes_2026-06-04_macos-sidebar_design",
+      "openspec_changes_2026-06-04_macos-sidebar_init"
+    ],
+    "11": [
+      "public_pharmakopersonbody_png_pharmakoperson_full_body",
+      "public_pharmakopersonbody_webp_pharmakoperson_full_body_webp",
+      "public_pharmakopersonmiddlebody_png_pharmakoperson_mid_body",
+      "public_pharmakopersonmiddlebody_webp_pharmakoperson_mid_body_webp",
+      "public_pharmakopersonmiddlebodyextralarge_png_pharmakoperson_mid_body_xl",
+      "public_pharmakopersontwopandphone_png_pharmakoperson_dual_scene",
+      "public_pharmakoreviewdocumentsextralarge_webp_pharmakoperson_reviewing_docs"
+    ],
+    "12": [
+      "concept_dashboard_workflow_centered",
+      "openspec_changes_2026-06-04_dashboard-structure_design",
+      "openspec_changes_2026-06-04_dashboard-structure_init",
+      "openspec_changes_2026-06-04_dashboard-structure_proposal",
+      "openspec_changes_2026-06-04_dashboard-structure_spec",
+      "openspec_changes_2026-06-04_dashboard-structure_tasks"
+    ],
+    "13": [
+      "src_features_offline_types_sync_types_catalogentity",
+      "src_features_offline_types_sync_types_city",
+      "src_features_offline_types_sync_types_clinicbranch",
+      "src_features_offline_types_sync_types_formtemplate",
+      "src_features_offline_types_sync_types_medication",
+      "src_features_offline_types_sync_types_specialty"
+    ],
+    "14": [
+      "concept_macos_floating_sidebar",
+      "concept_sidebar_indrawer_mobile",
+      "openspec_changes_2026_06_04_macos_sidebar_proposal",
+      "openspec_changes_2026_06_04_macos_sidebar_spec",
+      "openspec_changes_2026_06_04_macos_sidebar_tasks"
+    ],
+    "15": [
+      "src_features_auth_types_index_patientaccount",
+      "src_features_auth_types_index_patientprofile",
+      "src_features_auth_types_index_userprofile",
+      "src_store_auth_authstate"
+    ],
+    "16": [
+      "src_features_appointments_api_scheduleapi_createexceptiondto",
+      "src_features_appointments_api_scheduleapi_scheduleexceptionresponse",
+      "src_features_offline_database_schema_exceptiontype"
+    ],
+    "17": [
+      "src_features_appointments_api_scheduleapi_createscheduledto",
+      "src_features_appointments_api_scheduleapi_doctorscheduleresponse",
+      "src_features_offline_database_schema_weekday"
+    ],
+    "18": [
+      "src_features_medications_api_medicationapi_medicationresponse",
+      "src_features_medications_api_medicationapi_medicationsresponse",
+      "src_features_medications_schemas_medication"
+    ],
+    "19": [
+      "src_features_medications_api_prescriptiontemplateapi_prescriptiontemplateresponse",
+      "src_features_medications_api_prescriptiontemplateapi_prescriptiontemplatesresponse",
+      "src_features_medications_schemas_prescriptiontemplate"
+    ],
+    "20": [
+      "concept_search_command_deduplication",
+      "openspec_changes_2026_06_04_search_fix_init"
+    ],
+    "21": [
+      "public_favicon_dark_svg_luca_favicon_dark",
+      "public_logo_logo"
+    ],
+    "22": [
+      "src_features_clinical_history_builder_types_clinicalhistoryschema",
+      "src_lib_api_clinical_history_schema_patientformrequest"
+    ],
+    "23": [
+      "src_features_offline_database_schema_syncerror",
+      "src_features_offline_types_sync_types_entitytype"
+    ],
+    "24": [
+      "db_geography_city"
+    ],
+    "25": [
+      "db_geography_country"
+    ],
+    "26": [
+      "db_table_clinic"
+    ],
+    "27": [
+      "db_table_followup"
+    ],
+    "28": [
+      "db_table_medicalbackground"
+    ],
+    "29": [
+      "db_table_notification"
+    ],
+    "30": [
+      "docs_history_2026_06_16_medications_page_prescription_flow"
+    ],
+    "31": [
+      "framer_motion_pattern"
+    ],
+    "32": [
+      "openspec_changes_2026_06_04_scrollbar_theme_init"
+    ],
+    "33": [
+      "openspec_changes_2026_06_07_patient_dashboard_init"
+    ],
+    "34": [
+      "openspec_changes_2026_06_08_clinic_dashboard_init"
+    ],
+    "35": [
+      "public_logoteal_logo"
+    ],
+    "36": [
+      "readme_md"
+    ],
+    "37": [
+      "src_app_api_clinical_history_schema_id_route_delete"
+    ],
+    "38": [
+      "src_app_api_clinical_history_schema_id_route_get"
+    ],
+    "39": [
+      "src_app_api_clinical_history_schema_id_route_patch"
+    ],
+    "40": [
+      "src_app_api_clinical_history_schema_route_delete"
+    ],
+    "41": [
+      "src_app_api_clinical_history_schema_route_get"
+    ],
+    "42": [
+      "src_app_api_clinical_history_schema_route_post"
+    ],
+    "43": [
+      "src_app_clinical_history_builder_page_builderpage"
+    ],
+    "44": [
+      "src_app_clinical_history_page_templateslistpage"
+    ],
+    "45": [
+      "src_app_dashboard_appointments_page_appointmentspage"
+    ],
+    "46": [
+      "src_app_dashboard_consultations_id_page_consultationdetailpage"
+    ],
+    "47": [
+      "src_app_dashboard_drawer_context_drawercontexttype"
+    ],
+    "48": [
+      "src_app_dashboard_drawer_context_usedrawer"
+    ],
+    "49": [
+      "src_app_dashboard_drawer_context_usedrawertoggle"
+    ],
+    "50": [
+      "src_app_dashboard_laboratorios_page_laboratoriospage"
+    ],
+    "51": [
+      "src_app_dashboard_layout_dashboardlayout"
+    ],
+    "52": [
+      "src_app_dashboard_medications_page_medicationspage"
+    ],
+    "53": [
+      "src_app_dashboard_page_dashboardpage"
+    ],
+    "54": [
+      "src_app_dashboard_patients_page_patientspage"
+    ],
+    "55": [
+      "src_app_dashboard_profile_page_profilepage"
+    ],
+    "56": [
+      "src_app_doctors_page_doctorspage"
+    ],
+    "57": [
+      "src_app_layout_rootlayout"
+    ],
+    "58": [
+      "src_app_lib_utils_cn"
+    ],
+    "59": [
+      "src_app_login_page_pharmakologinpage"
+    ],
+    "60": [
+      "src_app_main_aboutus_aboutus"
+    ],
+    "61": [
+      "src_app_main_contacto_page_contactopage"
+    ],
+    "62": [
+      "src_app_main_contactus_contactus"
+    ],
+    "63": [
+      "src_app_main_welcome_welcome"
+    ],
+    "64": [
+      "src_app_page_home"
+    ],
+    "65": [
+      "src_components_authprovider_authprovider"
+    ],
+    "66": [
+      "src_components_offlineprovider_offlineprovider"
+    ],
+    "67": [
+      "src_components_pharmako_login_authtabs_authtabs"
+    ],
+    "68": [
+      "src_components_providers_providers"
+    ],
+    "69": [
+      "src_components_smartheader_headercontext_headercontext"
+    ],
+    "70": [
+      "src_components_smartheader_notificationbell_notificationbell"
+    ],
+    "71": [
+      "src_components_smartheader_userprofile_userprofile"
+    ],
+    "72": [
+      "src_components_ui_container_container"
+    ],
+    "73": [
+      "src_components_ui_select_selecttrigger"
+    ],
+    "74": [
+      "src_components_ui_select_selectvalue"
+    ],
+    "75": [
+      "src_config_navigation_navitem"
+    ],
+    "76": [
+      "src_config_navigation_navitemgroup"
+    ],
+    "77": [
+      "src_features_appointments_components_bookingmodal_bookingmodal"
+    ],
+    "78": [
+      "src_features_appointments_hooks_useappointments_useappointment"
+    ],
+    "79": [
+      "src_features_appointments_hooks_useappointments_useappointments"
+    ],
+    "80": [
+      "src_features_appointments_hooks_useappointments_useappointmentsbydoctor"
+    ],
+    "81": [
+      "src_features_appointments_hooks_useappointments_useappointmentsbypatient"
+    ],
+    "82": [
+      "src_features_appointments_hooks_useappointments_usecancelappointment"
+    ],
+    "83": [
+      "src_features_appointments_hooks_useappointments_usecreateappointment"
+    ],
+    "84": [
+      "src_features_appointments_hooks_useappointments_usedeleteappointment"
+    ],
+    "85": [
+      "src_features_appointments_hooks_useappointments_useupcomingappointments"
+    ],
+    "86": [
+      "src_features_appointments_hooks_useappointments_useupdateappointment"
+    ],
+    "87": [
+      "src_features_appointments_hooks_useappointments_useupdateappointmentstatus"
+    ],
+    "88": [
+      "src_features_appointments_hooks_useavailability_usedoctoravailability"
+    ],
+    "89": [
+      "src_features_appointments_hooks_usedoctorappointmentsquery_usedoctorappointmentsquery"
+    ],
+    "90": [
+      "src_features_appointments_hooks_usedoctorschedule_usedeletedoctorexception"
+    ],
+    "91": [
+      "src_features_appointments_hooks_usedoctorschedule_usedeletedoctorschedule"
+    ],
+    "92": [
+      "src_features_appointments_hooks_usedoctorschedule_usedoctorexceptionsquery"
+    ],
+    "93": [
+      "src_features_appointments_hooks_usedoctorschedule_usedoctorschedulesquery"
+    ],
+    "94": [
+      "src_features_appointments_hooks_usedoctorschedule_usesavedoctorexception"
+    ],
+    "95": [
+      "src_features_appointments_hooks_usedoctorschedule_usesavedoctorschedule"
+    ],
+    "96": [
+      "src_features_appointments_hooks_usepatientappointmentsquery_usepatientappointmentsquery"
+    ],
+    "97": [
+      "src_features_appointments_schemas_appointment"
+    ],
+    "98": [
+      "src_features_appointments_types_index_appointmentresponse"
+    ],
+    "99": [
+      "src_features_appointments_types_index_appointmentsresponse"
+    ],
+    "100": [
+      "src_features_appointments_types_index_dayschedule"
+    ],
+    "101": [
+      "src_features_appointments_types_index_doctoravailability"
+    ],
+    "102": [
+      "src_features_appointments_types_index_doctoravailabilityresponse"
+    ],
+    "103": [
+      "src_features_appointments_types_index_doctoroption"
+    ],
+    "104": [
+      "src_features_appointments_types_index_patientoption"
+    ],
+    "105": [
+      "src_features_appointments_types_index_scheduleexceptioninfo"
+    ],
+    "106": [
+      "src_features_appointments_types_index_slot"
+    ],
+    "107": [
+      "src_features_appointments_types_index_updateappointmentdto"
+    ],
+    "108": [
+      "src_features_audit_schemas_auditaction"
+    ],
+    "109": [
+      "src_features_audit_schemas_auditlog"
+    ],
+    "110": [
+      "src_features_auth_components_formregistermedical_formregistermedical"
+    ],
+    "111": [
+      "src_features_auth_components_formregisterpatient_formregisterpatient"
+    ],
+    "112": [
+      "src_features_auth_components_typeprofile_typeprofile"
+    ],
+    "113": [
+      "src_features_auth_hooks_useauth_usegetpatientprofilequery"
+    ],
+    "114": [
+      "src_features_auth_hooks_useauth_usegetuserprofilequery"
+    ],
+    "115": [
+      "src_features_auth_hooks_useauth_useloginpatientmutation"
+    ],
+    "116": [
+      "src_features_auth_hooks_useauth_useloginusermutation"
+    ],
+    "117": [
+      "src_features_auth_hooks_useauth_useregisterdoctormutation"
+    ],
+    "118": [
+      "src_features_auth_hooks_useauth_useregisterpatientmutation"
+    ],
+    "119": [
+      "src_features_auth_hooks_useauth_useregisterprovidermutation"
+    ],
+    "120": [
+      "src_features_auth_hooks_useauth_usesendotpmutation"
+    ],
+    "121": [
+      "src_features_auth_hooks_useauth_useverifyotpmutation"
+    ],
+    "122": [
+      "src_features_auth_hooks_usegetcities_country"
+    ],
+    "123": [
+      "src_features_auth_hooks_usegetcities_usegetcities"
+    ],
+    "124": [
+      "src_features_auth_hooks_usegetcities_usegetcountries"
+    ],
+    "125": [
+      "src_features_auth_hooks_usegetcities_usegetcountrycities"
+    ],
+    "126": [
+      "src_features_auth_hooks_usegetspecialties_usegetspecialties"
+    ],
+    "127": [
+      "src_features_auth_hooks_uselogout_uselogout"
+    ],
+    "128": [
+      "src_features_auth_types_index_accountstatus"
+    ],
+    "129": [
+      "src_features_auth_types_index_apiresponse"
+    ],
+    "130": [
+      "src_features_auth_types_index_authresponse"
+    ],
+    "131": [
+      "src_features_auth_types_index_city"
+    ],
+    "132": [
+      "src_features_auth_types_index_country"
+    ],
+    "133": [
+      "src_features_auth_types_index_patientstatusapi"
+    ],
+    "134": [
+      "src_features_auth_types_index_plantype"
+    ],
+    "135": [
+      "src_features_auth_types_index_providertype"
+    ],
+    "136": [
+      "src_features_auth_types_index_specialty"
+    ],
+    "137": [
+      "src_features_auth_types_index_state"
+    ],
+    "138": [
+      "src_features_auth_types_index_userrole"
+    ],
+    "139": [
+      "src_features_auth_types_index_userroleapi"
+    ],
+    "140": [
+      "src_features_auth_types_index_verificationdocpayload"
+    ],
+    "141": [
+      "src_features_billing_schemas_invoice"
+    ],
+    "142": [
+      "src_features_billing_schemas_invoiceformdata"
+    ],
+    "143": [
+      "src_features_billing_schemas_invoiceitem"
+    ],
+    "144": [
+      "src_features_billing_schemas_invoicestatus"
+    ],
+    "145": [
+      "src_features_billing_schemas_payment"
+    ],
+    "146": [
+      "src_features_billing_schemas_paymentformdata"
+    ],
+    "147": [
+      "src_features_billing_schemas_paymentmethod"
+    ],
+    "148": [
+      "src_features_clinic_dashboard_components_clinicdashboard_clinicdashboard"
+    ],
+    "149": [
+      "src_features_clinic_dashboard_components_clinicgreeting_clinicgreeting"
+    ],
+    "150": [
+      "src_features_clinic_dashboard_components_clinickpicards_clinickpicards"
+    ],
+    "151": [
+      "src_features_clinic_dashboard_hooks_useclinicactions_useclinicactions"
+    ],
+    "152": [
+      "src_features_clinic_dashboard_hooks_useclinicconsultations_useclinicconsultations"
+    ],
+    "153": [
+      "src_features_clinic_dashboard_hooks_useclinicdoctors_useclinicdoctors"
+    ],
+    "154": [
+      "src_features_clinic_dashboard_hooks_useclinicgreeting_useclinicgreeting"
+    ],
+    "155": [
+      "src_features_clinic_dashboard_hooks_useclinickpis_useclinickpis"
+    ],
+    "156": [
+      "src_features_clinic_dashboard_types_index_clinicconsultation"
+    ],
+    "157": [
+      "src_features_clinic_dashboard_types_index_clinicdoctor"
+    ],
+    "158": [
+      "src_features_clinic_dashboard_types_index_clinickpi"
+    ],
+    "159": [
+      "src_features_clinic_dashboard_types_index_clinicquickaction"
+    ],
+    "160": [
+      "src_features_clinical_history_builder_components_importexportmenu_importexportmenu"
+    ],
+    "161": [
+      "src_features_clinical_history_builder_hooks_usebuilderdnd_createnewelement"
+    ],
+    "162": [
+      "src_features_clinical_history_builder_hooks_usebuilderdnd_findelementbyid"
+    ],
+    "163": [
+      "src_features_clinical_history_builder_hooks_usebuilderdnd_insertelementat"
+    ],
+    "164": [
+      "src_features_clinical_history_builder_hooks_usebuilderdnd_removeelementbyid"
+    ],
+    "165": [
+      "src_features_clinical_history_builder_hooks_usebuilderdnd_serializeschema"
+    ],
+    "166": [
+      "src_features_clinical_history_builder_hooks_usebuilderdnd_updateelementbyid"
+    ],
+    "167": [
+      "src_features_clinical_history_builder_hooks_usebuilderdnd_updategridcolumnchildren"
+    ],
+    "168": [
+      "src_features_clinical_history_builder_hooks_usebuilderdnd_usebuilderdnd"
+    ],
+    "169": [
+      "src_features_clinical_history_builder_hooks_usekeyboardshortcuts_useduplicateshortcut"
+    ],
+    "170": [
+      "src_features_clinical_history_builder_hooks_usekeyboardshortcuts_usekeyboardshortcuts"
+    ],
+    "171": [
+      "src_features_clinical_history_builder_hooks_usekeyboardshortcuts_useundoredo"
+    ],
+    "172": [
+      "src_features_clinical_history_builder_schemas_clinical_history_schema_clinicalhistoryschema"
+    ],
+    "173": [
+      "src_features_clinical_history_builder_types_activepaneltab"
+    ],
+    "174": [
+      "src_features_clinical_history_builder_types_activetoolboxtab"
+    ],
+    "175": [
+      "src_features_clinical_history_builder_types_blockcondition"
+    ],
+    "176": [
+      "src_features_clinical_history_builder_types_blocktype"
+    ],
+    "177": [
+      "src_features_clinical_history_builder_types_blockwidth"
+    ],
+    "178": [
+      "src_features_clinical_history_builder_types_builderuistate"
+    ],
+    "179": [
+      "src_features_clinical_history_builder_types_canvaselement"
+    ],
+    "180": [
+      "src_features_clinical_history_builder_types_canvasstate"
+    ],
+    "181": [
+      "src_features_clinical_history_builder_types_checkboxmultipleblock"
+    ],
+    "182": [
+      "src_features_clinical_history_builder_types_cie10selectorblock"
+    ],
+    "183": [
+      "src_features_clinical_history_builder_types_clinicalhistorysettings"
+    ],
+    "184": [
+      "src_features_clinical_history_builder_types_datetimeblock"
+    ],
+    "185": [
+      "src_features_clinical_history_builder_types_dragitem"
+    ],
+    "186": [
+      "src_features_clinical_history_builder_types_dropdownblock"
+    ],
+    "187": [
+      "src_features_clinical_history_builder_types_dropresult"
+    ],
+    "188": [
+      "src_features_clinical_history_builder_types_fieldsize"
+    ],
+    "189": [
+      "src_features_clinical_history_builder_types_fileuploadblock"
+    ],
+    "190": [
+      "src_features_clinical_history_builder_types_gridrowblock"
+    ],
+    "191": [
+      "src_features_clinical_history_builder_types_headerblock"
+    ],
+    "192": [
+      "src_features_clinical_history_builder_types_numberblock"
+    ],
+    "193": [
+      "src_features_clinical_history_builder_types_propertyformstate"
+    ],
+    "194": [
+      "src_features_clinical_history_builder_types_radiogroupblock"
+    ],
+    "195": [
+      "src_features_clinical_history_builder_types_repeaterblock"
+    ],
+    "196": [
+      "src_features_clinical_history_builder_types_sectionblock"
+    ],
+    "197": [
+      "src_features_clinical_history_builder_types_sectiontitleblock"
+    ],
+    "198": [
+      "src_features_clinical_history_builder_types_selectoroption"
+    ],
+    "199": [
+      "src_features_clinical_history_builder_types_templatestatus"
+    ],
+    "200": [
+      "src_features_clinical_history_builder_types_textparagraphblock"
+    ],
+    "201": [
+      "src_features_clinical_history_builder_types_textshortblock"
+    ],
+    "202": [
+      "src_features_clinical_history_builder_types_toggleblock"
+    ],
+    "203": [
+      "src_features_clinical_history_builder_types_toolboxblockdefinition"
+    ],
+    "204": [
+      "src_features_clinical_history_builder_types_toolboxcategory"
+    ],
+    "205": [
+      "src_features_clinical_history_builder_types_visualseparatorblock"
+    ],
+    "206": [
+      "src_features_clinical_history_builder_types_vitalsignsblock"
+    ],
+    "207": [
+      "src_features_clinical_history_builder_types_vitalsignsfield"
+    ],
+    "208": [
+      "src_features_clinical_history_builder_types_vitalsignskey"
+    ],
+    "209": [
+      "src_features_consultations_components_consultationtabs_consultationtabs"
+    ],
+    "210": [
+      "src_features_consultations_components_digitallabrequestcard_digitallabrequestcard"
+    ],
+    "211": [
+      "src_features_consultations_components_digitalprescriptioncard_digitalprescriptioncard"
+    ],
+    "212": [
+      "src_features_consultations_hooks_useactiveconsultationquery_activeconsultationdata"
+    ],
+    "213": [
+      "src_features_consultations_hooks_useactiveconsultationquery_useactiveconsultationquery"
+    ],
+    "214": [
+      "src_features_consultations_hooks_useconsultationlist_consultationlistitem"
+    ],
+    "215": [
+      "src_features_consultations_hooks_useconsultationlist_useconsultationlist"
+    ],
+    "216": [
+      "src_features_consultations_hooks_useconsultationmutations_usecreatefollowup"
+    ],
+    "217": [
+      "src_features_consultations_hooks_useconsultationmutations_usestartconsultation"
+    ],
+    "218": [
+      "src_features_consultations_hooks_useconsultationmutations_useupdateconsultation"
+    ],
+    "219": [
+      "src_features_consultations_hooks_usemedicationscatalog_medicationcatalogitem"
+    ],
+    "220": [
+      "src_features_consultations_hooks_usemedicationscatalog_usemedicationscatalog"
+    ],
+    "221": [
+      "src_features_consultations_hooks_usepatientconsultationsquery_usepatientconsultationsquery"
+    ],
+    "222": [
+      "src_features_consultations_schemas_administrationroute"
+    ],
+    "223": [
+      "src_features_consultations_schemas_biologicalsex"
+    ],
+    "224": [
+      "src_features_consultations_schemas_consultation"
+    ],
+    "225": [
+      "src_features_consultations_schemas_doctor"
+    ],
+    "226": [
+      "src_features_consultations_schemas_historyentry"
+    ],
+    "227": [
+      "src_features_consultations_schemas_medication"
+    ],
+    "228": [
+      "src_features_consultations_schemas_patient"
+    ],
+    "229": [
+      "src_features_consultations_schemas_prescriptionitem"
+    ],
+    "230": [
+      "src_features_consultations_schemas_presentation"
+    ],
+    "231": [
+      "src_features_consultations_schemas_vitals"
+    ],
+    "232": [
+      "src_features_doctor_dashboard_components_agendaitem_agendaitem"
+    ],
+    "233": [
+      "src_features_doctor_dashboard_components_bottomnav_bottomnav"
+    ],
+    "234": [
+      "src_features_doctor_dashboard_components_dashboardswitcher_dashboardswitcher"
+    ],
+    "235": [
+      "src_features_doctor_dashboard_components_doctordashboard_doctordashboard"
+    ],
+    "236": [
+      "src_features_doctor_dashboard_components_doctorgreeting_doctorgreeting"
+    ],
+    "237": [
+      "src_features_doctor_dashboard_components_followupview_followupview"
+    ],
+    "238": [
+      "src_features_doctor_dashboard_components_kpicard_kpicard"
+    ],
+    "239": [
+      "src_features_doctor_dashboard_components_kpicards_kpicards"
+    ],
+    "240": [
+      "src_features_doctor_dashboard_components_mobiledrawer_mobiledrawer"
+    ],
+    "241": [
+      "src_features_doctor_dashboard_components_notificationalert_notificationalert"
+    ],
+    "242": [
+      "src_features_doctor_dashboard_components_quickactions_quickactions"
+    ],
+    "243": [
+      "src_features_doctor_dashboard_components_resumenview_resumenview"
+    ],
+    "244": [
+      "src_features_doctor_dashboard_components_statusbadge_statusbadge"
+    ],
+    "245": [
+      "src_features_doctor_dashboard_hooks_usedoctoractions_usedoctoractions"
+    ],
+    "246": [
+      "src_features_doctor_dashboard_hooks_usedoctoragenda_usedoctoragenda"
+    ],
+    "247": [
+      "src_features_doctor_dashboard_hooks_usedoctordashboardquery_usedoctordashboardquery"
+    ],
+    "248": [
+      "src_features_doctor_dashboard_hooks_usedoctorkpis_usedoctorkpis"
+    ],
+    "249": [
+      "src_features_doctor_dashboard_hooks_usedoctornextpatient_usedoctornextpatient"
+    ],
+    "250": [
+      "src_features_doctor_dashboard_hooks_usedoctornotifications_usedoctornotifications"
+    ],
+    "251": [
+      "src_features_doctor_dashboard_types_index_actionitem"
+    ],
+    "252": [
+      "src_features_doctor_dashboard_types_index_actiontype"
+    ],
+    "253": [
+      "src_features_doctor_dashboard_types_index_alerttype"
+    ],
+    "254": [
+      "src_features_doctor_dashboard_types_index_appointment"
+    ],
+    "255": [
+      "src_features_doctor_dashboard_types_index_appointmentstatus"
+    ],
+    "256": [
+      "src_features_doctor_dashboard_types_index_dashboardview"
+    ],
+    "257": [
+      "src_features_doctor_dashboard_types_index_doctorprofile"
+    ],
+    "258": [
+      "src_features_doctor_dashboard_types_index_kpidata"
+    ],
+    "259": [
+      "src_features_doctor_dashboard_types_index_nextpatient"
+    ],
+    "260": [
+      "src_features_doctor_dashboard_types_index_notification"
+    ],
+    "261": [
+      "src_features_doctor_dashboard_types_index_notificationtype"
+    ],
+    "262": [
+      "src_features_doctor_dashboard_types_index_patientalert"
+    ],
+    "263": [
+      "src_features_doctor_dashboard_types_index_quickaction"
+    ],
+    "264": [
+      "src_features_doctor_dashboard_types_index_quickactionvariant"
+    ],
+    "265": [
+      "src_features_documents_hooks_usepatientdocumentdetailquery_usepatientdocumentdetailquery"
+    ],
+    "266": [
+      "src_features_documents_hooks_usepatientdocumentsquery_usepatientdocumentsquery"
+    ],
+    "267": [
+      "src_features_inventory_schemas_pharmacyinventory"
+    ],
+    "268": [
+      "src_features_inventory_schemas_pharmacyinventoryformdata"
+    ],
+    "269": [
+      "src_features_invoices_hooks_usepatientinvoicedetailquery_usepatientinvoicedetailquery"
+    ],
+    "270": [
+      "src_features_invoices_hooks_usepatientinvoicesquery_usepatientinvoicesquery"
+    ],
+    "271": [
+      "src_features_invoices_hooks_usereportpaymentmutation_usereportpaymentmutation"
+    ],
+    "272": [
+      "src_features_lab_results_schemas_labresult"
+    ],
+    "273": [
+      "src_features_lab_results_schemas_labresultformdata"
+    ],
+    "274": [
+      "src_features_lab_results_schemas_labresultstatus"
+    ],
+    "275": [
+      "src_features_labs_api_labrequestapi_createlabrequestdto"
+    ],
+    "276": [
+      "src_features_labs_api_labrequestapi_updatelabrequestdto"
+    ],
+    "277": [
+      "src_features_labs_hooks_uselabrequests_usecreatelabrequest"
+    ],
+    "278": [
+      "src_features_labs_hooks_uselabrequests_usedeletelabrequest"
+    ],
+    "279": [
+      "src_features_labs_hooks_uselabrequests_uselabrequest"
+    ],
+    "280": [
+      "src_features_labs_hooks_uselabrequests_uselabrequests"
+    ],
+    "281": [
+      "src_features_labs_hooks_uselabrequests_useupdatelabrequest"
+    ],
+    "282": [
+      "src_features_labs_hooks_usepatientlabresultsquery_usepatientlabresultsquery"
+    ],
+    "283": [
+      "src_features_medications_hooks_usemedications_usecreatemedication"
+    ],
+    "284": [
+      "src_features_medications_hooks_usemedications_usedeletemedication"
+    ],
+    "285": [
+      "src_features_medications_hooks_usemedications_usemedications"
+    ],
+    "286": [
+      "src_features_medications_hooks_usemedications_usetopprescribedmedications"
+    ],
+    "287": [
+      "src_features_medications_hooks_usemedications_useupdatemedication"
+    ],
+    "288": [
+      "src_features_medications_hooks_useprescriptiontemplates_usecreateprescriptiontemplate"
+    ],
+    "289": [
+      "src_features_medications_hooks_useprescriptiontemplates_usedeleteprescriptiontemplate"
+    ],
+    "290": [
+      "src_features_medications_hooks_useprescriptiontemplates_useprescriptiontemplates"
+    ],
+    "291": [
+      "src_features_medications_hooks_useprescriptiontemplates_useupdateprescriptiontemplate"
+    ],
+    "292": [
+      "src_features_medications_schemas_administrationroute"
+    ],
+    "293": [
+      "src_features_medications_schemas_presentation"
+    ],
+    "294": [
+      "src_features_medications_schemas_templateitem"
+    ],
+    "295": [
+      "src_features_notifications_components_delaybanner_delaybanner"
+    ],
+    "296": [
+      "src_features_notifications_hooks_usepatientnotifications_usemarkallnotificationsreadmutation"
+    ],
+    "297": [
+      "src_features_notifications_hooks_usepatientnotifications_usemarknotificationreadmutation"
+    ],
+    "298": [
+      "src_features_notifications_hooks_usepatientnotifications_usepatientnotificationsquery"
+    ],
+    "299": [
+      "src_features_notifications_hooks_usepatientnotifications_usepatientunreadcountquery"
+    ],
+    "300": [
+      "src_features_offline_components_syncindicator_syncindicator"
+    ],
+    "301": [
+      "src_features_offline_database_schema_activedelayrecord"
+    ],
+    "302": [
+      "src_features_offline_database_schema_clearsyncerrors"
+    ],
+    "303": [
+      "src_features_offline_database_schema_getlastsynctimestamp"
+    ],
+    "304": [
+      "src_features_offline_database_schema_getpendingchangescount"
+    ],
+    "305": [
+      "src_features_offline_database_schema_setlastsynctimestamp"
+    ],
+    "306": [
+      "src_features_offline_database_schema_syncmeta"
+    ],
+    "307": [
+      "src_features_offline_hooks_useonlinestatus_useonlinestatus"
+    ],
+    "308": [
+      "src_features_offline_hooks_usesync_usesync"
+    ],
+    "309": [
+      "src_features_offline_hooks_usesyncqueue_usesyncqueue"
+    ],
+    "310": [
+      "src_features_offline_types_sync_types_conflictresolution"
+    ],
+    "311": [
+      "src_features_offline_types_sync_types_entitybytype"
+    ],
+    "312": [
+      "src_features_offline_types_sync_types_entitypushresult"
+    ],
+    "313": [
+      "src_features_offline_types_sync_types_entityuuid"
+    ],
+    "314": [
+      "src_features_offline_types_sync_types_pushresults"
+    ],
+    "315": [
+      "src_features_offline_types_sync_types_queuedchange"
+    ],
+    "316": [
+      "src_features_offline_types_sync_types_syncenginestate"
+    ],
+    "317": [
+      "src_features_offline_types_sync_types_syncerror"
+    ],
+    "318": [
+      "src_features_offline_types_sync_types_syncrequest"
+    ],
+    "319": [
+      "src_features_offline_types_sync_types_syncresponse"
+    ],
+    "320": [
+      "src_features_offline_types_sync_types_syncstats"
+    ],
+    "321": [
+      "src_features_offline_types_sync_types_syncstatus"
+    ],
+    "322": [
+      "src_features_offline_types_sync_types_syncstatustype"
+    ],
+    "323": [
+      "src_features_offline_types_sync_types_synctimestamp"
+    ],
+    "324": [
+      "src_features_offline_utils_uuid_clienttoserver"
+    ],
+    "325": [
+      "src_features_offline_utils_uuid_generateuuid"
+    ],
+    "326": [
+      "src_features_offline_utils_uuid_getcurrenttimestamp"
+    ],
+    "327": [
+      "src_features_offline_utils_uuid_isvaliduuid"
+    ],
+    "328": [
+      "src_features_offline_utils_uuid_servertoclient"
+    ],
+    "329": [
+      "src_features_patient_dashboard_components_bookdoctor_bookdoctorsection"
+    ],
+    "330": [
+      "src_features_patient_dashboard_components_nextappointmentcard_nextappointmentcard"
+    ],
+    "331": [
+      "src_features_patient_dashboard_components_patientdashboard_patientdashboard"
+    ],
+    "332": [
+      "src_features_patient_dashboard_components_patientformrequests_patientformrequests"
+    ],
+    "333": [
+      "src_features_patient_dashboard_components_patientgreeting_patientgreeting"
+    ],
+    "334": [
+      "src_features_patient_dashboard_components_patientkpicards_patientkpicards"
+    ],
+    "335": [
+      "src_features_patient_dashboard_hooks_usepatientactions_usepatientactions"
+    ],
+    "336": [
+      "src_features_patient_dashboard_hooks_usepatientappointments_usepatientappointments"
+    ],
+    "337": [
+      "src_features_patient_dashboard_hooks_usepatientconsultations_usepatientconsultations"
+    ],
+    "338": [
+      "src_features_patient_dashboard_hooks_usepatientdashboardquery_dashboardresponse"
+    ],
+    "339": [
+      "src_features_patient_dashboard_hooks_usepatientdashboardquery_usepatientdashboardquery"
+    ],
+    "340": [
+      "src_features_patient_dashboard_hooks_usepatientgreeting_usepatientgreeting"
+    ],
+    "341": [
+      "src_features_patient_dashboard_hooks_usepatientkpis_usepatientkpis"
+    ],
+    "342": [
+      "src_features_patient_dashboard_hooks_usepatienttreatments_usepatienttreatments"
+    ],
+    "343": [
+      "src_features_patient_dashboard_hooks_usepatientvitals_usepatientvitals"
+    ],
+    "344": [
+      "src_features_patient_dashboard_types_index_appointment"
+    ],
+    "345": [
+      "src_features_patient_dashboard_types_index_consultation"
+    ],
+    "346": [
+      "src_features_patient_dashboard_types_index_patientkpi"
+    ],
+    "347": [
+      "src_features_patient_dashboard_types_index_quickaction"
+    ],
+    "348": [
+      "src_features_patient_dashboard_types_index_treatment"
+    ],
+    "349": [
+      "src_features_patient_dashboard_types_index_trenddirection"
+    ],
+    "350": [
+      "src_features_patient_dashboard_types_index_vitalsign"
+    ],
+    "351": [
+      "src_features_patients_hooks_usepatients_usecreatepatient"
+    ],
+    "352": [
+      "src_features_patients_hooks_usepatients_usedeletepatient"
+    ],
+    "353": [
+      "src_features_patients_hooks_usepatients_usepatient"
+    ],
+    "354": [
+      "src_features_patients_hooks_usepatients_usepatients"
+    ],
+    "355": [
+      "src_features_patients_hooks_usepatients_useupdatepatient"
+    ],
+    "356": [
+      "src_features_patients_schemas_biologicalsex"
+    ],
+    "357": [
+      "src_features_patients_schemas_bloodtype"
+    ],
+    "358": [
+      "src_features_patients_schemas_patient"
+    ],
+    "359": [
+      "src_features_patients_types_index_createpatientdto"
+    ],
+    "360": [
+      "src_features_patients_types_index_getpatientage"
+    ],
+    "361": [
+      "src_features_patients_types_index_getpatientfullname"
+    ],
+    "362": [
+      "src_features_patients_types_index_patientresponse"
+    ],
+    "363": [
+      "src_features_patients_types_index_patientsresponse"
+    ],
+    "364": [
+      "src_features_patients_types_index_updatepatientdto"
+    ],
+    "365": [
+      "src_features_pharmacy_dashboard_components_kpicards_kpicards"
+    ],
+    "366": [
+      "src_features_pharmacy_dashboard_components_notificationalert_notificationalert"
+    ],
+    "367": [
+      "src_features_pharmacy_dashboard_components_orderitem_orderitem"
+    ],
+    "368": [
+      "src_features_pharmacy_dashboard_components_pharmacydashboard_pharmacydashboard"
+    ],
+    "369": [
+      "src_features_pharmacy_dashboard_components_pharmacygreeting_pharmacygreeting"
+    ],
+    "370": [
+      "src_features_pharmacy_dashboard_components_quickactionbutton_quickactionbutton"
+    ],
+    "371": [
+      "src_features_pharmacy_dashboard_components_statusbadge_statusbadge"
+    ],
+    "372": [
+      "src_features_pharmacy_dashboard_hooks_usepharmacykpis_usepharmacykpis"
+    ],
+    "373": [
+      "src_features_pharmacy_dashboard_hooks_usepharmacynotifications_usepharmacynotifications"
+    ],
+    "374": [
+      "src_features_pharmacy_dashboard_hooks_usepharmacyorders_usepharmacyorders"
+    ],
+    "375": [
+      "src_features_pharmacy_dashboard_hooks_usepharmacyprescription_usepharmacyprescription"
+    ],
+    "376": [
+      "src_features_pharmacy_dashboard_hooks_usepharmacyquickactions_usepharmacyquickactions"
+    ],
+    "377": [
+      "src_features_pharmacy_dashboard_types_index_fulfillmenttype"
+    ],
+    "378": [
+      "src_features_pharmacy_dashboard_types_index_notificationtype"
+    ],
+    "379": [
+      "src_features_pharmacy_dashboard_types_index_orderstatus"
+    ],
+    "380": [
+      "src_features_pharmacy_dashboard_types_index_pharmacykpi"
+    ],
+    "381": [
+      "src_features_pharmacy_dashboard_types_index_pharmacynotification"
+    ],
+    "382": [
+      "src_features_pharmacy_dashboard_types_index_pharmacyorder"
+    ],
+    "383": [
+      "src_features_pharmacy_dashboard_types_index_pharmacyquickaction"
+    ],
+    "384": [
+      "src_features_pharmacy_dashboard_types_index_prescriptiondetail"
+    ],
+    "385": [
+      "src_features_pharmacy_dashboard_types_index_prescriptionmedication"
+    ],
+    "386": [
+      "src_features_pharmacy_dashboard_types_index_quickactionvariant"
+    ],
+    "387": [
+      "src_features_pharmacy_dashboard_types_index_trenddirection"
+    ],
+    "388": [
+      "src_features_prescriptions_hooks_usepatientprescriptionsquery_usepatientprescriptionsquery"
+    ],
+    "389": [
+      "src_features_prescriptions_hooks_usepatientquotesquery_usepatientquotesquery"
+    ],
+    "390": [
+      "src_features_profile_hooks_useupdateprofile_usegetpatientprofilequery"
+    ],
+    "391": [
+      "src_features_profile_hooks_useupdateprofile_usegetuserprofilequery"
+    ],
+    "392": [
+      "src_features_profile_hooks_useupdateprofile_useupdatepatientmutation"
+    ],
+    "393": [
+      "src_features_profile_hooks_useupdateprofile_useupdateusermutation"
+    ],
+    "394": [
+      "src_features_profile_types_index_patientprofileedit"
+    ],
+    "395": [
+      "src_features_profile_types_index_profileupdatepayload"
+    ],
+    "396": [
+      "src_features_profile_types_index_userprofileedit"
+    ],
+    "397": [
+      "src_features_public_components_cataloggrid_cataloggrid"
+    ],
+    "398": [
+      "src_features_public_hooks_usecatalog_usecities"
+    ],
+    "399": [
+      "src_features_public_hooks_usecatalog_useclinics"
+    ],
+    "400": [
+      "src_features_public_hooks_usecatalog_usedoctors"
+    ],
+    "401": [
+      "src_features_public_hooks_usecatalog_usepharmacies"
+    ],
+    "402": [
+      "src_features_public_hooks_usedebounce_usedebounce"
+    ],
+    "403": [
+      "src_features_public_types_catalog_types_city"
+    ],
+    "404": [
+      "src_features_public_types_catalog_types_clinic"
+    ],
+    "405": [
+      "src_features_public_types_catalog_types_clinicbasic"
+    ],
+    "406": [
+      "src_features_public_types_catalog_types_clinicbranch"
+    ],
+    "407": [
+      "src_features_public_types_catalog_types_clinicbranchbasic"
+    ],
+    "408": [
+      "src_features_public_types_catalog_types_clinicdoctor"
+    ],
+    "409": [
+      "src_features_public_types_catalog_types_clinicsresponse"
+    ],
+    "410": [
+      "src_features_public_types_catalog_types_doctor"
+    ],
+    "411": [
+      "src_features_public_types_catalog_types_doctorsresponse"
+    ],
+    "412": [
+      "src_features_public_types_catalog_types_paginationmeta"
+    ],
+    "413": [
+      "src_features_public_types_catalog_types_pharmaciesresponse"
+    ],
+    "414": [
+      "src_features_public_types_catalog_types_pharmacy"
+    ],
+    "415": [
+      "src_features_public_types_catalog_types_pharmacybranch"
+    ],
+    "416": [
+      "src_features_public_types_catalog_types_specialty"
+    ],
+    "417": [
+      "src_features_services_hooks_useservices_usedeleteproviderservice"
+    ],
+    "418": [
+      "src_features_services_hooks_useservices_useglobalservices"
+    ],
+    "419": [
+      "src_features_services_hooks_useservices_useproviderservices"
+    ],
+    "420": [
+      "src_features_services_hooks_useservices_usesaveproviderservice"
+    ],
+    "421": [
+      "src_features_services_schemas_providerservice"
+    ],
+    "422": [
+      "src_features_services_schemas_providerserviceformdata"
+    ],
+    "423": [
+      "src_features_services_schemas_service"
+    ],
+    "424": [
+      "src_features_services_schemas_servicecategory"
+    ],
+    "425": [
+      "src_hooks_usekeyboardshortcut_usekeyboardshortcut"
+    ],
+    "426": [
+      "src_hooks_usemediaquery_usemediaquery"
+    ],
+    "427": [
+      "src_hooks_usescrolldirection_usescrolldirection"
+    ],
+    "428": [
+      "src_lib_api_clinical_history_schema_useallclinicalhistoryschemas"
+    ],
+    "429": [
+      "src_lib_api_clinical_history_schema_useclinicalhistoryschema"
+    ],
+    "430": [
+      "src_lib_api_clinical_history_schema_usedeleteclinicalhistoryschema"
+    ],
+    "431": [
+      "src_lib_api_clinical_history_schema_usepatchschemastatus"
+    ],
+    "432": [
+      "src_lib_api_clinical_history_schema_usepatientformrequest"
+    ],
+    "433": [
+      "src_lib_api_clinical_history_schema_usepatientformrequests"
+    ],
+    "434": [
+      "src_lib_api_clinical_history_schema_usesaveclinicalhistoryschema"
+    ],
+    "435": [
+      "src_lib_api_clinical_history_schema_useshareclinicalhistoryschema"
+    ],
+    "436": [
+      "src_lib_api_clinical_history_schema_usesubmitpatientformrequest"
+    ],
+    "437": [
+      "src_lib_api_clinical_history_shared_store_deleteschema"
+    ],
+    "438": [
+      "src_lib_api_clinical_history_shared_store_getschema"
+    ],
+    "439": [
+      "src_lib_api_clinical_history_shared_store_getschemas"
+    ],
+    "440": [
+      "src_lib_api_clinical_history_shared_store_setschema"
+    ],
+    "441": [
+      "src_lib_utils_cn"
+    ],
+    "442": [
+      "src_lib_utils_getlocaltodaystring"
+    ],
+    "443": [
+      "src_proxy_proxy"
+    ],
+    "444": [
+      "src_proxy_proxyconfig"
+    ],
+    "445": [
+      "src_store_auth_role"
+    ]
+  },
+  "cohesion": {
+    "0": 0.05405405405405406,
+    "1": 0.09686609686609686,
+    "2": 0.08,
+    "3": 0.10276679841897234,
+    "4": 0.1383399209486166,
+    "5": 0.16883116883116883,
+    "6": 0.16176470588235295,
+    "7": 0.18095238095238095,
+    "8": 0.2727272727272727,
+    "9": 0.32727272727272727,
+    "10": 0.38095238095238093,
+    "11": 0.2857142857142857,
+    "12": 0.4,
+    "13": 0.3333333333333333,
+    "14": 0.5,
+    "15": 0.6666666666666666,
+    "16": 0.6666666666666666,
+    "17": 0.6666666666666666,
+    "18": 0.6666666666666666,
+    "19": 0.6666666666666666,
+    "20": 1.0,
+    "21": 1.0,
+    "22": 1.0,
+    "23": 1.0,
+    "24": 1.0,
+    "25": 1.0,
+    "26": 1.0,
+    "27": 1.0,
+    "28": 1.0,
+    "29": 1.0,
+    "30": 1.0,
+    "31": 1.0,
+    "32": 1.0,
+    "33": 1.0,
+    "34": 1.0,
+    "35": 1.0,
+    "36": 1.0,
+    "37": 1.0,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0,
+    "41": 1.0,
+    "42": 1.0,
+    "43": 1.0,
+    "44": 1.0,
+    "45": 1.0,
+    "46": 1.0,
+    "47": 1.0,
+    "48": 1.0,
+    "49": 1.0,
+    "50": 1.0,
+    "51": 1.0,
+    "52": 1.0,
+    "53": 1.0,
+    "54": 1.0,
+    "55": 1.0,
+    "56": 1.0,
+    "57": 1.0,
+    "58": 1.0,
+    "59": 1.0,
+    "60": 1.0,
+    "61": 1.0,
+    "62": 1.0,
+    "63": 1.0,
+    "64": 1.0,
+    "65": 1.0,
+    "66": 1.0,
+    "67": 1.0,
+    "68": 1.0,
+    "69": 1.0,
+    "70": 1.0,
+    "71": 1.0,
+    "72": 1.0,
+    "73": 1.0,
+    "74": 1.0,
+    "75": 1.0,
+    "76": 1.0,
+    "77": 1.0,
+    "78": 1.0,
+    "79": 1.0,
+    "80": 1.0,
+    "81": 1.0,
+    "82": 1.0,
+    "83": 1.0,
+    "84": 1.0,
+    "85": 1.0,
+    "86": 1.0,
+    "87": 1.0,
+    "88": 1.0,
+    "89": 1.0,
+    "90": 1.0,
+    "91": 1.0,
+    "92": 1.0,
+    "93": 1.0,
+    "94": 1.0,
+    "95": 1.0,
+    "96": 1.0,
+    "97": 1.0,
+    "98": 1.0,
+    "99": 1.0,
+    "100": 1.0,
+    "101": 1.0,
+    "102": 1.0,
+    "103": 1.0,
+    "104": 1.0,
+    "105": 1.0,
+    "106": 1.0,
+    "107": 1.0,
+    "108": 1.0,
+    "109": 1.0,
+    "110": 1.0,
+    "111": 1.0,
+    "112": 1.0,
+    "113": 1.0,
+    "114": 1.0,
+    "115": 1.0,
+    "116": 1.0,
+    "117": 1.0,
+    "118": 1.0,
+    "119": 1.0,
+    "120": 1.0,
+    "121": 1.0,
+    "122": 1.0,
+    "123": 1.0,
+    "124": 1.0,
+    "125": 1.0,
+    "126": 1.0,
+    "127": 1.0,
+    "128": 1.0,
+    "129": 1.0,
+    "130": 1.0,
+    "131": 1.0,
+    "132": 1.0,
+    "133": 1.0,
+    "134": 1.0,
+    "135": 1.0,
+    "136": 1.0,
+    "137": 1.0,
+    "138": 1.0,
+    "139": 1.0,
+    "140": 1.0,
+    "141": 1.0,
+    "142": 1.0,
+    "143": 1.0,
+    "144": 1.0,
+    "145": 1.0,
+    "146": 1.0,
+    "147": 1.0,
+    "148": 1.0,
+    "149": 1.0,
+    "150": 1.0,
+    "151": 1.0,
+    "152": 1.0,
+    "153": 1.0,
+    "154": 1.0,
+    "155": 1.0,
+    "156": 1.0,
+    "157": 1.0,
+    "158": 1.0,
+    "159": 1.0,
+    "160": 1.0,
+    "161": 1.0,
+    "162": 1.0,
+    "163": 1.0,
+    "164": 1.0,
+    "165": 1.0,
+    "166": 1.0,
+    "167": 1.0,
+    "168": 1.0,
+    "169": 1.0,
+    "170": 1.0,
+    "171": 1.0,
+    "172": 1.0,
+    "173": 1.0,
+    "174": 1.0,
+    "175": 1.0,
+    "176": 1.0,
+    "177": 1.0,
+    "178": 1.0,
+    "179": 1.0,
+    "180": 1.0,
+    "181": 1.0,
+    "182": 1.0,
+    "183": 1.0,
+    "184": 1.0,
+    "185": 1.0,
+    "186": 1.0,
+    "187": 1.0,
+    "188": 1.0,
+    "189": 1.0,
+    "190": 1.0,
+    "191": 1.0,
+    "192": 1.0,
+    "193": 1.0,
+    "194": 1.0,
+    "195": 1.0,
+    "196": 1.0,
+    "197": 1.0,
+    "198": 1.0,
+    "199": 1.0,
+    "200": 1.0,
+    "201": 1.0,
+    "202": 1.0,
+    "203": 1.0,
+    "204": 1.0,
+    "205": 1.0,
+    "206": 1.0,
+    "207": 1.0,
+    "208": 1.0,
+    "209": 1.0,
+    "210": 1.0,
+    "211": 1.0,
+    "212": 1.0,
+    "213": 1.0,
+    "214": 1.0,
+    "215": 1.0,
+    "216": 1.0,
+    "217": 1.0,
+    "218": 1.0,
+    "219": 1.0,
+    "220": 1.0,
+    "221": 1.0,
+    "222": 1.0,
+    "223": 1.0,
+    "224": 1.0,
+    "225": 1.0,
+    "226": 1.0,
+    "227": 1.0,
+    "228": 1.0,
+    "229": 1.0,
+    "230": 1.0,
+    "231": 1.0,
+    "232": 1.0,
+    "233": 1.0,
+    "234": 1.0,
+    "235": 1.0,
+    "236": 1.0,
+    "237": 1.0,
+    "238": 1.0,
+    "239": 1.0,
+    "240": 1.0,
+    "241": 1.0,
+    "242": 1.0,
+    "243": 1.0,
+    "244": 1.0,
+    "245": 1.0,
+    "246": 1.0,
+    "247": 1.0,
+    "248": 1.0,
+    "249": 1.0,
+    "250": 1.0,
+    "251": 1.0,
+    "252": 1.0,
+    "253": 1.0,
+    "254": 1.0,
+    "255": 1.0,
+    "256": 1.0,
+    "257": 1.0,
+    "258": 1.0,
+    "259": 1.0,
+    "260": 1.0,
+    "261": 1.0,
+    "262": 1.0,
+    "263": 1.0,
+    "264": 1.0,
+    "265": 1.0,
+    "266": 1.0,
+    "267": 1.0,
+    "268": 1.0,
+    "269": 1.0,
+    "270": 1.0,
+    "271": 1.0,
+    "272": 1.0,
+    "273": 1.0,
+    "274": 1.0,
+    "275": 1.0,
+    "276": 1.0,
+    "277": 1.0,
+    "278": 1.0,
+    "279": 1.0,
+    "280": 1.0,
+    "281": 1.0,
+    "282": 1.0,
+    "283": 1.0,
+    "284": 1.0,
+    "285": 1.0,
+    "286": 1.0,
+    "287": 1.0,
+    "288": 1.0,
+    "289": 1.0,
+    "290": 1.0,
+    "291": 1.0,
+    "292": 1.0,
+    "293": 1.0,
+    "294": 1.0,
+    "295": 1.0,
+    "296": 1.0,
+    "297": 1.0,
+    "298": 1.0,
+    "299": 1.0,
+    "300": 1.0,
+    "301": 1.0,
+    "302": 1.0,
+    "303": 1.0,
+    "304": 1.0,
+    "305": 1.0,
+    "306": 1.0,
+    "307": 1.0,
+    "308": 1.0,
+    "309": 1.0,
+    "310": 1.0,
+    "311": 1.0,
+    "312": 1.0,
+    "313": 1.0,
+    "314": 1.0,
+    "315": 1.0,
+    "316": 1.0,
+    "317": 1.0,
+    "318": 1.0,
+    "319": 1.0,
+    "320": 1.0,
+    "321": 1.0,
+    "322": 1.0,
+    "323": 1.0,
+    "324": 1.0,
+    "325": 1.0,
+    "326": 1.0,
+    "327": 1.0,
+    "328": 1.0,
+    "329": 1.0,
+    "330": 1.0,
+    "331": 1.0,
+    "332": 1.0,
+    "333": 1.0,
+    "334": 1.0,
+    "335": 1.0,
+    "336": 1.0,
+    "337": 1.0,
+    "338": 1.0,
+    "339": 1.0,
+    "340": 1.0,
+    "341": 1.0,
+    "342": 1.0,
+    "343": 1.0,
+    "344": 1.0,
+    "345": 1.0,
+    "346": 1.0,
+    "347": 1.0,
+    "348": 1.0,
+    "349": 1.0,
+    "350": 1.0,
+    "351": 1.0,
+    "352": 1.0,
+    "353": 1.0,
+    "354": 1.0,
+    "355": 1.0,
+    "356": 1.0,
+    "357": 1.0,
+    "358": 1.0,
+    "359": 1.0,
+    "360": 1.0,
+    "361": 1.0,
+    "362": 1.0,
+    "363": 1.0,
+    "364": 1.0,
+    "365": 1.0,
+    "366": 1.0,
+    "367": 1.0,
+    "368": 1.0,
+    "369": 1.0,
+    "370": 1.0,
+    "371": 1.0,
+    "372": 1.0,
+    "373": 1.0,
+    "374": 1.0,
+    "375": 1.0,
+    "376": 1.0,
+    "377": 1.0,
+    "378": 1.0,
+    "379": 1.0,
+    "380": 1.0,
+    "381": 1.0,
+    "382": 1.0,
+    "383": 1.0,
+    "384": 1.0,
+    "385": 1.0,
+    "386": 1.0,
+    "387": 1.0,
+    "388": 1.0,
+    "389": 1.0,
+    "390": 1.0,
+    "391": 1.0,
+    "392": 1.0,
+    "393": 1.0,
+    "394": 1.0,
+    "395": 1.0,
+    "396": 1.0,
+    "397": 1.0,
+    "398": 1.0,
+    "399": 1.0,
+    "400": 1.0,
+    "401": 1.0,
+    "402": 1.0,
+    "403": 1.0,
+    "404": 1.0,
+    "405": 1.0,
+    "406": 1.0,
+    "407": 1.0,
+    "408": 1.0,
+    "409": 1.0,
+    "410": 1.0,
+    "411": 1.0,
+    "412": 1.0,
+    "413": 1.0,
+    "414": 1.0,
+    "415": 1.0,
+    "416": 1.0,
+    "417": 1.0,
+    "418": 1.0,
+    "419": 1.0,
+    "420": 1.0,
+    "421": 1.0,
+    "422": 1.0,
+    "423": 1.0,
+    "424": 1.0,
+    "425": 1.0,
+    "426": 1.0,
+    "427": 1.0,
+    "428": 1.0,
+    "429": 1.0,
+    "430": 1.0,
+    "431": 1.0,
+    "432": 1.0,
+    "433": 1.0,
+    "434": 1.0,
+    "435": 1.0,
+    "436": 1.0,
+    "437": 1.0,
+    "438": 1.0,
+    "439": 1.0,
+    "440": 1.0,
+    "441": 1.0,
+    "442": 1.0,
+    "443": 1.0,
+    "444": 1.0,
+    "445": 1.0
+  },
+  "gods": [
+    {
+      "id": "src_features_offline_types_sync_types_syncableentity",
+      "label": "SyncableEntity",
+      "degree": 31
+    },
+    {
+      "id": "database_md",
+      "label": "LUCA Database Schema v3 (database.md)",
+      "degree": 13
+    },
+    {
+      "id": "architecture_md",
+      "label": "LUCA Project Architecture (ARCHITECTURE.md)",
+      "degree": 10
+    },
+    {
+      "id": "concept_notion_isomatic_design",
+      "label": "Notion-Isomatic Design System",
+      "degree": 8
+    },
+    {
+      "id": "db_table_consultation",
+      "label": "DB Table: Consultation",
+      "degree": 7
+    },
+    {
+      "id": "docs_integration-back_frontend-implementation-guide-of-backend",
+      "label": "Frontend Implementation Guide of Backend (comprehensive)",
+      "degree": 7
+    },
+    {
+      "id": "openspec_changes_2026_06_07_patient_dashboard_design",
+      "label": "Patient Dashboard Design",
+      "degree": 7
+    },
+    {
+      "id": "openspec_changes_2026_06_08_doctor_dashboard_redesign_proposal_proposal",
+      "label": "Proposal: Doctor Dashboard Redesign",
+      "degree": 7
+    },
+    {
+      "id": "openspec_changes_2026-06-08_pharmacy-dashboard-redesign_proposal",
+      "label": "Pharmacy Dashboard Redesign Proposal",
+      "degree": 7
+    },
+    {
+      "id": "openspec_specs_auth-login_spec",
+      "label": "Auth-Login Canonical Spec",
+      "degree": 7
+    }
+  ],
+  "surprises": [
+    {
+      "source": "LUCA Database Schema v3 (database.md)",
+      "target": "Complete Database Schema Phases 1-5 (database_complete_schema copy.md)",
+      "source_files": [
+        "database.md",
+        "docs/database_complete_schema copy.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities; peripheral node `Complete Database Schema Phases 1-5 (database_complete_schema copy.md)` unexpectedly reaches hub `LUCA Database Schema v3 (database.md)`"
+    },
+    {
+      "source": "Clean & Elevated Design Language",
+      "target": "Notion-Isomatic Design System",
+      "source_files": [
+        "AGENTS.md",
+        "ARCHITECTURE.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "semantically_similar_to",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; semantically similar concepts with no structural link"
+    },
+    {
+      "source": "Pharmako Design Token System",
+      "target": "LUCA Earth/Green Fluid UI Palette",
+      "source_files": [
+        "WORKFLOW.md",
+        "docs/luca-palette.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "semantically_similar_to",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; semantically similar concepts with no structural link"
+    },
+    {
+      "source": "Backend Phase 2 Schema - Clinical Engine (backend-phase2-schema.md)",
+      "target": "DB Table: Appointment",
+      "source_files": [
+        "docs/backend-phase2-schema.md",
+        "database.md"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "connects across different repos/directories; bridges separate communities; peripheral node `DB Table: Appointment` unexpectedly reaches hub `Backend Phase 2 Schema - Clinical Engine (backend-phase2-schema.md)`"
+    },
+    {
+      "source": "Offline-First Architecture",
+      "target": "UUID Native Type vs VARCHAR Decision",
+      "source_files": [
+        "api_offline_sync_spec.md",
+        "docs/backend-architecture-plan.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "conceptually_related_to",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `SyncableEntity` connect `SyncableEntity` to `CatalogEntity`?",
+      "why": "High betweenness centrality (0.004) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `Notion-Isomatic Design System` connect `Notion-Isomatic Design System` to `Patient Dashboard Design`?",
+      "why": "High betweenness centrality (0.003) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `LUCA Database Schema v3 (database.md)` connect `LUCA Database Schema v3 (database.md)` to `API Phase 6 - Scheduling System (api_phase6_scheduling_system copy.md)`, `DB Table: Consultation`?",
+      "why": "High betweenness centrality (0.003) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 4 inferred relationships involving `Notion-Isomatic Design System` (e.g. with `PharmacyGreeting Component` and `Zero Shadow / Notion-Esque Aesthetic`) actually correct?",
+      "why": "`Notion-Isomatic Design System` has 4 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `AboutUs`, `ContactUs`, `Welcome` to the rest of the system?",
+      "why": "520 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `SyncableEntity` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.05405405405405406 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Patient Dashboard Design` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.09686609686609686 - nodes in this community are weakly interconnected."
+    }
+  ]
+}
