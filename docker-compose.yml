@@ -1,0 +1,92 @@
+name: luca-health-os
+
+services:
+  # ---------------------------------------------------------------------------
+  # Frontend: Next.js (luca-front) con PNPM
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - luca_network
+
+  # ---------------------------------------------------------------------------
+  # Backend: Laravel (medicina) con PHP 8.3 y pdo_pgsql
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ../medicina
+      dockerfile: Dockerfile.dev
+    env_file:
+      - ../medicina/.env.docker
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../medicina:/var/www/html
+      - /var/www/html/vendor
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - luca_network
+
+  # ---------------------------------------------------------------------------
+  # Base de datos: PostgreSQL 16
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: medicina
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: prodigy03
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d medicina" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - luca_network
+
+  # ---------------------------------------------------------------------------
+  # Cache & Queues: Redis
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - luca_network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  luca_network:
+    driver: bridge
