@@ -15,9 +15,11 @@ services:
       NODE_ENV: development
       NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
       WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
     volumes:
       - .:/app
       - /app/node_modules
+      - /app/.next
     depends_on:
       - backend
     networks:
@@ -38,6 +40,7 @@ services:
     volumes:
       - ../medicina:/var/www/html
       - /var/www/html/vendor
+      - /var/www/html/bootstrap/cache
     depends_on:
       db:
         condition: service_healthy

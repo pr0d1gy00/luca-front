@@ -50,7 +50,8 @@ export default function Welcome() {
                  items-center justify-center
                  px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16
                  py-8 sm:py-12 md:py-16
-                 gap-6 sm:gap-8 md:gap-10 lg:gap-0"
+                 gap-6 sm:gap-8 md:gap-10 lg:gap-0
+                "
       initial="hidden"
       animate="visible"
       variants={CONTAINER_VARIANTS}
@@ -82,7 +83,7 @@ export default function Welcome() {
         <motion.h2
           variants={TEXT_CONTENT_VARIANTS}
           className="text-5xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl 2xl:text-9xl
-                     font-bold text-[#23dce1] leading-none"
+                     font-bold text-pharmako-care leading-none"
         >
           <span>¡</span>Hola<span>!</span>
         </motion.h2>
