@@ -58,9 +58,18 @@ export const appointmentApi = {
    * Create new appointment
    */
   create: async (data: CreateAppointmentDTO): Promise<AppointmentResponse> => {
+    const payload = {
+      patient_id: data.patientUuid,
+      user_id: data.doctorUuid,
+      clinic_branch_id: data.clinicBranchUuid || null,
+      date: data.date,
+      time: data.time,
+      type: data.type,
+      notes: data.notes || data.reason || "",
+    };
     const response = await apiClient.post<AppointmentResponse>(
       "/appointments",
-      data,
+      payload,
     );
     return response.data;
   },
@@ -69,9 +78,18 @@ export const appointmentApi = {
    * Update existing appointment
    */
   update: async (data: UpdateAppointmentDTO): Promise<AppointmentResponse> => {
+    const payload = {
+      ...(data.patientUuid && { patient_id: data.patientUuid }),
+      ...(data.doctorUuid && { user_id: data.doctorUuid }),
+      ...(data.clinicBranchUuid && { clinic_branch_id: data.clinicBranchUuid }),
+      ...(data.date && { date: data.date }),
+      ...(data.time && { time: data.time }),
+      ...(data.type && { type: data.type }),
+      ...(data.notes && { notes: data.notes }),
+    };
     const response = await apiClient.put<AppointmentResponse>(
       `/appointments/${data.uuid}`,
-      data,
+      payload,
     );
     return response.data;
   },
