@@ -17,8 +17,8 @@ export const catalogApi = {
 	 * Get doctors catalog
 	 */
 	getDoctors: async (params?: {
-		city_id?: number;
-		specialty_id?: number;
+		city_id?: number | string;
+		specialty_id?: number | string;
 		page?: number;
 		per_page?: number;
 		search?: string;
@@ -34,7 +34,7 @@ export const catalogApi = {
 	 * Get pharmacies catalog
 	 */
 	getPharmacies: async (params?: {
-		city_id?: number;
+		city_id?: number | string;
 		page?: number;
 		per_page?: number;
 		search?: string;
@@ -50,7 +50,7 @@ export const catalogApi = {
 	 * Get clinics catalog
 	 */
 	getClinics: async (params?: {
-		city_id?: number;
+		city_id?: number | string;
 		page?: number;
 		per_page?: number;
 		search?: string;

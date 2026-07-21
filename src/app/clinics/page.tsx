@@ -109,8 +109,14 @@ export default function ClinicsPage() {
 		setActiveClinicId(null);
 	}, [selectedCity, debouncedSearch]);
 
+	const parseFilterId = (val?: string) => {
+		if (!val) return undefined;
+		const num = Number(val);
+		return isNaN(num) ? val : num;
+	};
+
 	const { data: clinicsData, isLoading } = useClinics({
-		city_id: selectedCity ? Number(selectedCity) : undefined,
+		city_id: parseFilterId(selectedCity),
 		page,
 		per_page: 10,
 		search: debouncedSearch.trim() || undefined,

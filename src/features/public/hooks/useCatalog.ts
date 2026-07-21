@@ -1,14 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { catalogApi } from "../api/catalogApi";
-import type { Doctor, Pharmacy, Clinic, City } from "../types/catalog.types";
 
 // ============================================
 // DOCTORS
 // ============================================
 
 interface UseDoctorsOptions {
-	city_id?: number;
-	specialty_id?: number;
+	city_id?: number | string;
+	specialty_id?: number | string;
 	page?: number;
 	per_page?: number;
 	search?: string;
@@ -27,7 +26,7 @@ export function useDoctors(options: UseDoctorsOptions = {}) {
 // ============================================
 
 interface UsePharmaciesOptions {
-	city_id?: number;
+	city_id?: number | string;
 	page?: number;
 	per_page?: number;
 	search?: string;
@@ -46,7 +45,7 @@ export function usePharmacies(options: UsePharmaciesOptions = {}) {
 // ============================================
 
 interface UseClinicsOptions {
-	city_id?: number;
+	city_id?: number | string;
 	page?: number;
 	per_page?: number;
 	search?: string;

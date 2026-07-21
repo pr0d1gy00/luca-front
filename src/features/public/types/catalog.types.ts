@@ -3,7 +3,7 @@
 // ============================================
 
 export interface City {
-	id: number;
+	id: number | string;
 	name: string;
 }
 
@@ -15,7 +15,7 @@ export interface PaginationMeta {
 }
 
 export interface Specialty {
-	id: number;
+	id: number | string;
 	name: string;
 }
 

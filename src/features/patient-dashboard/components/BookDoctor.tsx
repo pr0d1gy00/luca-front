@@ -29,9 +29,15 @@ export function BookDoctorSection({ onBookAppointment }: BookDoctorProps) {
 	>();
 	const [searchQuery, setSearchQuery] = useState("");
 
+	const parseFilterId = (val?: string) => {
+		if (!val) return undefined;
+		const num = Number(val);
+		return isNaN(num) ? val : num;
+	};
+
 	const { data: doctorsData, isLoading } = useDoctors({
-		city_id: selectedCity ? Number(selectedCity) : undefined,
-		specialty_id: selectedSpecialty ? Number(selectedSpecialty) : undefined,
+		city_id: parseFilterId(selectedCity),
+		specialty_id: parseFilterId(selectedSpecialty),
 	});
 
 	const { data: citiesData } = useCities();
@@ -40,7 +46,7 @@ export function BookDoctorSection({ onBookAppointment }: BookDoctorProps) {
 
 	const specialties: Specialty[] = useMemo(() => {
 		if (!doctorsData?.data) return [];
-		const specialtyMap = new Map<number, Specialty>();
+		const specialtyMap = new Map<number | string, Specialty>();
 		doctorsData.data.forEach((doctor) => {
 			doctor.specialties.forEach((s) => {
 				if (!specialtyMap.has(s.id)) specialtyMap.set(s.id, s);
