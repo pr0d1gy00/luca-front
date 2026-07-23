@@ -64,7 +64,9 @@ function TreatmentCard({ treatment }: { treatment: Treatment }) {
 
       <h3 className="text-lg font-bold text-slate-900 mb-1">{medication}</h3>
       <p className="text-sm text-slate-600 mb-0.5">{dosage}</p>
-      <p className="text-sm text-slate-500">{frequency}</p>
+      {frequency && frequency !== dosage && (
+        <p className="text-sm text-slate-500">{frequency}</p>
+      )}
 
       <div className="mt-4 space-y-2">
         <div className="flex items-center justify-between text-xs">
@@ -78,7 +80,7 @@ function TreatmentCard({ treatment }: { treatment: Treatment }) {
               progress >= 75
                 ? "bg-emerald-500"
                 : progress >= 40
-                  ? "bg-pharmako-care-light0"
+                  ? "bg-pharmako-care"
                   : "bg-amber-500",
             )}
             style={{ width: `${progress}%` }}

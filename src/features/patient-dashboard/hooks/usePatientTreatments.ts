@@ -14,7 +14,7 @@ export function usePatientTreatments(): Treatment[] {
     id: `trt-${idx}`,
     medication: t.name,
     dosage: t.instructions,
-    frequency: t.instructions,
+    frequency: "",
     duration: "Tratamiento",
     progress: t.progress,
     status: "active",
