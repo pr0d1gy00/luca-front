@@ -1,13 +1,7 @@
 "use client";
 
 import React, { Component, ReactNode } from "react";
-import {
-  AlertTriangle,
-  RefreshCw,
-  ChevronDown,
-  ChevronUp,
-  LifeBuoy,
-} from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { logErrorToService } from "@/lib/telemetry";
 
@@ -28,7 +22,6 @@ interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
   errorInfo: React.ErrorInfo | null;
-  showTechnicalDetails: boolean;
 }
 
 export class ErrorBoundary extends Component<
@@ -39,7 +32,6 @@ export class ErrorBoundary extends Component<
     hasError: false,
     error: null,
     errorInfo: null,
-    showTechnicalDetails: false,
   };
 
   public static getDerivedStateFromError(
@@ -51,7 +43,7 @@ export class ErrorBoundary extends Component<
   public componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     this.setState({ errorInfo });
 
-    // Send error telemetry to external monitoring service (Sentry, etc.)
+    // Send error telemetry to external monitoring service
     logErrorToService(error, {
       boundaryName: this.props.name || "GenericErrorBoundary",
       componentStack: errorInfo.componentStack,
@@ -66,20 +58,13 @@ export class ErrorBoundary extends Component<
       hasError: false,
       error: null,
       errorInfo: null,
-      showTechnicalDetails: false,
     });
-  };
-
-  public toggleDetails = () => {
-    this.setState((prev) => ({
-      showTechnicalDetails: !prev.showTechnicalDetails,
-    }));
   };
 
   public render() {
     if (this.state.hasError) {
       const { error } = this.state;
-      const { fallback, name, showDetails } = this.props;
+      const { fallback, name } = this.props;
 
       if (fallback) {
         if (typeof fallback === "function") {
@@ -92,32 +77,33 @@ export class ErrorBoundary extends Component<
       }
 
       return (
-        <div className="w-full min-h-[280px] flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6 text-center">
-            {/* Header Icon */}
-            <div className="mx-auto size-12 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/50 flex items-center justify-center text-amber-600 dark:text-amber-400">
-              <AlertTriangle className="size-6" />
-            </div>
+        <div className="w-full flex items-center justify-center p-4 sm:p-6 min-h-[400px]">
+          <div className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 text-center flex flex-col items-center">
+            {/* Person Error Boundary Illustration */}
+            <img
+              src="/PharmakoPersonErrorBoundaryExtraLarge-PNG.png"
+              alt="Ilustración de error"
+              className="w-44 sm:w-52 h-auto object-contain mx-auto select-none pointer-events-none"
+            />
 
-            {/* Main Info */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                Se produjo un problema insospechado
+            {/* Friendly Main Info */}
+            <div className="space-y-2 max-w-md">
+              <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                ¡Ups! Algo no salió como esperábamos
               </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+              <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                 {name
-                  ? `El módulo "${name}" no pudo cargarse correctamente.`
-                  : "Ocurrió un error inesperado al procesar esta sección."}{" "}
-                El equipo técnico ya fue notificado automáticamente.
+                  ? `Ocurrió un inconveniente al cargar el módulo "${name}".`
+                  : "No te preocupes, tu información está resguardada. Tuvimos un inconveniente técnico inesperado en esta sección."}{" "}
+                Ya notificamos a nuestro equipo para resolverlo.
               </p>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2 w-full">
               <Button
                 onClick={this.handleReset}
-                variant="default"
-                className="bg-teal-600 hover:bg-teal-700 text-white shadow-sm font-medium"
+                className="bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl px-5 py-2.5 h-11"
               >
                 <RefreshCw className="mr-2 size-4" />
                 Reintentar
@@ -125,46 +111,26 @@ export class ErrorBoundary extends Component<
               <Button
                 onClick={() => window.location.reload()}
                 variant="outline"
-                className="border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
+                className="border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl px-5 py-2.5 h-11"
               >
                 Recargar página
               </Button>
             </div>
 
-            {/* Collapsible Technical Details for Debugging */}
-            {(showDetails || process.env.NODE_ENV === "development") &&
-              error && (
-                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 text-left">
-                  <button
-                    onClick={this.toggleDetails}
-                    type="button"
-                    className="flex items-center justify-between w-full text-xs font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors py-1"
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <LifeBuoy className="size-3.5" />
-                      Detalles técnicos para diagnóstico
-                    </span>
-                    {this.state.showTechnicalDetails ? (
-                      <ChevronUp className="size-3.5" />
-                    ) : (
-                      <ChevronDown className="size-3.5" />
-                    )}
-                  </button>
-
-                  {this.state.showTechnicalDetails && (
-                    <div className="mt-3 p-3 bg-slate-900 text-slate-200 rounded-xl text-xs font-mono overflow-x-auto space-y-2 max-h-48 border border-slate-800">
-                      <div className="font-semibold text-rose-400">
-                        {error.name}: {error.message}
-                      </div>
-                      {error.stack && (
-                        <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-slate-400">
-                          {error.stack}
-                        </pre>
-                      )}
-                    </div>
-                  )}
+            {/* Development Error Details Box (Only in Development) */}
+            {process.env.NODE_ENV === "development" && error && (
+              <div className="w-full text-left mt-4 p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-2 overflow-hidden">
+                <div className="flex items-center gap-2 text-xs font-semibold text-rose-400 font-mono border-b border-slate-800 pb-2">
+                  <span className="size-2 rounded-full bg-rose-500 animate-pulse" />
+                  [DEV ONLY] {error.name || "Error"}: {error.message}
                 </div>
-              )}
+                {error.stack && (
+                  <pre className="text-[11px] font-mono text-slate-400 leading-relaxed overflow-x-auto max-h-48 whitespace-pre-wrap pt-1">
+                    {error.stack}
+                  </pre>
+                )}
+              </div>
+            )}
           </div>
         </div>
       );
