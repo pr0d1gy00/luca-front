@@ -271,9 +271,10 @@ Scheduling/agenda system. Doctors manage their appointment calendar.
 | 6 | `time` | `VARCHAR` | NOT NULL | — | Time slot, e.g. "09:30" |
 | 7 | `type` | `VARCHAR` | NOT NULL | — | e.g. "Control general", "Cardiología" |
 | 8 | `status` | `VARCHAR` | NOT NULL | `pending` | pending -> in-progress -> completed -> cancelled |
-| 9 | `notes` | `TEXT` | NULL | — | Internal doctor notes |
-| 10 | `createdAt` | `TIMESTAMP` | NOT NULL | `NOW()` | Creation |
-| 11 | `updatedAt` | `TIMESTAMP` | NOT NULL | `NOW()` | Last update |
+| 9 | `reason` | `TEXT` | NULL | — | Motivo de la consulta expresado por el paciente |
+| 10 | `notes` | `TEXT` | NULL | — | Internal doctor notes |
+| 11 | `createdAt` | `TIMESTAMP` | NOT NULL | `NOW()` | Creation |
+| 12 | `updatedAt` | `TIMESTAMP` | NOT NULL | `NOW()` | Last update |
 
 **Business rules:**
 - Doctor (and clinic) calendar: appointments are scoped to doctor+date

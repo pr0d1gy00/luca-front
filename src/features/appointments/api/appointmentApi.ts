@@ -65,7 +65,8 @@ export const appointmentApi = {
       date: data.date,
       time: data.time,
       type: data.type,
-      notes: data.notes || data.reason || "",
+      reason: data.reason || "",
+      notes: data.notes || "",
     };
     const response = await apiClient.post<AppointmentResponse>(
       "/appointments",
@@ -85,7 +86,8 @@ export const appointmentApi = {
       ...(data.date && { date: data.date }),
       ...(data.time && { time: data.time }),
       ...(data.type && { type: data.type }),
-      ...(data.notes && { notes: data.notes }),
+      ...(data.reason !== undefined && { reason: data.reason }),
+      ...(data.notes !== undefined && { notes: data.notes }),
     };
     const response = await apiClient.put<AppointmentResponse>(
       `/appointments/${data.uuid}`,

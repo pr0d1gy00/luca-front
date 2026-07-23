@@ -24,6 +24,7 @@ CREATE TABLE "Appointment" (
     "time" VARCHAR NOT NULL, -- e.g. "09:30"
     "type" VARCHAR NOT NULL, -- e.g. "Control general", "Primera vez"
     "status" VARCHAR NOT NULL DEFAULT 'pending', -- pending, in-progress, completed, cancelled
+    "reason" TEXT, -- Motivo de la consulta
     "notes" TEXT,
     "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
     "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW()

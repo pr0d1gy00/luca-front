@@ -44,6 +44,7 @@ CREATE TABLE Appointment (
   type            VARCHAR NOT NULL,           -- Ej: "Control general", "Cardiología"
   status          VARCHAR NOT NULL DEFAULT 'pending'
                     CHECK (status IN ('pending', 'in-progress', 'completed', 'cancelled')),
+  reason          TEXT,                       -- Motivo de la consulta
   notes           TEXT,                       -- Notas internas del doctor
   createdAt       TIMESTAMP DEFAULT NOW(),
   updatedAt       TIMESTAMP DEFAULT NOW(),
