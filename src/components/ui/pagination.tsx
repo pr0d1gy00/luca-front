@@ -119,7 +119,7 @@ export function Pagination({
 
   return (
     <div
-      className={`flex flex-col sm:flex-row items-center justify-between gap-4 p-3 bg-white border border-slate-200 rounded-2xl shadow-xs transition-all ${className}`}
+      className={`flex flex-col sm:flex-row items-center justify-between gap-4 p-3 bg-white border border-slate-200 rounded-xl transition-all ${className}`}
     >
       {/* Items range summary */}
       {showSummary && (
@@ -194,11 +194,10 @@ export function Pagination({
                 type="button"
                 onClick={() => onPageChange(page)}
                 aria-current={isCurrent ? "page" : undefined}
-                className={`min-w-[34px] h-8.5 px-2.5 rounded-xl text-xs font-bold transition-all border ${
-                  isCurrent
+                className={`min-w-[34px] h-8.5 px-2.5 rounded-xl text-xs font-bold transition-all border ${isCurrent
                     ? activeStyles
                     : `bg-white text-slate-700 border-slate-200 ${hoverStyles}`
-                }`}
+                  }`}
               >
                 {page}
               </button>

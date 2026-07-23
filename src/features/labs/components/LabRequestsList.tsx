@@ -132,7 +132,7 @@ export function LabRequestsList() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
-            <div className="bg-teal-50 text-teal-600 rounded-xl p-2.5">
+            <div className="bg-phamako-care/10 text-pharmako-care rounded-xl p-2.5">
               <Dna className="w-6 h-6" />
             </div>
             Pedidos de Laboratorio
@@ -147,14 +147,14 @@ export function LabRequestsList() {
             setEditingRequest(null);
             setIsModalOpen(true);
           }}
-          className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold flex items-center gap-2"
+          className="bg-pharmako-care hover:bg-pharmako-care-hover text-white rounded-xl font-bold flex items-center gap-2 h-12"
         >
           <Plus className="w-5 h-5" /> Emitir Examen
         </Button>
       </div>
 
       {/* Filters card */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Search */}
         <div className="relative w-full md:max-w-xs group">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors pointer-events-none" />
@@ -171,17 +171,16 @@ export function LabRequestsList() {
         </div>
 
         {/* Status filters */}
-        <div className="flex bg-slate-100 p-1 rounded-xl">
+        <div className="flex">
           <button
             onClick={() => {
               setStatusFilter("ALL");
               setPage(1);
             }}
-            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              statusFilter === "ALL"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-800"
-            }`}
+            className={`px-4 py-1.5 text-sm font-bold transition-all ${statusFilter === "ALL"
+              ? "bg-white border-b border-pharmako-care text-pharmako-care"
+              : "text-slate-500 hover:text-slate-800"
+              }`}
           >
             Todos
           </button>
@@ -190,11 +189,10 @@ export function LabRequestsList() {
               setStatusFilter("PENDING");
               setPage(1);
             }}
-            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              statusFilter === "PENDING"
-                ? "bg-white text-amber-600 shadow-sm"
-                : "text-slate-500 hover:text-slate-800"
-            }`}
+            className={`px-4 py-1.5 text-sm font-bold transition-all ${statusFilter === "PENDING"
+              ? "bg-white border-b border-pharmako-care text-pharmako-care"
+              : "text-slate-500 hover:text-slate-800"
+              }`}
           >
             Pendientes
           </button>
@@ -203,11 +201,10 @@ export function LabRequestsList() {
               setStatusFilter("COMPLETED");
               setPage(1);
             }}
-            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              statusFilter === "COMPLETED"
-                ? "bg-white text-emerald-600 shadow-sm"
-                : "text-slate-500 hover:text-slate-800"
-            }`}
+            className={`px-4 py-1.5 text-sm font-bold transition-all ${statusFilter === "COMPLETED"
+              ? "bg-white border-b border-pharmako-care text-pharmako-care"
+              : "text-slate-500 hover:text-slate-800"
+              }`}
           >
             Completados
           </button>
@@ -215,7 +212,7 @@ export function LabRequestsList() {
       </div>
 
       {/* Main requests table card */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         {isLoading ? (
           <div className="p-16 text-center text-sm text-slate-400">
             Cargando pedidos...
@@ -227,7 +224,7 @@ export function LabRequestsList() {
           </div>
         ) : (
           <div className="w-full overflow-x-auto">
-            <table className="w-full min-w-[800px] border-collapse">
+            <table className="w-full min-w-200 border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/50">
                   <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
@@ -252,7 +249,7 @@ export function LabRequestsList() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredRequests.map((req) => {
-                  const patient = getPatientData(req.patientUuid);
+                  const patient = getPatientData(req.patient.uuid);
                   return (
                     <tr
                       key={req.uuid}

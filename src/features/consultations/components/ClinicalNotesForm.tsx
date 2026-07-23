@@ -571,13 +571,16 @@ export function ClinicalNotesForm({
   }, [defaultUuid, setValue, watch]);
 
   const currentConsultationUuid = watch("uuid") || defaultUuid;
-  const { data: allLabRequests = [], isLoading: isLoadingLabs } = useLabRequests(patient?.uuid);
-  const consultationLabs = allLabRequests.filter(
-    (req) =>
-      (req.consultationUuid === currentConsultationUuid ||
-        (req as any).consultation?.uuid === currentConsultationUuid) &&
-      !req.deletedAt
-  );
+  const { data: labRequestsResponse, isLoading: isLoadingLabs } = useLabRequests(patient?.uuid, 1, 100);
+  const allLabRequests = labRequestsResponse?.data ?? [];
+  const consultationLabs = Array.isArray(allLabRequests)
+    ? allLabRequests.filter(
+        (req) =>
+          (req.consultationUuid === currentConsultationUuid ||
+            (req as unknown as { consultation?: { uuid?: string } }).consultation?.uuid === currentConsultationUuid) &&
+          !req.deletedAt
+      )
+    : [];
 
   // Initialize form laboratorios from database when loaded
   useEffect(() => {
