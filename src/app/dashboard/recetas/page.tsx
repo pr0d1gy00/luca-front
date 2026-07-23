@@ -60,6 +60,8 @@ interface PrescriptionItem {
     name: string;
     concentration?: string;
     presentation?: string;
+    active_principle?: string;
+    commercial_name?: string;
   };
 }
 
@@ -294,7 +296,11 @@ export default function PatientPrescriptionsPage() {
                             className="inline-flex items-center gap-1 px-2 py-1 bg-pharmako-primary-light text-pharmako-text-secondary rounded-lg text-[10px] font-semibold border border-pharmako-primary-muted/20"
                           >
                             <Pill className="h-2.5 w-2.5 text-pharmako-care" />
-                            {item.medication?.name || "Medicamento"}
+                            {item.medication?.active_principle +
+                              " " +
+                              "(" +
+                              item.medication?.commercial_name +
+                              ")" || "Medicamento"}
                           </span>
                         ))
                       ) : (
@@ -411,7 +417,10 @@ export default function PatientPrescriptionsPage() {
                               <Pill className="h-4 w-4 text-pharmako-care shrink-0 mt-0.5" />
                               <div>
                                 <p className="text-sm font-bold text-pharmako-text-primary">
-                                  {item.medication?.name || "Medicamento"}
+                                  {item.medication?.active_principle +
+                                    " " +
+                                    `(${item.medication?.commercial_name})` ||
+                                    "Medicamento"}
                                 </p>
                                 {item.medication?.concentration && (
                                   <p className="text-[10px] text-pharmako-text-secondary font-medium">
