@@ -231,11 +231,11 @@ export function ClinicalHistoryTimeline({
           <ol className="relative border-l-2 border-slate-200 ml-4 space-y-6">
             {entries.map((entry) => (
               <li key={entry.id} className="relative pl-8">
-                <div className="absolute left-[-9px] top-[50%] size-4 rounded-full bg-blue-700 ring-4 ring-white" />
+                <div className="absolute left-[-9px] top-[50%] size-4 rounded-full bg-pharmako-care ring-4 ring-white" />
 
                 <button
                   onClick={() => setSelectedId(entry.id)}
-                  className="w-full text-left bg-slate-50 rounded-2xl p-5 border border-slate-200 hover:bg-white hover:border-slate-300 transition-all cursor-pointer"
+                  className="w-full text-left rounded-2xl p-5 border border-slate-200 hover:bg-pharmako-care/10 hover:border-pharmako-care transition-all cursor-pointer"
                 >
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <time className="text-xs font-medium text-pharmako-care">

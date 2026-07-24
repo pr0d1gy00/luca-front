@@ -1423,12 +1423,12 @@ export function PatientCrudLayout({
 					{selectedPatient && (
 						<div className="mt-8 space-y-6">
 							{/* Patient Info Card Header */}
-							<div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+							<div className="border border-slate-200/60 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 								<div>
 									<h4 className="text-sm font-bold text-slate-800">
 										{selectedPatient.firstName} {selectedPatient.lastName}
 									</h4>
-									<span className="text-[11px] text-slate-400 font-medium block mt-0.5">
+									<span className="text-sm text-slate-400 font-medium block mt-0.5">
 										DNI: {selectedPatient.nationalId} | Edad:{" "}
 										{calculateAge(new Date(selectedPatient.birthDate))} años
 									</span>
@@ -1436,7 +1436,7 @@ export function PatientCrudLayout({
 								<div className="flex gap-2">
 									<Badge
 										variant="outline"
-										className="bg-white text-slate-600 border-slate-200 text-[10px] rounded-full px-2.5 py-0.5"
+										className="bg-white text-slate-600 border-slate-200 text-sm rounded-full px-2.5 py-0.5"
 									>
 										Sangre:{" "}
 										{(selectedPatient.bloodType ?? "")
@@ -1447,7 +1447,7 @@ export function PatientCrudLayout({
 										selectedPatient.chronicConditions.length > 0 && (
 											<Badge
 												variant="outline"
-												className="bg-amber-50 text-amber-700 border-amber-200 text-[10px] rounded-full px-2.5 py-0.5 font-semibold"
+												className="bg-amber-50 text-amber-700 border-amber-200 text-sm rounded-full px-2.5 py-0.5 font-semibold"
 											>
 												Crónico
 											</Badge>
