@@ -211,7 +211,7 @@ export function ClinicalNotesForm({
 
   const handleApplyCombo = (combo: any) => {
     const newMedForms = [...medForms];
-    
+
     combo.items.forEach((item: any) => {
       const qty = parseQuantity(item.dose);
       const freq = parseFrequency(item.frequency);
@@ -575,11 +575,11 @@ export function ClinicalNotesForm({
   const allLabRequests = labRequestsResponse?.data ?? [];
   const consultationLabs = Array.isArray(allLabRequests)
     ? allLabRequests.filter(
-        (req) =>
-          (req.consultationUuid === currentConsultationUuid ||
-            (req as unknown as { consultation?: { uuid?: string } }).consultation?.uuid === currentConsultationUuid) &&
-          !req.deletedAt
-      )
+      (req) =>
+        (req.consultationUuid === currentConsultationUuid ||
+          (req as unknown as { consultation?: { uuid?: string } }).consultation?.uuid === currentConsultationUuid) &&
+        !req.deletedAt
+    )
     : [];
 
   // Initialize form laboratorios from database when loaded
@@ -782,34 +782,40 @@ export function ClinicalNotesForm({
     const labs = submittedData.laboratorios || [];
 
     return (
-      <div className="flex flex-col gap-8 max-w-6xl mx-auto">
+      <div className="flex flex-col gap-8 max-w-6xl mx-auto px-2 sm:px-4 py-4">
         <div className="text-center space-y-1">
-          <h2 className="text-xl font-bold text-slate-800">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800">
             Confirmación de Récipes y Órdenes
           </h2>
-          <p className="text-sm text-slate-500">
-            Revisá los récipe de medicamentos y órdenes de exámenes clínicos antes de finalizar.
+          <p className="text-xs sm:text-sm text-slate-500 max-w-lg mx-auto">
+            Revisá el récipe de medicamentos y órdenes de exámenes clínicos antes de finalizar la consulta.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-          <div className="space-y-4 lg:col-span-1">
-            <h3 className="text-xs font-semibold text-slate-500 text-center uppercase tracking-wider">
-              Récipe de Medicamentos
-            </h3>
-            <DigitalPrescriptionCard
-              doctor={doctor as Doctor}
-              patient={patient as Patient}
-              prescriptions={prescriptionItems}
-              medications={meds as unknown as Medication[]}
-              issuanceDate={new Date()}
-            />
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Main Documents Column (Prescription + Labs) */}
+          <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-6 w-full">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between px-1">
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Récipe de Medicamentos
+                </h3>
+                <Badge variant="outline" className="rounded-full bg-teal-50 text-pharmako-care border-pharmako-care text-xs">
+                  Vista Previa Oficial
+                </Badge>
+              </div>
+              <DigitalPrescriptionCard
+                doctor={doctor as Doctor}
+                patient={patient as Patient}
+                prescriptions={prescriptionItems}
+                medications={meds as unknown as Medication[]}
+                issuanceDate={new Date()}
+              />
+            </div>
 
-          <div className="space-y-4 lg:col-span-1">
             {labs.length > 0 ? (
-              <>
-                <h3 className="text-xs font-semibold text-slate-500 text-center uppercase tracking-wider">
+              <div className="space-y-3 mt-4">
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1">
                   Orden de Laboratorio
                 </h3>
                 {labs.map((lab, i) => (
@@ -822,23 +828,20 @@ export function ClinicalNotesForm({
                     issuanceDate={new Date()}
                   />
                 ))}
-              </>
+              </div>
             ) : (
-              <div className="h-full flex flex-col justify-center items-center p-8 bg-slate-50 border border-slate-200/60 rounded-3xl text-slate-400 text-center select-none min-h-[250px]">
-                <Dna className="w-8 h-8 text-slate-300 mb-2" />
-                <p className="text-xs font-medium">Sin exámenes solicitados</p>
-                <p className="text-xxs text-slate-400 mt-1 max-w-[200px]">No se agregaron órdenes de laboratorio para esta consulta.</p>
+              <div className="p-6 bg-slate-50 border border-slate-200/60 rounded-2xl text-slate-400 text-center select-none flex items-center justify-center gap-3">
+                <Dna className="w-5 h-5 text-slate-300" />
+                <p className="text-xs font-medium">No se agregaron órdenes de laboratorio para esta consulta.</p>
               </div>
             )}
           </div>
 
-          <div className="space-y-4 lg:col-span-1">
-            <h3 className="text-xs font-semibold text-slate-500 text-center uppercase tracking-wider">
-              Facturación Administrativa
-            </h3>
-            <div className="bg-white rounded-3xl border border-slate-200 p-6 flex flex-col gap-4 shadow-sm">
+          {/* Sidebar Column (Facturación & Actions) */}
+          <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-6 flex flex-col gap-6 w-full">
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 flex flex-col gap-4 shadow-sm">
               <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-                <Layers className="w-5 h-5 text-teal-600" />
+                <Layers className="w-5 h-5 text-pharmako-care" />
                 <h3 className="text-sm font-bold text-slate-900">
                   Pre-Factura Interna (LUCA)
                 </h3>
@@ -848,13 +851,13 @@ export function ClinicalNotesForm({
                   <span>Consulta Médica General:</span>
                   <span className="font-semibold text-slate-900">50.00 USD</span>
                 </div>
-                {submittedData.servicesPerformed && submittedData.servicesPerformed.map((val: any, idx: number) => {
+                {submittedData.servicesPerformed && submittedData.servicesPerformed.map((val: { providerServiceUuid: string; price: number; quantity: number }, idx: number) => {
                   const pSvc = myServices.find((s) => s.uuid === val.providerServiceUuid);
                   const baseSvc = pSvc ? globalServices.find((s) => s.uuid === pSvc.serviceUuid) : null;
                   const name = pSvc?.customName || baseSvc?.name || "Servicio extra";
                   return (
                     <div key={idx} className="flex justify-between text-slate-600 pl-3 border-l-2 border-teal-500/30">
-                      <span className="truncate max-w-[150px]">{name} (x{val.quantity}):</span>
+                      <span className="truncate max-w-[160px]">{name} (x{val.quantity}):</span>
                       <span className="font-semibold text-slate-900">{(val.price * val.quantity).toFixed(2)} USD</span>
                     </div>
                   );
@@ -865,44 +868,44 @@ export function ClinicalNotesForm({
                     {(
                       50 +
                       (submittedData.servicesPerformed || []).reduce(
-                        (acc: number, val: any) => acc + val.price * val.quantity,
+                        (acc: number, val: { price: number; quantity: number }) => acc + val.price * val.quantity,
                         0
                       )
                     ).toFixed(2)} USD
                   </span>
                 </div>
               </div>
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xxs text-slate-400 mt-2 leading-relaxed">
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-[10px] text-slate-400 leading-relaxed">
                 * Este documento es un registro interno para la administración del profesional y la clínica. No representa una factura fiscal de cobro al paciente.
+              </div>
+
+              <div className="flex flex-col gap-2.5 pt-2 border-t border-slate-100">
+                <Button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => onSubmit(submittedData)}
+                  className="w-full rounded-xl bg-pharmako-care hover:bg-pharmako-care-hover text-white font-semibold h-12 flex items-center justify-center gap-2 disabled:opacity-50 shadow-sm"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="size-5 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    "Confirmar y Guardar Todo"
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowPrescription(false)}
+                  className="w-full rounded-xl border-slate-200 h-10 text-slate-600 text-xs font-semibold"
+                >
+                  ← Editar Consulta
+                </Button>
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="flex justify-center gap-3 border-t border-slate-100 pt-6">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setShowPrescription(false)}
-            className="rounded-2xl border-slate-200 h-12 px-6"
-          >
-            ← Editar Consulta
-          </Button>
-          <Button
-            type="button"
-            disabled={isSubmitting}
-            onClick={() => onSubmit(submittedData)}
-            className="rounded-2xl bg-pharmako-care hover:bg-pharmako-care-hover text-white font-semibold px-8 h-12 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="size-5 animate-spin" />
-                Guardando...
-              </>
-            ) : (
-              "Confirmar y Guardar Todo"
-            )}
-          </Button>
         </div>
       </div>
     );
@@ -1625,11 +1628,10 @@ export function ClinicalNotesForm({
                             onClick={() => {
                               setValue("followUp.channel", chan.value as any);
                             }}
-                            className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all ${
-                              isSelected
-                                ? "border-teal-600 bg-teal-50/50 text-teal-600"
-                                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                            }`}
+                            className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all ${isSelected
+                              ? "border-teal-600 bg-teal-50/50 text-teal-600"
+                              : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                              }`}
                           >
                             <span className="text-xs font-bold">{chan.label}</span>
                           </button>
@@ -1789,8 +1791,8 @@ export function ClinicalNotesForm({
                     const name = pSvc?.customName || baseSvc?.name || "Servicio desconocido";
 
                     return (
-                      <div 
-                        key={field.id} 
+                      <div
+                        key={field.id}
                         className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100/50 transition-colors"
                       >
                         <div className="flex-1">
