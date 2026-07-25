@@ -118,6 +118,31 @@ function getDefaultElementProps(elementType: string): Partial<CanvasElement> {
       maxRows: 10,
       children: [],
     },
+    signature: {
+      title: "Firma",
+      signerLabel: "Firma del Médico",
+      includeDate: true,
+      includeName: true,
+      includeLicense: true,
+    },
+    "computed-field": {
+      title: "Campo Calculado",
+      formula: "bmi",
+      sourceFields: [],
+      unit: "",
+    },
+    scale: {
+      title: "Escala de Evaluación",
+      scaleType: "nrs",
+      min: 0,
+      max: 10,
+      labels: { 0: "Sin dolor", 10: "Dolor máximo" },
+    },
+    "rich-text": {
+      title: "Texto Informativo",
+      content: "<p>Escriba aquí el contenido informativo o legal...</p>",
+      editable: false,
+    },
   };
   return defaults[elementType] ?? { title: elementType };
 }

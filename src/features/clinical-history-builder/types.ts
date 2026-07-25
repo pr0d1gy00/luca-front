@@ -139,6 +139,38 @@ export interface FileUploadBlock extends BaseBlock {
   preview?: boolean;
 }
 
+// --- Universal Document Fields ---
+export interface SignatureBlock extends BaseBlock {
+  type: "signature";
+  signerLabel?: string; // "Firma del Médico" | "Firma del Paciente"
+  includeDate?: boolean;
+  includeName?: boolean;
+  includeLicense?: boolean; // Matrícula / Nro. de colegiatura
+}
+
+export interface ComputedFieldBlock extends BaseBlock {
+  type: "computed-field";
+  formula: "bmi" | "age-from-dob" | "weeks-of-pregnancy" | "custom";
+  customFormula?: string;
+  sourceFields?: string[]; // IDs de campos usados en el cálculo
+  unit?: string;
+  displayFormat?: string;
+}
+
+export interface ScaleBlock extends BaseBlock {
+  type: "scale";
+  scaleType: "likert" | "nrs" | "vas";
+  min: number;
+  max: number;
+  labels?: Record<number, string>; // Ej: { 0: "Sin dolor", 10: "Dolor máximo" }
+}
+
+export interface RichTextBlock extends BaseBlock {
+  type: "rich-text";
+  content?: string; // HTML sanitizado (solo lectura en el form llenado)
+  editable?: boolean; // false = informativo/legal, true = editable por quien llena
+}
+
 // ------------------------------------------------------------
 // CONTAINER BLOCKS — Bloques que contienen children
 // ------------------------------------------------------------
@@ -178,7 +210,18 @@ export interface HeaderBlock extends BaseBlock {
   subtitleText?: string;
   contactInfo?: string;
   showPatientData?: boolean;
-  patientDataFields?: ("name" | "idNumber" | "age" | "date")[];
+  patientDataFields?: (
+    | "name"
+    | "idNumber"
+    | "age"
+    | "date"
+    | "doctor-name"
+    | "doctor-license"
+    | "establishment"
+    | "document-number"
+    | "second-doctor"
+    | "witness-name"
+  )[];
   style?: "simple" | "boxed" | "bordered";
 }
 
@@ -217,6 +260,10 @@ export type CanvasElement =
   | VitalSignsBlock
   | Cie10SelectorBlock
   | FileUploadBlock
+  | SignatureBlock
+  | ComputedFieldBlock
+  | ScaleBlock
+  | RichTextBlock
   | GridRowBlock
   | SectionBlock
   | VisualSeparatorBlock
@@ -252,6 +299,39 @@ export interface ToolboxBlockDefinition {
 }
 
 // ------------------------------------------------------------
+// DOCUMENT CATEGORY — Clasificación universal de documentos
+// ------------------------------------------------------------
+
+export type DocumentCategory =
+  | "historia-clinica"
+  | "formulario-evaluacion"
+  | "nota-evolucion"
+  | "consentimiento"
+  | "certificado"
+  | "receta"
+  | "orden-medica"
+  | "epicrisis"
+  | "triaje"
+  | "protocolo"
+  | "seguimiento"
+  | "otro";
+
+export const DOCUMENT_CATEGORY_LABELS: Record<DocumentCategory, string> = {
+  "historia-clinica": "Historia Clínica",
+  "formulario-evaluacion": "Formulario de Evaluación",
+  "nota-evolucion": "Nota de Evolución",
+  consentimiento: "Consentimiento Informado",
+  certificado: "Certificado Médico",
+  receta: "Receta Médica",
+  "orden-medica": "Orden Médica",
+  epicrisis: "Epicrisis / Alta",
+  triaje: "Triaje / Admisión",
+  protocolo: "Protocolo",
+  seguimiento: "Seguimiento",
+  otro: "Otro",
+};
+
+// ------------------------------------------------------------
 // CLINICAL HISTORY SCHEMA — Raíz del documento
 // ------------------------------------------------------------
 
@@ -260,9 +340,13 @@ export type TemplateStatus = "draft" | "published";
 export interface ClinicalHistorySchema {
   id: string;
   name: string;
+  documentCategory?: DocumentCategory;
   description?: string;
   version: string;
   specialty?: string;
+  tags?: string[];
+  targetRole?: ("doctor" | "nurse" | "admin")[];
+  applicableTo?: ("adult" | "pediatric" | "obstetric" | "all")[];
   status: TemplateStatus;
   createdAt: string;
   updatedAt: string;
@@ -341,6 +425,10 @@ export const BLOCK_TYPE_LABELS: Record<string, string> = {
   "vital-signs": "Signos Vitales",
   "cie10-selector": "Selector CIE-10",
   "file-upload": "Subida de Archivos",
+  signature: "Firma",
+  "computed-field": "Campo Calculado",
+  scale: "Escala (Likert / NRS)",
+  "rich-text": "Texto Informativo",
   "grid-row": "Fila de Columnas",
   section: "Sección / Acordeón",
   "visual-separator": "Separador Visual",

@@ -4,6 +4,7 @@ import type { ClinicalHistorySchema } from "../types";
 export const generalMedicineTemplate: ClinicalHistorySchema = {
   id: "template-general-001",
   name: "Consulta Clínica General",
+  documentCategory: "historia-clinica",
   description:
     "Plantilla base para atención médica general. Adaptable a cualquier especialidad.",
   version: "1.0.0",
@@ -163,6 +164,7 @@ export const generalMedicineTemplate: ClinicalHistorySchema = {
 export const pediatricTemplate: ClinicalHistorySchema = {
   id: "template-pediatric-001",
   name: "Consulta Pediátrica",
+  documentCategory: "historia-clinica",
   description:
     "Control de crecimiento, esquema de vacunas y desarrollo infantil.",
   version: "1.0.0",
@@ -297,7 +299,8 @@ export const pediatricTemplate: ClinicalHistorySchema = {
 // ─── 3. CONSULTA GINECOLÓGICA ────────────────────────────────────────────
 export const gynecologyTemplate: ClinicalHistorySchema = {
   id: "template-gynecology-001",
-  name: "Consulta Ginecológica y Obstétrica",
+  name: "Consulta Ginecológica",
+  documentCategory: "historia-clinica",
   description: "Control ginecológico de rutina, citología y control prenatal.",
   version: "1.0.0",
   specialty: "ginecologia",
@@ -406,7 +409,8 @@ export const gynecologyTemplate: ClinicalHistorySchema = {
 // ─── 4. TRIAJE GENERAL ───────────────────────────────────────────────────
 export const triageTemplate: ClinicalHistorySchema = {
   id: "template-triage-001",
-  name: "Ficha de Triaje de Emergencia",
+  name: "Ficha de Triaje / Admisión",
+  documentCategory: "triaje",
   description:
     "Clasificación rápida de riesgo y toma de constantes vitales al ingreso.",
   version: "1.0.0",

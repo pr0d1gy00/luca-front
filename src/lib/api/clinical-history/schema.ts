@@ -25,9 +25,13 @@ async function fetchAllSchemas(): Promise<{
 async function saveSchema(
   schema: ClinicalHistorySchema,
 ): Promise<{ schema: ClinicalHistorySchema }> {
+  const payload = {
+    ...schema,
+    document_category: schema.documentCategory ?? "historia-clinica",
+  };
   const res = await apiClient.post<{ schema: ClinicalHistorySchema }>(
     BASE,
-    schema,
+    payload,
   );
   return res.data;
 }
@@ -41,9 +45,13 @@ async function patchSchema(
   id: string,
   data: Partial<ClinicalHistorySchema>,
 ): Promise<{ schema: ClinicalHistorySchema }> {
+  const payload = {
+    ...data,
+    ...(data.documentCategory && { document_category: data.documentCategory }),
+  };
   const res = await apiClient.patch<{ schema: ClinicalHistorySchema }>(
     `${BASE}/${id}`,
-    data,
+    payload,
   );
   return res.data;
 }
