@@ -22,6 +22,10 @@ import type {
   BlockCondition,
   HeaderBlock,
   RepeaterBlock,
+  SignatureBlock,
+  ComputedFieldBlock,
+  ScaleBlock,
+  RichTextBlock,
 } from "../types";
 import { cn } from "@/lib/utils";
 import { Cie10Selector } from "./Cie10Selector";
@@ -101,6 +105,18 @@ function buildZodSchema(element: CanvasElement): z.ZodType<unknown> {
               `Debe ingresar al menos ${(element as RepeaterBlock).minRows ?? 1} registro(s)`,
             )
         : z.array(z.record(z.unknown())).optional();
+    case "signature":
+      return element.required
+        ? z.string().min(1, "Firma requerida")
+        : z.string().optional();
+    case "computed-field":
+      return z.union([z.string(), z.number()]).optional();
+    case "scale":
+      return element.required
+        ? z.number({ required_error: "Seleccione un valor en la escala" })
+        : z.number().optional();
+    case "rich-text":
+      return z.unknown().optional();
     default:
       return z.unknown().optional();
   }
@@ -1402,6 +1418,95 @@ function CanvasElementRenderer({
           }
         />
       );
+
+    case "signature": {
+      const sigEl = element as SignatureBlock;
+      return (
+        <div className="space-y-3 p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+          <div className="h-20 border-b-2 border-slate-300 flex items-end pb-2">
+            <span className="text-sm text-slate-400 italic">
+              {sigEl.signerLabel ?? "Firma"}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400">
+            {sigEl.includeName && <span>Nombre: ___________________</span>}
+            {sigEl.includeDate && <span>Fecha: ____/____/________</span>}
+            {sigEl.includeLicense && <span>Matrícula: _______________</span>}
+          </div>
+        </div>
+      );
+    }
+
+    case "computed-field": {
+      const compEl = element as ComputedFieldBlock;
+      return (
+        <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-xl border border-amber-200">
+          <span className="text-lg font-bold text-amber-600">ƒ</span>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-amber-700">
+              {compEl.formula === "bmi"
+                ? "IMC (Índice de Masa Corporal)"
+                : compEl.formula === "age-from-dob"
+                  ? "Edad calculada"
+                  : compEl.formula === "weeks-of-pregnancy"
+                    ? "Semanas de embarazo"
+                    : "Campo calculado"}
+            </p>
+            <p className="text-xs text-amber-500">
+              Valor calculado automáticamente
+              {compEl.unit ? ` (${compEl.unit})` : ""}
+            </p>
+          </div>
+          <div className="px-3 py-1.5 bg-white border border-amber-200 rounded-lg text-sm text-amber-600 font-mono">
+            —
+          </div>
+        </div>
+      );
+    }
+
+    case "scale": {
+      const scaleEl = element as ScaleBlock;
+      const range = Array.from(
+        { length: (scaleEl.max ?? 10) - (scaleEl.min ?? 0) + 1 },
+        (_, i) => (scaleEl.min ?? 0) + i,
+      );
+      return (
+        <div className="space-y-2">
+          <div className="flex items-center gap-1">
+            {range.map((n) => (
+              <button
+                key={n}
+                type="button"
+                className="flex-1 h-10 rounded-lg border border-slate-200 bg-white hover:bg-pharmako-care hover:text-white hover:border-pharmako-care text-sm text-slate-600 transition-colors"
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+          {scaleEl.labels && (
+            <div className="flex justify-between text-xs text-slate-400 px-1">
+              <span>{scaleEl.labels[scaleEl.min ?? 0]}</span>
+              <span>{scaleEl.labels[scaleEl.max ?? 10]}</span>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    case "rich-text": {
+      const rtEl = element as RichTextBlock;
+      return (
+        <div
+          className={cn(
+            "prose prose-sm max-w-none p-4 rounded-xl border",
+            rtEl.editable
+              ? "bg-white border-slate-200"
+              : "bg-blue-50 border-blue-100",
+          )}
+          dangerouslySetInnerHTML={{ __html: rtEl.content ?? "" }}
+        />
+      );
+    }
 
     default:
       return null;

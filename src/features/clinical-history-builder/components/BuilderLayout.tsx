@@ -46,6 +46,11 @@ import {
   PanelTop,
   Table,
   Trash2,
+  PenTool,
+  Calculator,
+  SlidersHorizontal,
+  FileText,
+  HelpCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -87,7 +92,13 @@ import type {
   VitalSignsField,
   SelectorOption,
   HeaderBlock,
+  DocumentCategory,
+  SignatureBlock,
+  ComputedFieldBlock,
+  ScaleBlock,
+  RichTextBlock,
 } from "../types";
+import { DOCUMENT_CATEGORY_LABELS } from "../types";
 import {
   clinicalHistorySchema as seedSchema,
   PRESETS,
@@ -206,6 +217,30 @@ const TOOLBOX_BLOCKS = {
       label: "Subida de Archivos",
       icon: Paperclip,
       description: "Adjunta imágenes o documentos",
+    },
+    {
+      type: "signature",
+      label: "Firma",
+      icon: PenTool,
+      description: "Campo de firma médico/paciente",
+    },
+    {
+      type: "computed-field",
+      label: "Campo Calculado",
+      icon: Calculator,
+      description: "IMC, edad, semanas de embarazo",
+    },
+    {
+      type: "scale",
+      label: "Escala de Evaluación",
+      icon: SlidersHorizontal,
+      description: "Likert, NRS, VAS",
+    },
+    {
+      type: "rich-text",
+      label: "Texto Informativo",
+      icon: FileText,
+      description: "Instructivos, legal, consentimientos",
     },
   ],
 };
@@ -477,6 +512,8 @@ function PropertiesPanel({
   onSchemaDescriptionChange,
   onCollapse,
   schemaStatus,
+  documentCategory,
+  onDocumentCategoryChange,
 }: {
   selectedElement: CanvasElement | null;
   onUpdate: (updates: Partial<CanvasElement>) => void;
@@ -496,6 +533,8 @@ function PropertiesPanel({
   onSchemaDescriptionChange: (v: string) => void;
   onCollapse?: () => void;
   schemaStatus: "draft" | "published";
+  documentCategory: DocumentCategory;
+  onDocumentCategoryChange: (cat: DocumentCategory) => void;
 }) {
   return (
     <aside className="w-full bg-white border-l border-slate-100 flex flex-col h-full">
@@ -567,12 +606,36 @@ function PropertiesPanel({
                 <textarea
                   value={schemaDescription ?? ""}
                   onChange={(e) => onSchemaDescriptionChange(e.target.value)}
-                  rows={6}
+                  rows={3}
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
-                             text-slate-900 placeholder-slate-400 resize-y min-h-[120px] xl:min-h-[160px] 2xl:min-h-[200px]
+                             text-slate-900 placeholder-slate-400 resize-y min-h-[80px]
                              focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
                   placeholder="Descripción (opcional)"
                 />
+              </div>
+
+              {/* Document Category */}
+              <div className="border-t border-slate-100 pt-4">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+                  Tipo de Documento
+                </p>
+                <select
+                  value={documentCategory}
+                  onChange={(e) =>
+                    onDocumentCategoryChange(e.target.value as DocumentCategory)
+                  }
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm
+                             text-slate-900 bg-white
+                             focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
+                >
+                  {Object.entries(DOCUMENT_CATEGORY_LABELS).map(
+                    ([key, label]) => (
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
+                    ),
+                  )}
+                </select>
               </div>
             </div>
           )}
@@ -1100,9 +1163,7 @@ function PropertiesPanel({
                           onChange={(e) =>
                             onUpdate({
                               logoPosition: e.target.value as
-                                | "left"
-                                | "right"
-                                | "center",
+                                "left" | "right" | "center",
                             })
                           }
                           className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
@@ -1163,9 +1224,7 @@ function PropertiesPanel({
                           onChange={(e) =>
                             onUpdate({
                               style: e.target.value as
-                                | "simple"
-                                | "boxed"
-                                | "bordered",
+                                "simple" | "boxed" | "bordered",
                             })
                           }
                           className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
@@ -1215,11 +1274,29 @@ function PropertiesPanel({
                             { key: "idNumber", label: "Identificación / DNI" },
                             { key: "age", label: "Edad" },
                             { key: "date", label: "Fecha Consulta" },
+                            { key: "doctor-name", label: "Nombre del Médico" },
+                            {
+                              key: "doctor-license",
+                              label: "Matrícula / Colegiatura",
+                            },
+                            { key: "establishment", label: "Establecimiento" },
+                            {
+                              key: "document-number",
+                              label: "Nº de Documento",
+                            },
+                            { key: "second-doctor", label: "Segundo Médico" },
+                            {
+                              key: "witness-name",
+                              label: "Nombre del Testigo",
+                            },
                           ].map((field) => {
                             const activeFields =
                               headerEl.patientDataFields ?? [];
                             const isChecked = activeFields.includes(
-                              field.key as "name" | "idNumber" | "age" | "date",
+                              field.key as HeaderBlock["patientDataFields"] extends
+                                (infer T)[] | undefined
+                                ? T
+                                : never,
                             );
                             return (
                               <label
@@ -1236,11 +1313,10 @@ function PropertiesPanel({
                                         )
                                       : [
                                           ...activeFields,
-                                          field.key as
-                                            | "name"
-                                            | "idNumber"
-                                            | "age"
-                                            | "date",
+                                          field.key as HeaderBlock["patientDataFields"] extends
+                                            (infer T)[] | undefined
+                                            ? T
+                                            : never,
                                         ];
                                     onUpdate({ patientDataFields: nextFields });
                                   }}
@@ -1252,6 +1328,216 @@ function PropertiesPanel({
                           })}
                         </div>
                       )}
+                    </div>
+                  );
+                })()}
+
+              {/* Signature block settings */}
+              {selectedElement.type === "signature" &&
+                (() => {
+                  const sigEl = selectedElement as SignatureBlock;
+                  return (
+                    <div className="border-t border-slate-100 pt-4 mt-4 space-y-4">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        Propiedades de Firma
+                      </p>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                          Etiqueta del Firmante
+                        </label>
+                        <input
+                          type="text"
+                          value={sigEl.signerLabel ?? "Firma del Médico"}
+                          onChange={(e) =>
+                            onUpdate({ signerLabel: e.target.value })
+                          }
+                          placeholder="Ej: Firma del Paciente"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
+                        />
+                      </div>
+                      {["includeDate", "includeName", "includeLicense"].map(
+                        (prop) => (
+                          <div
+                            key={prop}
+                            className="flex items-center justify-between py-1"
+                          >
+                            <label className="text-xs font-medium text-slate-600">
+                              {prop === "includeDate"
+                                ? "Incluir Fecha"
+                                : prop === "includeName"
+                                  ? "Incluir Nombre"
+                                  : "Incluir Matrícula"}
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                onUpdate({
+                                  [prop]: !(sigEl as Record<string, unknown>)[
+                                    prop
+                                  ],
+                                })
+                              }
+                              className={`relative w-10 h-6 rounded-full transition-colors ${(sigEl as Record<string, unknown>)[prop] ? "bg-pharmako-care" : "bg-slate-200"}`}
+                            >
+                              <div
+                                className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform ${(sigEl as Record<string, unknown>)[prop] ? "translate-x-5" : "translate-x-1"}`}
+                              />
+                            </button>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  );
+                })()}
+
+              {/* Scale block settings */}
+              {selectedElement.type === "scale" &&
+                (() => {
+                  const scaleEl = selectedElement as ScaleBlock;
+                  return (
+                    <div className="border-t border-slate-100 pt-4 mt-4 space-y-4">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        Propiedades de Escala
+                      </p>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                          Tipo de Escala
+                        </label>
+                        <select
+                          value={scaleEl.scaleType ?? "nrs"}
+                          onChange={(e) =>
+                            onUpdate({
+                              scaleType: e.target.value as
+                                "likert" | "nrs" | "vas",
+                            })
+                          }
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
+                        >
+                          <option value="nrs">NRS (Numérica 0-10)</option>
+                          <option value="likert">Likert</option>
+                          <option value="vas">VAS (Visual Analógica)</option>
+                        </select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                            Mínimo
+                          </label>
+                          <input
+                            type="number"
+                            value={scaleEl.min ?? 0}
+                            onChange={(e) =>
+                              onUpdate({ min: parseInt(e.target.value) || 0 })
+                            }
+                            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                            Máximo
+                          </label>
+                          <input
+                            type="number"
+                            value={scaleEl.max ?? 10}
+                            onChange={(e) =>
+                              onUpdate({ max: parseInt(e.target.value) || 10 })
+                            }
+                            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+              {/* Computed field settings */}
+              {selectedElement.type === "computed-field" &&
+                (() => {
+                  const compEl = selectedElement as ComputedFieldBlock;
+                  return (
+                    <div className="border-t border-slate-100 pt-4 mt-4 space-y-4">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        Campo Calculado
+                      </p>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                          Fórmula
+                        </label>
+                        <select
+                          value={compEl.formula ?? "bmi"}
+                          onChange={(e) =>
+                            onUpdate({
+                              formula: e.target
+                                .value as ComputedFieldBlock["formula"],
+                            })
+                          }
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
+                        >
+                          <option value="bmi">
+                            Índice de Masa Corporal (IMC)
+                          </option>
+                          <option value="age-from-dob">
+                            Edad desde Fecha de Nacimiento
+                          </option>
+                          <option value="weeks-of-pregnancy">
+                            Semanas de Embarazo
+                          </option>
+                          <option value="custom">Fórmula Personalizada</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                          Unidad
+                        </label>
+                        <input
+                          type="text"
+                          value={compEl.unit ?? ""}
+                          onChange={(e) => onUpdate({ unit: e.target.value })}
+                          placeholder="Ej: kg/m², años"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care"
+                        />
+                      </div>
+                    </div>
+                  );
+                })()}
+
+              {/* Rich text block settings */}
+              {selectedElement.type === "rich-text" &&
+                (() => {
+                  const rtEl = selectedElement as RichTextBlock;
+                  return (
+                    <div className="border-t border-slate-100 pt-4 mt-4 space-y-4">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        Texto Informativo
+                      </p>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                          Contenido
+                        </label>
+                        <textarea
+                          value={rtEl.content ?? ""}
+                          onChange={(e) =>
+                            onUpdate({ content: e.target.value })
+                          }
+                          rows={6}
+                          placeholder="Escriba aquí el texto informativo, legal o instructivo..."
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care resize-y min-h-[120px]"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between py-1">
+                        <label className="text-xs font-medium text-slate-600">
+                          ¿Editable por quien llena?
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => onUpdate({ editable: !rtEl.editable })}
+                          className={`relative w-10 h-6 rounded-full transition-colors ${rtEl.editable ? "bg-pharmako-care" : "bg-slate-200"}`}
+                        >
+                          <div
+                            className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform ${rtEl.editable ? "translate-x-5" : "translate-x-1"}`}
+                          />
+                        </button>
+                      </div>
                     </div>
                   );
                 })()}
@@ -1373,6 +1659,9 @@ export function ClinicalHistoryBuilder() {
   const [schemaStatus, setSchemaStatus] = useState<"draft" | "published">(
     seedSchema.status,
   );
+  const [documentCategory, setDocumentCategory] = useState<DocumentCategory>(
+    seedSchema.documentCategory ?? "historia-clinica",
+  );
 
   const selectedElement =
     canvasElements.find((e) => e.id === uiState.selectedElementId) ?? null;
@@ -1386,6 +1675,7 @@ export function ClinicalHistoryBuilder() {
     ...seedSchema,
     name: schemaName,
     description: schemaDescription,
+    documentCategory,
     status: schemaStatus,
     canvas: { elements: canvasElements },
   };
@@ -1460,6 +1750,7 @@ export function ClinicalHistoryBuilder() {
         setCanvasElements(preset.canvas.elements);
         setSchemaName(preset.name);
         setSchemaDescription(preset.description ?? "");
+        setDocumentCategory(preset.documentCategory ?? "historia-clinica");
         toast.success(`Plantilla "${preset.name}" cargada correctamente`);
       }
     }
@@ -1672,13 +1963,21 @@ export function ClinicalHistoryBuilder() {
 
             <div className="h-4 w-px bg-slate-200 mx-1.5 xl:mx-2" />
 
-            {/* Preview & Import/Export */}
+            {/* Preview, Guide & Import/Export */}
+            <Link
+              href="/dashboard/clinical-history/guide"
+              target="_blank"
+              title="Guía de uso del constructor"
+              className="p-1.5 xl:p-2 rounded-lg hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center"
+            >
+              <HelpCircle className="w-4 h-4 xl:w-5 xl:h-5 text-pharmako-care" />
+            </Link>
             <button
               onClick={() => window.open(previewUrl, "_blank")}
               title="Vista previa"
               className="p-1.5 xl:p-2 rounded-lg hover:bg-slate-50 text-slate-600 transition-colors"
             >
-              <Eye className="w-4 h-4 xl:w-5 h-5" />
+              <Eye className="w-4 h-4 xl:w-5 xl:h-5" />
             </button>
             <ImportExportMenu
               schema={activeSchema}
@@ -1784,6 +2083,8 @@ export function ClinicalHistoryBuilder() {
                 onSchemaDescriptionChange={setSchemaDescription}
                 onCollapse={() => setIsRightCollapsed(true)}
                 schemaStatus={schemaStatus}
+                documentCategory={documentCategory}
+                onDocumentCategoryChange={setDocumentCategory}
               />
             </div>
 

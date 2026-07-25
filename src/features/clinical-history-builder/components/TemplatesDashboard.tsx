@@ -14,6 +14,8 @@ import {
   CheckCircle,
   TrendingUp,
   Share2,
+  HelpCircle,
+  Form,
 } from "lucide-react";
 import {
   useAllClinicalHistorySchemas,
@@ -24,6 +26,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ShareTemplateModal } from "./ShareTemplateModal";
+import type { DocumentCategory } from "../types";
+import { DOCUMENT_CATEGORY_LABELS } from "../types";
 
 export function TemplatesDashboard() {
   const { data, isLoading } = useAllClinicalHistorySchemas();
@@ -34,14 +38,24 @@ export function TemplatesDashboard() {
     null,
   );
   const [shareTemplateName, setShareTemplateName] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<
+    DocumentCategory | "all"
+  >("all");
 
   const schemas = data?.schemas ?? [];
 
-  const filtered = schemas.filter(
-    (s) =>
+  const filtered = schemas.filter((s) => {
+    const matchesSearch =
       s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.specialty?.toLowerCase().includes(search.toLowerCase()),
-  );
+      s.specialty?.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory =
+      categoryFilter === "all" ||
+      (s as { documentCategory?: string }).documentCategory ===
+        categoryFilter ||
+      (!(s as { documentCategory?: string }).documentCategory &&
+        categoryFilter === "historia-clinica");
+    return matchesSearch && matchesCategory;
+  });
 
   // ─── KPIs Clínicos Dinámicos ─────────────────────────────
   const totalTemplates = schemas.length;
@@ -108,21 +122,31 @@ export function TemplatesDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
-            Historias Clínicas y Plantillas
+            Documentos Médicos y Plantillas
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Diseñá y gestioná las fichas clínicas especializadas para tu
-            consultorio.
+            Diseñá y gestioná historias clínicas, consentimientos, certificados
+            y más para tu consultorio.
           </p>
         </div>
-        <Link
-          href="/clinical-history/builder"
-          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-pharmako-care text-white text-sm font-semibold
-                     hover:bg-pharmako-care-hover transition-colors shadow-sm self-start sm:self-auto shrink-0"
-        >
-          <Plus className="w-5 h-5" />
-          Nueva Plantilla
-        </Link>
+        <div className="flex items-center gap-3 self-start sm:self-auto shrink-0">
+          <Link
+            href="/dashboard/clinical-history/guide"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-medium
+                       hover:bg-slate-50 transition-colors shadow-none"
+          >
+            <HelpCircle className="w-4 h-4 text-pharmako-care" />
+            <span>¿Cómo funciona?</span>
+          </Link>
+          <Link
+            href="/clinical-history/builder"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-pharmako-care text-white text-sm font-semibold
+                       hover:bg-pharmako-care-hover transition-colors shadow-none"
+          >
+            <Plus className="w-5 h-5" />
+            Nueva Plantilla
+          </Link>
+        </div>
       </div>
 
       {/* KPI Cards Grid */}
@@ -239,6 +263,53 @@ export function TemplatesDashboard() {
             </div>
           </div>
 
+          {/* Category Filter Tabs */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setCategoryFilter("all")}
+              className={cn(
+                "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                categoryFilter === "all"
+                  ? "bg-pharmako-care text-white"
+                  : "bg-slate-100 text-slate-500 hover:bg-slate-200",
+              )}
+            >
+              Todos
+            </button>
+            {(
+              Object.entries(DOCUMENT_CATEGORY_LABELS) as [
+                DocumentCategory,
+                string,
+              ][]
+            ).map(([key, label]) => {
+              const count = schemas.filter(
+                (s) =>
+                  (s as { documentCategory?: string }).documentCategory ===
+                    key ||
+                  (!(s as { documentCategory?: string }).documentCategory &&
+                    key === "historia-clinica"),
+              ).length;
+              if (count === 0) return null;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setCategoryFilter(key)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                    categoryFilter === key
+                      ? "bg-pharmako-care text-white"
+                      : "bg-slate-100 text-slate-500 hover:bg-slate-200",
+                  )}
+                >
+                  {label}
+                  <span className="ml-1.5 text-[10px] opacity-70">
+                    ({count})
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
           <div className="w-full overflow-x-auto">
             {isLoading ? (
               <div className="space-y-3 py-6">
@@ -251,7 +322,7 @@ export function TemplatesDashboard() {
               </div>
             ) : filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center text-slate-400">
-                <span className="text-2xl mb-2">📋</span>
+                <FileText className="w-12 h-12 text-slate-200" />
                 <p className="text-xs font-semibold">
                   No se encontraron plantillas de historia clínica
                 </p>

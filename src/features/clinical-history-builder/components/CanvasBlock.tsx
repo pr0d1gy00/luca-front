@@ -281,6 +281,109 @@ export function CanvasBlock({
             )}
           </div>
         );
+      case "signature":
+        return (
+          <div className="p-4 bg-slate-50 rounded-lg border border-dashed border-slate-200 space-y-2">
+            <div className="h-12 border-b border-slate-300 flex items-end pb-1">
+              <span className="text-xs text-slate-400 italic">
+                {(el as import("../types").SignatureBlock).signerLabel ??
+                  "Firma"}
+              </span>
+            </div>
+            <div className="flex items-center gap-4 text-[10px] text-slate-400">
+              {(el as import("../types").SignatureBlock).includeName && (
+                <span>Nombre: ___________</span>
+              )}
+              {(el as import("../types").SignatureBlock).includeDate && (
+                <span>Fecha: __/__/____</span>
+              )}
+              {(el as import("../types").SignatureBlock).includeLicense && (
+                <span>Matrícula: _______</span>
+              )}
+            </div>
+          </div>
+        );
+      case "computed-field":
+        return (
+          <div className="h-10 bg-amber-50 rounded-lg border border-amber-200 flex items-center px-3 gap-2">
+            <span className="text-xs font-medium text-amber-600">ƒ</span>
+            <span className="text-xs text-amber-500">
+              {(el as import("../types").ComputedFieldBlock).formula === "bmi"
+                ? "IMC = peso / altura²"
+                : (el as import("../types").ComputedFieldBlock).formula ===
+                    "age-from-dob"
+                  ? "Edad = hoy - nacimiento"
+                  : (el as import("../types").ComputedFieldBlock).formula ===
+                      "weeks-of-pregnancy"
+                    ? "Semanas = hoy - FUM"
+                    : "Fórmula personalizada"}
+            </span>
+            {(el as import("../types").ComputedFieldBlock).unit && (
+              <span className="text-[10px] text-amber-400 ml-auto">
+                {(el as import("../types").ComputedFieldBlock).unit}
+              </span>
+            )}
+          </div>
+        );
+      case "scale":
+        return (
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              {Array.from({
+                length: Math.min(
+                  ((el as import("../types").ScaleBlock).max ?? 10) -
+                    ((el as import("../types").ScaleBlock).min ?? 0) +
+                    1,
+                  11,
+                ),
+              }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex-1 h-6 rounded border border-slate-200 bg-slate-50 flex items-center justify-center"
+                >
+                  <span className="text-[9px] text-slate-400">
+                    {((el as import("../types").ScaleBlock).min ?? 0) + i}
+                  </span>
+                </div>
+              ))}
+            </div>
+            {(el as import("../types").ScaleBlock).labels && (
+              <div className="flex justify-between text-[9px] text-slate-400 px-1">
+                <span>
+                  {
+                    (el as import("../types").ScaleBlock).labels?.[
+                      (el as import("../types").ScaleBlock).min ?? 0
+                    ]
+                  }
+                </span>
+                <span>
+                  {
+                    (el as import("../types").ScaleBlock).labels?.[
+                      (el as import("../types").ScaleBlock).max ?? 10
+                    ]
+                  }
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      case "rich-text":
+        return (
+          <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+            <p className="text-xs text-blue-600 line-clamp-3">
+              {(el as import("../types").RichTextBlock).content
+                ? (el as import("../types").RichTextBlock)
+                    .content!.replace(/<[^>]+>/g, "")
+                    .slice(0, 120)
+                : "Texto informativo / legal..."}
+            </p>
+            {!(el as import("../types").RichTextBlock).editable && (
+              <span className="text-[9px] text-blue-400 mt-1 inline-block">
+                🔒 Solo lectura
+              </span>
+            )}
+          </div>
+        );
       default:
         return (
           <div className="h-8 bg-slate-50 rounded-lg border border-slate-100" />
