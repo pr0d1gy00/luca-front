@@ -268,7 +268,7 @@ export function ServiceManager({
             return (
               <Card
                 key={pSvc.uuid}
-                className="bg-white hover:border-slate-300 transition-colors duration-150 border border-slate-200 rounded-xl flex flex-col justify-between overflow-hidden shadow-none"
+                className="bg-white hover:border-slate-300 transition-colors duration-150 rounded-xl flex flex-col justify-between overflow-hidden shadow-none"
               >
                 <div>
                   <CardHeader className="p-6 pb-4">
