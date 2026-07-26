@@ -29,7 +29,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import { cn, getFullImageUrl } from "@/lib/utils";
 import { navigationConfig } from "@/config/navigation";
 import { useAuthStore, type Role } from "@/store/auth";
 import { useLogout } from "@/features/auth/hooks/useLogout";
@@ -530,7 +530,7 @@ export default function Sidebar({ inDrawer = false }: SidebarProps) {
                 <div className="flex items-center justify-center rounded-lg size-9 shrink-0">
                   <Avatar className="size-8">
                     {avatar ? (
-                      <AvatarImage src={avatar} alt={name || "Usuario"} />
+                      <AvatarImage src={getFullImageUrl(avatar)} alt={name || "Usuario"} />
                     ) : null}
                     <AvatarFallback className="text-xs">
                       {initials}
@@ -783,7 +783,7 @@ export default function Sidebar({ inDrawer = false }: SidebarProps) {
                 <div className="flex items-center justify-center rounded-lg size-9 shrink-0">
                   <Avatar className="size-8">
                     {avatar ? (
-                      <AvatarImage src={avatar} alt={name || "Usuario"} />
+                      <AvatarImage src={getFullImageUrl(avatar)} alt={name || "Usuario"} />
                     ) : null}
                     <AvatarFallback className="text-xs">
                       {initials}

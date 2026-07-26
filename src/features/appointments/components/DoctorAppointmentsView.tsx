@@ -456,7 +456,7 @@ export function DoctorAppointmentsView() {
                     <Mail className="h-4 w-4 text-pharmako-text-muted shrink-0" />
                     <span className="truncate">Correo: {selectedApt.patient?.email || "—"}</span>
                   </div>
-                  
+
                   {/* Alertas Clínicas Rápidas */}
                   {(selectedApt.patient as any)?.clinical_summary && (
                     <div className="flex flex-wrap gap-1.5 pt-2">
@@ -509,7 +509,7 @@ export function DoctorAppointmentsView() {
                           (selectedApt.patient as any).clinical_summary.surgical_history?.length === 0 &&
                           (selectedApt.patient as any).clinical_summary.family_history?.length === 0 && (
                             <span className="text-pharmako-text-muted italic">Sin antecedentes registrados</span>
-                        )}
+                          )}
                       </div>
                     </div>
 
@@ -614,14 +614,14 @@ export function DoctorAppointmentsView() {
                     <div className="flex flex-col gap-2 w-full">
                       <Button
                         onClick={() => router.push(`/dashboard/consultations/${selectedApt.uuid}`)}
-                        className="w-full bg-pharmako-canvas hover:bg-pharmako-border-soft text-pharmako-text-primary font-semibold rounded-lg text-sm h-9 transition-colors flex items-center justify-center gap-2"
+                        className="w-full bg-pharmako-canvas hover:bg-pharmako-border-soft text-pharmako-text-primary font-semibold rounded-lg text-sm h-9 transition-colors flex items-center justify-center gap-2 h-12"
                       >
                         <FileText className="w-3.5 h-3.5" />
                         Ver Consulta Atendida
                       </Button>
                       <Button
                         onClick={() => setIsFollowUpOpen(true)}
-                        className="w-full bg-teal-650 hover:bg-teal-700 text-white font-semibold rounded-lg text-sm h-9 transition-colors flex items-center justify-center gap-2"
+                        className="w-full bg-teal-650 hover:bg-pharmako-care hover:text-white text-pharmako-care font-semibold border border-pharmako-care rounded-lg text-sm h-9 transition-colors flex items-center justify-center gap-2 h-12"
                       >
                         <Calendar className="w-3.5 h-3.5" />
                         Agendar Seguimiento
@@ -660,7 +660,7 @@ export function DoctorAppointmentsView() {
           </AnimatePresence>
         </div>
       </div>
-      
+
       {selectedApt && (
         <ScheduleFollowUpModal
           isOpen={isFollowUpOpen}

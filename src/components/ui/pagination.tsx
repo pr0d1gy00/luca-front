@@ -99,14 +99,14 @@ export function Pagination({
   // Variant color definitions
   const activeStyles =
     variant === "care"
-      ? "bg-teal-600 text-white border-teal-600 shadow-sm"
+      ? "bg-pharmako-care text-white border-pharmako-care shadow-sm"
       : variant === "primary"
         ? "bg-blue-600 text-white border-blue-600 shadow-sm"
         : "bg-slate-900 text-white border-slate-900 shadow-sm";
 
   const hoverStyles =
     variant === "care"
-      ? "hover:bg-teal-50 hover:text-teal-700 hover:border-teal-200"
+      ? "hover:bg-pharmako-care-hover hover:text-white hover:border-pharmako-care"
       : variant === "primary"
         ? "hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200"
         : "hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300";
@@ -195,8 +195,8 @@ export function Pagination({
                 onClick={() => onPageChange(page)}
                 aria-current={isCurrent ? "page" : undefined}
                 className={`min-w-[34px] h-8.5 px-2.5 rounded-xl text-xs font-bold transition-all border ${isCurrent
-                    ? activeStyles
-                    : `bg-white text-slate-700 border-slate-200 ${hoverStyles}`
+                  ? activeStyles
+                  : `bg-white text-slate-700 border-slate-200 ${hoverStyles}`
                   }`}
               >
                 {page}

@@ -972,7 +972,7 @@ export function PatientCrudLayout({
 						{/* Casos Complejos Prioritarios */}
 						<div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between min-h-[180px]">
 							<div className="flex items-center justify-between mb-4">
-								<span className="text-xs font-semibold text-slate-500 tracking-wider uppercase">
+								<span className="text-sm font-semibold text-slate-500 tracking-wider uppercase">
 									Pacientes Multipatología Activos
 								</span>
 								<div className="bg-purple-50 rounded-lg p-1.5 text-purple-600">
@@ -997,7 +997,7 @@ export function PatientCrudLayout({
 												.map((p, idx) => (
 													<div
 														key={idx}
-														className="bg-purple-50/30 border border-purple-100/50 rounded-lg p-2.5 text-xs flex flex-col gap-1"
+														className="bg-purple-50/30 border border-purple-100/50 rounded-lg p-2.5 text-sm flex flex-col gap-1"
 													>
 														<span className="font-bold text-purple-900">
 															{p.firstName} {p.lastName}
@@ -1009,7 +1009,7 @@ export function PatientCrudLayout({
 																.map((cond: string, i: number) => (
 																	<Badge
 																		key={i}
-																		className="text-[8px] bg-purple-100 text-purple-800 border-none font-semibold py-0 px-1"
+																		className="text-[12px] bg-purple-100 text-purple-800 border-none font-semibold py-0 px-1"
 																	>
 																		{cond.trim()}
 																	</Badge>
