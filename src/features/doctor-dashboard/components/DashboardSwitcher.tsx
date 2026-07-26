@@ -13,6 +13,7 @@ const VIEWS: { id: DashboardView; label: string }[] = [
   { id: "resumen", label: "Resumen" },
   { id: "flujo", label: "Flujo Pacientes" },
   { id: "seguimiento", label: "Seguimiento" },
+  { id: "servicios", label: "Servicios" },
 ];
 
 const STORAGE_KEY = "pharmako-dashboard-view";
@@ -22,16 +23,16 @@ export function DashboardSwitcher({
   onChange,
 }: DashboardSwitcherProps) {
   return (
-    <div className="flex items-center gap-1 p-1 bg-white border border-slate-200 rounded-xl w-fit">
+    <div className="flex items-center gap-1 p-1 bg-slate-100/80 border border-slate-200/60 rounded-xl w-fit">
       {VIEWS.map((view) => (
         <button
           key={view.id}
           onClick={() => onChange(view.id)}
           className={cn(
-            "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+            "px-3.5 py-1.5 rounded-lg text-xs transition-colors duration-150 shadow-none font-medium",
             activeView === view.id
-              ? "text-pharmako-care"
-              : "text-slate-400 hover:text-slate-600 ",
+              ? "bg-white text-slate-900 font-semibold border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900 border border-transparent",
           )}
         >
           {view.label}
@@ -51,7 +52,10 @@ export function useDashboardView(): [
   }, []);
   const getSnapshot = useCallback((): DashboardView => {
     const stored = localStorage.getItem(STORAGE_KEY) as DashboardView | null;
-    if (stored && ["resumen", "flujo", "seguimiento"].includes(stored)) {
+    if (
+      stored &&
+      ["resumen", "flujo", "seguimiento", "servicios"].includes(stored)
+    ) {
       return stored;
     }
     return "resumen";

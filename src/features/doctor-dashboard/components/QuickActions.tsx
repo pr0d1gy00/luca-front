@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { staggerChildrenVariant } from "@/app/lib/animations";
-import { Stethoscope, FlaskConical, MessageSquare } from "lucide-react";
+import { Stethoscope, FlaskConical, Briefcase } from "lucide-react";
 import { QuickActionButton } from "./QuickActionButton";
 import { AdHocConsultationModal } from "./AdHocConsultationModal";
 import type { QuickAction } from "../types";
@@ -26,10 +26,9 @@ const QUICK_ACTIONS: QuickAction[] = [
   },
   {
     id: "qa-3",
-    label: "Mensajes",
-    icon: MessageSquare,
-    href: "#",
-    count: 5,
+    label: "Mis Servicios",
+    icon: Briefcase,
+    href: "/dashboard/services",
     variant: "outline",
   },
 ];
@@ -49,7 +48,9 @@ export function QuickActions() {
           <QuickActionButton
             key={action.id}
             action={action}
-            onClick={action.id === "qa-1" ? () => setIsAdHocOpen(true) : undefined}
+            onClick={
+              action.id === "qa-1" ? () => setIsAdHocOpen(true) : undefined
+            }
           />
         ))}
       </motion.div>

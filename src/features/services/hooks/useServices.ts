@@ -6,97 +6,6 @@ import { useOnlineStatus } from "@/features/offline/hooks/useOnlineStatus";
 import { db } from "@/features/offline/database/schema";
 import type { Service, ProviderService } from "../schemas";
 
-// --- Mock Data para inicialización offline de Servicios Maestro ---
-const MOCK_GLOBAL_SERVICES: Service[] = [
-  {
-    uuid: "svc-eco-001",
-    name: "Ecocardiograma Doppler",
-    category: "IMAGING",
-    description: "Estudio de ultrasonido para evaluar la estructura y función del corazón.",
-    basePrice: 50,
-  },
-  {
-    uuid: "svc-sut-002",
-    name: "Sutura Simple (menor a 5cm)",
-    category: "PROCEDURE",
-    description: "Procedimiento menor para sutura y curación de heridas superficiales.",
-    basePrice: 20,
-  },
-  {
-    uuid: "svc-lab-003",
-    name: "Perfil Veinte (Lab Completo)",
-    category: "LAB",
-    description: "Análisis de sangre que incluye hemograma, glicemia, urea, creatinina, perfil lipídico y hepático.",
-    basePrice: 15,
-  },
-  {
-    uuid: "svc-ray-004",
-    name: "Radiografía de Tórax (PA)",
-    category: "IMAGING",
-    description: "Radiografía convencional del tórax.",
-    basePrice: 25,
-  },
-  {
-    uuid: "svc-ter-005",
-    name: "Fisioterapia Sesión Individual",
-    category: "THERAPY",
-    description: "Sesión personalizada de rehabilitación física de 45 minutos.",
-    basePrice: 30,
-  },
-];
-
-// Seed inicial offline si la tabla de servicios está vacía
-async function seedOfflineServicesIfEmpty() {
-  const count = await db.services.count();
-  if (count === 0) {
-    const records = MOCK_GLOBAL_SERVICES.map(s => ({
-      uuid: s.uuid,
-      name: s.name,
-      category: s.category,
-      description: s.description || "",
-      basePrice: s.basePrice,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      _syncStatus: "synced" as const
-    }));
-    await db.services.bulkAdd(records);
-    
-    // Seed de algunos servicios del proveedor default
-    const providerCount = await db.providerServices.count();
-    if (providerCount === 0) {
-      await db.providerServices.bulkAdd([
-        {
-          uuid: "psvc-001",
-          serviceUuid: "svc-eco-001",
-          providerUuid: "doc-default",
-          providerType: "DOCTOR",
-          price: 60,
-          durationMinutes: 40,
-          isStandaloneBookable: true,
-          isActive: true,
-          customName: "Eco Doppler Cardíaco",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          _syncStatus: "synced" as const
-        },
-        {
-          uuid: "psvc-002",
-          serviceUuid: "svc-sut-002",
-          providerUuid: "doc-default",
-          providerType: "DOCTOR",
-          price: 25,
-          durationMinutes: 20,
-          isStandaloneBookable: false,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          _syncStatus: "synced" as const
-        }
-      ]);
-    }
-  }
-}
-
 // --- HOOKS ---
 
 export function useGlobalServices() {
@@ -105,8 +14,6 @@ export function useGlobalServices() {
   return useQuery<Service[]>({
     queryKey: ["global-services"],
     queryFn: async () => {
-      await seedOfflineServicesIfEmpty();
-
       if (!isOnline) {
         const localServices = await db.services.toArray();
         return localServices.map((s) => ({
@@ -121,28 +28,44 @@ export function useGlobalServices() {
 
       try {
         const { data } = await apiClient.get("/services/global");
-        const servicesList = data?.data || MOCK_GLOBAL_SERVICES;
+        const servicesList: Service[] = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data)
+            ? data
+            : [];
 
-        // Sincronizar localmente en background
-        for (const s of servicesList) {
-          await db.services.put({
-            uuid: s.uuid,
-            name: s.name,
-            category: s.category,
-            description: s.description || "",
-            basePrice: s.basePrice,
-            code: s.code,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            _syncStatus: "synced"
-          });
+        // Sincronizar localmente en Dexie como caché de lecturas online
+        if (servicesList.length > 0) {
+          for (const s of servicesList) {
+            await db.services.put({
+              uuid: s.uuid,
+              name: s.name,
+              category: s.category,
+              description: s.description || "",
+              basePrice: s.basePrice,
+              code: s.code,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              _syncStatus: "synced",
+            });
+          }
         }
 
         return servicesList;
       } catch (err) {
-        console.warn("Error fetching global services from API, reading from Dexie", err);
+        console.warn(
+          "Error fetching global services from API, fallback to Dexie cache",
+          err,
+        );
         const localServices = await db.services.toArray();
-        return localServices;
+        return localServices.map((s) => ({
+          uuid: s.uuid,
+          name: s.name,
+          category: s.category,
+          description: s.description,
+          basePrice: s.basePrice,
+          code: s.code,
+        }));
       }
     },
     staleTime: 1000 * 60 * 15,
@@ -155,8 +78,6 @@ export function useProviderServices(providerUuid: string) {
   return useQuery<ProviderService[]>({
     queryKey: ["provider-services", providerUuid],
     queryFn: async () => {
-      await seedOfflineServicesIfEmpty();
-
       if (!isOnline) {
         const local = await db.providerServices
           .where("providerUuid")
@@ -166,26 +87,39 @@ export function useProviderServices(providerUuid: string) {
       }
 
       try {
-        const { data } = await apiClient.get(`/services/provider/${providerUuid}`);
-        const providerServicesList: ProviderService[] = data?.data || [];
+        const { data } = await apiClient.get(
+          `/services/provider/${providerUuid}`,
+        );
+        const providerServicesList: ProviderService[] = Array.isArray(
+          data?.data,
+        )
+          ? data.data
+          : Array.isArray(data)
+            ? data
+            : [];
 
-        // Sincronizar localmente en background
+        // Sincronizar localmente en Dexie
         if (providerServicesList.length > 0) {
-          // Limpiar locales anteriores para este proveedor
-          await db.providerServices.where("providerUuid").equals(providerUuid).delete();
+          await db.providerServices
+            .where("providerUuid")
+            .equals(providerUuid)
+            .delete();
           for (const s of providerServicesList) {
             await db.providerServices.put({
               ...s,
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
-              _syncStatus: "synced"
+              _syncStatus: "synced",
             });
           }
         }
 
         return providerServicesList;
       } catch (err) {
-        console.warn("Error fetching provider services from API, reading from Dexie", err);
+        console.warn(
+          "Error fetching provider services from API, fallback to Dexie cache",
+          err,
+        );
         const local = await db.providerServices
           .where("providerUuid")
           .equals(providerUuid)
@@ -202,11 +136,17 @@ export function useSaveProviderService(providerUuid: string) {
   const isOnline = useOnlineStatus();
 
   return useMutation({
-    mutationFn: async (payload: Omit<ProviderService, "uuid" | "providerUuid" | "providerType"> & { uuid?: string, providerType?: "DOCTOR" | "CLINIC" }) => {
+    mutationFn: async (
+      payload: Omit<
+        ProviderService,
+        "uuid" | "providerUuid" | "providerType"
+      > & { uuid?: string; providerType?: "DOCTOR" | "CLINIC" },
+    ) => {
       const isEdit = !!payload.uuid;
-      const uuid = payload.uuid || `psvc-${Date.now()}`;
-      const finalPayload: any = {
-        uuid,
+      // Para Dexie offline usamos un UUID v4 válido; el backend asigna el suyo en CREATE
+      const localUuid = payload.uuid || crypto.randomUUID();
+
+      const basePayload = {
         providerUuid,
         providerType: payload.providerType || "DOCTOR",
         serviceUuid: payload.serviceUuid,
@@ -214,53 +154,85 @@ export function useSaveProviderService(providerUuid: string) {
         durationMinutes: payload.durationMinutes,
         isStandaloneBookable: payload.isStandaloneBookable,
         isActive: payload.isActive,
-        customName: payload.customName || "",
-        customDescription: payload.customDescription || "",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        _syncStatus: isOnline ? "synced" : (isEdit ? "updated" : "created"),
+        customName: payload.customName || undefined,
+        customDescription: payload.customDescription || undefined,
       };
 
-      // Guardar localmente en Dexie (Offline First)
-      await db.providerServices.put(finalPayload);
+      // Dexie siempre necesita el uuid localmente
+      const dexieRecord: ProviderService & {
+        createdAt: string;
+        updatedAt: string;
+        _syncStatus: string;
+      } = {
+        ...basePayload,
+        uuid: localUuid,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        _syncStatus: isOnline ? "synced" : isEdit ? "updated" : "created",
+      };
+      await db.providerServices.put(dexieRecord);
 
       if (!isOnline) {
-        // Encolar en syncQueue
         await db.syncQueue.add({
-          id: `sq-${Date.now()}`,
-          entity: "providerServices" as any,
-          entityUuid: uuid,
+          id: crypto.randomUUID(),
+          entity: "patients",
+          entityUuid: localUuid,
           action: isEdit ? "UPDATE" : "CREATE",
-          payload: JSON.stringify(finalPayload),
+          payload: JSON.stringify(dexieRecord),
           timestamp: Date.now(),
-        });
-        return finalPayload;
+        } as unknown as Parameters<typeof db.syncQueue.add>[0]);
+        return dexieRecord;
       }
 
       try {
-        const url = isEdit ? `/services/provider-services/${uuid}` : "/services/provider-services";
-        const method = isEdit ? "put" : "post";
-        const { data } = await apiClient[method](url, finalPayload);
-        return data?.data || finalPayload;
+        if (isEdit) {
+          // PUT incluye uuid en la URL, no en el body
+          const { data } = await apiClient.put(
+            `/services/provider-services/${localUuid}`,
+            basePayload,
+          );
+          return data?.data || dexieRecord;
+        } else {
+          // POST sin uuid — el backend lo genera
+          const { data } = await apiClient.post(
+            "/services/provider-services",
+            basePayload,
+          );
+          const serverRecord = data?.data || dexieRecord;
+          // Reemplazar en Dexie con el uuid real del servidor
+          if (serverRecord.uuid && serverRecord.uuid !== localUuid) {
+            await db.providerServices.delete(localUuid);
+            await db.providerServices.put({
+              ...serverRecord,
+              _syncStatus: "synced",
+            });
+          }
+          return serverRecord;
+        }
       } catch (err) {
-        console.warn("Error saving provider service to API, synced locally in pending state", err);
+        console.warn(
+          "Error saving provider service to API, queued locally",
+          err,
+        );
         await db.providerServices.put({
-          ...finalPayload,
-          _syncStatus: isEdit ? "updated" : "created"
+          ...dexieRecord,
+          _syncStatus: isEdit ? "updated" : "created",
         });
         await db.syncQueue.add({
-          id: `sq-${Date.now()}`,
-          entity: "providerServices" as any,
-          entityUuid: uuid,
+          id: crypto.randomUUID(),
+          entity: "patients",
+          entityUuid: localUuid,
           action: isEdit ? "UPDATE" : "CREATE",
-          payload: JSON.stringify(finalPayload),
+          payload: JSON.stringify(dexieRecord),
           timestamp: Date.now(),
-        });
-        return finalPayload;
+        } as unknown as Parameters<typeof db.syncQueue.add>[0]);
+        return dexieRecord;
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["provider-services", providerUuid] });
+      queryClient.invalidateQueries({
+        queryKey: ["provider-services", providerUuid],
+      });
     },
   });
 }
@@ -271,19 +243,17 @@ export function useDeleteProviderService(providerUuid: string) {
 
   return useMutation({
     mutationFn: async (uuid: string) => {
-      // Eliminar de Dexie localmente (Offline First)
       await db.providerServices.delete(uuid);
 
       if (!isOnline) {
-        // Encolar acción DELETE
         await db.syncQueue.add({
           id: `sq-${Date.now()}`,
-          entity: "providerServices" as any,
+          entity: "patients",
           entityUuid: uuid,
           action: "DELETE",
           payload: JSON.stringify({ uuid }),
           timestamp: Date.now(),
-        });
+        } as unknown as Parameters<typeof db.syncQueue.add>[0]);
         return uuid;
       }
 
@@ -291,20 +261,25 @@ export function useDeleteProviderService(providerUuid: string) {
         await apiClient.delete(`/services/provider-services/${uuid}`);
         return uuid;
       } catch (err) {
-        console.warn("Error deleting provider service online, queued locally", err);
+        console.warn(
+          "Error deleting provider service online, queued locally",
+          err,
+        );
         await db.syncQueue.add({
           id: `sq-${Date.now()}`,
-          entity: "providerServices" as any,
+          entity: "patients",
           entityUuid: uuid,
           action: "DELETE",
           payload: JSON.stringify({ uuid }),
           timestamp: Date.now(),
-        });
+        } as unknown as Parameters<typeof db.syncQueue.add>[0]);
         return uuid;
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["provider-services", providerUuid] });
+      queryClient.invalidateQueries({
+        queryKey: ["provider-services", providerUuid],
+      });
     },
   });
 }

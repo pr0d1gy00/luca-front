@@ -1,69 +1,181 @@
 "use client";
 
-import React, { useState } from "react";
-import { 
-  Plus, 
-  Trash2, 
-  Edit3, 
-  Clock, 
-  DollarSign, 
-  Check, 
-  X, 
-  Activity, 
-  Info,
-  Calendar,
-  Layers
+import React, { useMemo } from "react";
+import Select from "react-select";
+import {
+  Trash2,
+  Edit3,
+  Clock,
+  DollarSign,
+  Check,
+  X,
+  Layers,
 } from "lucide-react";
-import { 
-  useGlobalServices, 
-  useProviderServices, 
-  useSaveProviderService, 
-  useDeleteProviderService 
+import {
+  useGlobalServices,
+  useProviderServices,
+  useSaveProviderService,
+  useDeleteProviderService,
 } from "../hooks/useServices";
 import { serviceCategoryLabels } from "../schemas";
 import type { ProviderService, Service } from "../schemas";
 
 // UI Components
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 
 interface ServiceManagerProps {
   providerUuid: string;
   providerType: "DOCTOR" | "CLINIC";
+  isDialogOpen: boolean;
+  setIsDialogOpen: (open: boolean) => void;
+  editingService: Partial<ProviderService> | null;
+  setEditingService: (service: Partial<ProviderService> | null) => void;
+  selectedServiceUuid: string;
+  setSelectedServiceUuid: (uuid: string) => void;
+  price: string;
+  setPrice: (price: string) => void;
+  durationMinutes: string;
+  setDurationMinutes: (minutes: string) => void;
+  isStandaloneBookable: boolean;
+  setIsStandaloneBookable: (standalone: boolean) => void;
+  customName: string;
+  setCustomName: (name: string) => void;
+  customDescription: string;
+  setCustomDescription: (desc: string) => void;
+  handleOpenAdd: () => void;
 }
 
-export function ServiceManager({ providerUuid, providerType }: ServiceManagerProps) {
-  const { data: globalServices = [], isLoading: loadingGlobal } = useGlobalServices();
-  const { data: providerServices = [], isLoading: loadingProvider } = useProviderServices(providerUuid);
+const customSelectStyles = {
+  control: (base: Record<string, unknown>, state: { isFocused: boolean }) => ({
+    ...base,
+    minHeight: "42px",
+    borderRadius: "12px",
+    borderColor: state.isFocused ? "#23dce1" : "#E2E8F0",
+    boxShadow: "none",
+    backgroundColor: "#FFFFFF",
+    fontSize: "14px",
+    fontFamily: "var(--font-sans)",
+    color: "#0F172A",
+    "&:hover": {
+      borderColor: state.isFocused ? "#23dce1" : "#cbd5e1",
+    },
+  }),
+  valueContainer: (base: Record<string, unknown>) => ({
+    ...base,
+    padding: "0 12px",
+  }),
+  input: (base: Record<string, unknown>) => ({
+    ...base,
+    margin: 0,
+    padding: 0,
+    color: "#0F172A",
+  }),
+  singleValue: (base: Record<string, unknown>) => ({
+    ...base,
+    color: "#0F172A",
+    fontWeight: 500,
+  }),
+  placeholder: (base: Record<string, unknown>) => ({
+    ...base,
+    color: "#64748B",
+  }),
+  menu: (base: Record<string, unknown>) => ({
+    ...base,
+    borderRadius: "12px",
+    border: "1px solid #E2E8F0",
+    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.08)",
+    zIndex: 99999,
+    backgroundColor: "#FFFFFF",
+    overflow: "hidden",
+  }),
+  menuList: (base: Record<string, unknown>) => ({
+    ...base,
+    maxHeight: "220px",
+    padding: "4px",
+  }),
+  menuPortal: (base: Record<string, unknown>) => ({
+    ...base,
+    zIndex: 99999,
+  }),
+  option: (
+    base: Record<string, unknown>,
+    state: { isSelected: boolean; isFocused: boolean },
+  ) => ({
+    ...base,
+    backgroundColor: state.isSelected
+      ? "#EBFAF3"
+      : state.isFocused
+        ? "#F8FAFC"
+        : "#FFFFFF",
+    color: state.isSelected ? "#0F172A" : "#334155",
+    fontWeight: state.isSelected ? 600 : 400,
+    fontSize: "14px",
+    cursor: "pointer",
+    borderRadius: "8px",
+    margin: "2px 0",
+  }),
+};
+
+export function ServiceManager({
+  providerUuid,
+  providerType,
+  isDialogOpen,
+  setIsDialogOpen,
+  editingService,
+  setEditingService,
+  selectedServiceUuid,
+  setSelectedServiceUuid,
+  price,
+  setPrice,
+  durationMinutes,
+  setDurationMinutes,
+  isStandaloneBookable,
+  setIsStandaloneBookable,
+  customName,
+  setCustomName,
+  customDescription,
+  setCustomDescription,
+  handleOpenAdd,
+}: ServiceManagerProps) {
+  const { data: globalServices = [], isLoading: loadingGlobal } =
+    useGlobalServices();
+  const { data: providerServices = [], isLoading: loadingProvider } =
+    useProviderServices(providerUuid);
   const saveMutation = useSaveProviderService(providerUuid);
   const deleteMutation = useDeleteProviderService(providerUuid);
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingService, setEditingService] = useState<Partial<ProviderService> | null>(null);
+  // Opciones formateadas para react-select
+  const selectOptions = useMemo(() => {
+    return globalServices.map((gSvc) => ({
+      value: gSvc.uuid,
+      label: `${gSvc.name} (${serviceCategoryLabels[gSvc.category] || gSvc.category})`,
+      service: gSvc,
+    }));
+  }, [globalServices]);
 
-  // Form states
-  const [selectedServiceUuid, setSelectedServiceUuid] = useState("");
-  const [price, setPrice] = useState("");
-  const [durationMinutes, setDurationMinutes] = useState("");
-  const [isStandaloneBookable, setIsStandaloneBookable] = useState(false);
-  const [customName, setCustomName] = useState("");
-  const [customDescription, setCustomDescription] = useState("");
-
-  const handleOpenAdd = () => {
-    setEditingService(null);
-    setSelectedServiceUuid("");
-    setPrice("");
-    setDurationMinutes("20");
-    setIsStandaloneBookable(false);
-    setCustomName("");
-    setCustomDescription("");
-    setIsDialogOpen(true);
-  };
+  const selectedOption = useMemo(() => {
+    return (
+      selectOptions.find((opt) => opt.value === selectedServiceUuid) || null
+    );
+  }, [selectOptions, selectedServiceUuid]);
 
   const handleOpenEdit = (pSvc: ProviderService) => {
     setEditingService(pSvc);
@@ -96,7 +208,11 @@ export function ServiceManager({ providerUuid, providerType }: ServiceManagerPro
   };
 
   const handleDelete = async (uuid: string) => {
-    if (confirm("¿Estás seguro de que deseas eliminar este servicio de tu oferta?")) {
+    if (
+      confirm(
+        "¿Estás seguro de que deseas eliminar este servicio de tu oferta?",
+      )
+    ) {
       await deleteMutation.mutateAsync(uuid);
     }
   };
@@ -109,41 +225,33 @@ export function ServiceManager({ providerUuid, providerType }: ServiceManagerPro
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900 font-sans">
-            Portafolio de Servicios Médicos
-          </h2>
-          <p className="text-slate-500 mt-1">
-            Administrá los servicios, precios, tiempos de consulta y disponibilidad para reserva directa.
-          </p>
-        </div>
-        <Button 
-          onClick={handleOpenAdd} 
-          className="bg-teal-600 hover:bg-teal-700 text-white shadow-sm flex items-center gap-2 rounded-xl transition-all duration-200"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Agregar Servicio</span>
-        </Button>
-      </div>
-
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
           {[1, 2, 3].map((n) => (
-            <div key={n} className="h-48 bg-slate-100 rounded-2xl border border-slate-100" />
+            <div
+              key={n}
+              className="h-48 bg-slate-100/80 rounded-xl border border-slate-200/60"
+            />
           ))}
         </div>
       ) : providerServices.length === 0 ? (
-        <Card className="border-dashed border-2 border-slate-200 bg-slate-50/50 rounded-2xl">
+        <Card className="border-dashed border border-slate-200 bg-slate-50/50 rounded-xl shadow-none">
           <CardContent className="flex flex-col items-center justify-center p-12 text-center">
-            <div className="p-4 bg-teal-50 text-teal-600 rounded-full mb-4">
+            <div className="p-4 bg-pharmako-care-light text-pharmako-care rounded-full mb-4">
               <Layers className="h-8 w-8" />
             </div>
-            <CardTitle className="text-slate-900 font-medium">No ofrecés servicios aún</CardTitle>
-            <CardDescription className="max-w-md mt-2 text-slate-500">
-              Agregá procedimientos, exámenes o consultas especializadas de nuestro catálogo para cargarlos a tus pacientes o permitir reservas online.
+            <CardTitle className="text-slate-900 font-bold text-base">
+              No ofrecés servicios aún
+            </CardTitle>
+            <CardDescription className="max-w-md mt-2 text-slate-500 text-sm">
+              Agregá procedimientos, exámenes o consultas especializadas de
+              nuestro catálogo para cargarlos a tus pacientes o permitir
+              reservas online.
             </CardDescription>
-            <Button onClick={handleOpenAdd} className="mt-6 bg-teal-600 hover:bg-teal-700 text-white rounded-xl">
+            <Button
+              onClick={handleOpenAdd}
+              className="mt-6 h-10 bg-pharmako-care hover:bg-pharmako-care-hover text-white font-semibold rounded-xl border-none shadow-none px-5"
+            >
               Configurar primer servicio
             </Button>
           </CardContent>
@@ -152,79 +260,82 @@ export function ServiceManager({ providerUuid, providerType }: ServiceManagerPro
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {providerServices.map((pSvc) => {
             const baseSvc = getGlobalService(pSvc.serviceUuid);
-            const displayName = pSvc.customName || baseSvc?.name || "Servicio no especificado";
+            const displayName =
+              pSvc.customName || baseSvc?.name || "Servicio no especificado";
             const displayDesc = pSvc.customDescription || baseSvc?.description;
             const category = baseSvc?.category || "OTHER";
 
             return (
-              <Card 
-                key={pSvc.uuid} 
-                className="bg-white hover:shadow-md transition-all duration-200 border border-slate-100 rounded-2xl flex flex-col justify-between overflow-hidden"
+              <Card
+                key={pSvc.uuid}
+                className="bg-white hover:border-slate-300 transition-colors duration-150 border border-slate-200 rounded-xl flex flex-col justify-between overflow-hidden shadow-none"
               >
                 <div>
                   <CardHeader className="p-6 pb-4">
                     <div className="flex items-start justify-between gap-4">
-                      <Badge className="bg-slate-100 text-slate-700 font-normal hover:bg-slate-100 border-none rounded-lg">
-                        {serviceCategoryLabels[category]}
+                      <Badge className="bg-slate-100 text-slate-700 font-medium hover:bg-slate-100 border-none rounded-md px-2.5 py-1 text-xs">
+                        {serviceCategoryLabels[category] || category}
                       </Badge>
                       <div className="flex items-center gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleOpenEdit(pSvc)}
-                          className="h-8 w-8 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                          className="h-8 w-8 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors shadow-none"
                         >
                           <Edit3 className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleDelete(pSvc.uuid)}
-                          className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="h-8 w-8 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shadow-none"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
-                    <CardTitle className="text-lg font-bold text-slate-900 mt-3 leading-snug">
+                    <CardTitle className="text-base font-bold text-slate-900 mt-3 leading-snug">
                       {displayName}
                     </CardTitle>
                     {displayDesc && (
-                      <CardDescription className="text-slate-500 text-sm mt-1 line-clamp-2 leading-relaxed">
+                      <CardDescription className="text-slate-500 text-xs mt-1 line-clamp-2 leading-relaxed">
                         {displayDesc}
                       </CardDescription>
                     )}
                   </CardHeader>
                 </div>
 
-                <div className="px-6 pb-6 pt-4 border-t border-slate-50 bg-slate-50/30">
+                <div className="px-6 pb-5 pt-4 border-t border-slate-100 bg-slate-50/40">
                   <div className="flex items-center justify-between text-sm text-slate-600">
-                    <div className="flex items-center gap-1.5 font-medium text-slate-900">
-                      <DollarSign className="h-4 w-4 text-teal-600" />
-                      <span className="text-base font-bold">{pSvc.price} USD</span>
+                    <div className="flex items-center gap-1 font-bold text-slate-900">
+                      <DollarSign className="h-4 w-4 text-pharmako-care" />
+                      <span className="text-base">{pSvc.price} USD</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="h-4 w-4 text-slate-400" />
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                      <Clock className="h-3.5 w-3.5 text-slate-400" />
                       <span>{pSvc.durationMinutes} min</span>
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-xs text-slate-400 font-medium">Reservable Standalone</span>
-                    <Badge 
-                      className={`font-normal border-none rounded-lg px-2 py-0.5 flex items-center gap-1 ${
-                        pSvc.isStandaloneBookable 
-                          ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-50" 
+                  <div className="mt-3.5 flex items-center justify-between">
+                    <span className="text-xs text-slate-500 font-medium">
+                      Agendamiento directo
+                    </span>
+                    <Badge
+                      className={`font-medium border-none rounded-md px-2 py-0.5 text-xs flex items-center gap-1 ${
+                        pSvc.isStandaloneBookable
+                          ? "bg-pharmako-care-light text-pharmako-care hover:bg-pharmako-care-light"
                           : "bg-slate-100 text-slate-500 hover:bg-slate-100"
                       }`}
                     >
                       {pSvc.isStandaloneBookable ? (
                         <>
-                          <Check className="h-3 w-3" /> Sí
+                          <Check className="h-3 w-3" /> Habilitado
                         </>
                       ) : (
                         <>
-                          <X className="h-3 w-3" /> No
+                          <X className="h-3 w-3" /> Deshabilitado
                         </>
                       )}
                     </Badge>
@@ -236,66 +347,104 @@ export function ServiceManager({ providerUuid, providerType }: ServiceManagerPro
         </div>
       )}
 
+      {/* Backdrop manual con blur — no interfiere con el focus trap de Radix */}
+      {isDialogOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-md"
+          onClick={() => setIsDialogOpen(false)}
+        />
+      )}
+
       {/* Agregar/Editar Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-2xl bg-white border border-slate-100 p-6">
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} modal={false}>
+        <DialogContent
+          className="sm:max-w-[500px] rounded-xl bg-white border border-slate-200 p-6 shadow-none z-50"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-slate-900">
-              {editingService ? "Editar Configuración de Servicio" : "Agregar Servicio al Portafolio"}
+            <DialogTitle className="text-lg font-bold text-slate-900">
+              {editingService
+                ? "Editar Configuración de Servicio"
+                : "Agregar Servicio al Portafolio"}
             </DialogTitle>
-            <DialogDescription className="text-slate-500 mt-1">
-              Definí el precio, la duración estimada de atención y el comportamiento en la agenda.
+            <DialogDescription className="text-xs text-slate-500 mt-1">
+              Definí el precio, la duración estimada de atención y el
+              comportamiento en la agenda.
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSave} className="space-y-4 my-4">
-            {/* Selección de Servicio Base */}
+          <form onSubmit={handleSave} className="space-y-4 my-2">
+            {/* Selección de Servicio Base con react-select */}
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">Servicio Base (Catálogo)</label>
+              <label className="text-xs font-semibold text-slate-700">
+                Servicio Base (Catálogo)
+              </label>
               {editingService ? (
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-sm font-medium">
-                  {getGlobalService(selectedServiceUuid)?.name || "Servicio seleccionado"}
+                  {getGlobalService(selectedServiceUuid)?.name ||
+                    "Servicio seleccionado"}
                 </div>
               ) : (
-                <Select value={selectedServiceUuid} onValueChange={setSelectedServiceUuid}>
-                  <SelectTrigger className="w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500">
-                    <SelectValue placeholder="Seleccioná un servicio maestro" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border border-slate-100 rounded-xl shadow-lg max-h-[200px]">
-                    {globalServices.map((gSvc) => (
-                      <SelectItem 
-                        key={gSvc.uuid} 
-                        value={gSvc.uuid}
-                        className="hover:bg-slate-50 rounded-lg text-slate-800"
-                      >
-                        {gSvc.name} ({serviceCategoryLabels[gSvc.category]})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Select
+                  classNamePrefix="react-select"
+                  options={selectOptions}
+                  value={selectedOption}
+                  onChange={(option) => {
+                    if (option) {
+                      setSelectedServiceUuid(option.value);
+                      if (!price && option.service.basePrice) {
+                        setPrice(option.service.basePrice.toString());
+                      }
+                    } else {
+                      setSelectedServiceUuid("");
+                    }
+                  }}
+                  placeholder="Buscá o seleccioná un servicio del catálogo maestro..."
+                  styles={customSelectStyles}
+                  isSearchable
+                  isClearable
+                  isLoading={loadingGlobal}
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : undefined
+                  }
+                  menuPosition="fixed"
+                  menuShouldScrollIntoView={false}
+                  noOptionsMessage={() =>
+                    loadingGlobal
+                      ? "Cargando catálogo..."
+                      : "No se encontraron servicios"
+                  }
+                />
               )}
             </div>
 
             {/* Nombre Personalizado (Opcional) */}
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 flex items-center gap-1">
+              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
                 <span>Nombre en el Portafolio</span>
-                <span className="text-xs text-slate-400">(Opcional)</span>
+                <span className="text-[11px] text-slate-400 font-normal">
+                  (Opcional)
+                </span>
               </label>
               <Input
                 placeholder="Ej: Ecocardiograma Doppler Color"
                 value={customName}
                 onChange={(e) => setCustomName(e.target.value)}
-                className="rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500"
+                className="rounded-xl border-slate-200 focus:border-pharmako-care focus:ring-pharmako-care text-sm"
               />
             </div>
 
             {/* Dos columnas: Precio y Duración */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700">Precio (USD)</label>
+                <label className="text-xs font-semibold text-slate-700">
+                  Precio (USD)
+                </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-slate-400">$</span>
+                  <span className="absolute left-3 top-2.5 text-slate-400 text-sm">
+                    $
+                  </span>
                   <Input
                     type="number"
                     step="0.01"
@@ -303,14 +452,16 @@ export function ServiceManager({ providerUuid, providerType }: ServiceManagerPro
                     placeholder="0.00"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    className="pl-7 rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500"
+                    className="pl-7 rounded-xl border-slate-200 focus:border-pharmako-care focus:ring-pharmako-care text-sm"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700">Duración (Minutos)</label>
+                <label className="text-xs font-semibold text-slate-700">
+                  Duración (Minutos)
+                </label>
                 <div className="relative">
                   <Input
                     type="number"
@@ -318,7 +469,7 @@ export function ServiceManager({ providerUuid, providerType }: ServiceManagerPro
                     placeholder="30"
                     value={durationMinutes}
                     onChange={(e) => setDurationMinutes(e.target.value)}
-                    className="rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500"
+                    className="rounded-xl border-slate-200 focus:border-pharmako-care focus:ring-pharmako-care text-sm"
                     required
                   />
                 </div>
@@ -327,33 +478,39 @@ export function ServiceManager({ providerUuid, providerType }: ServiceManagerPro
 
             {/* Descripción Personalizada */}
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 flex items-center gap-1">
+              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
                 <span>Instrucciones / Descripción propia</span>
-                <span className="text-xs text-slate-400">(Opcional)</span>
+                <span className="text-[11px] text-slate-400 font-normal">
+                  (Opcional)
+                </span>
               </label>
               <Textarea
                 placeholder="Instrucciones previas al paciente (ej: venir en ayunas, traer estudios anteriores...)"
                 value={customDescription}
                 onChange={(e) => setCustomDescription(e.target.value)}
-                className="rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 min-h-[80px]"
+                className="rounded-xl border-slate-200 focus:border-pharmako-care focus:ring-pharmako-care min-h-[80px] text-sm"
               />
             </div>
 
             {/* Standalone Checkbox */}
-            <div className="flex items-start gap-3 p-4 bg-teal-50/40 rounded-xl border border-teal-100/50 mt-2">
+            <div className="flex items-start gap-3 p-3.5 bg-pharmako-care-light/30 rounded-xl border border-slate-200 mt-2">
               <input
                 id="standalone-checkbox"
                 type="checkbox"
                 checked={isStandaloneBookable}
                 onChange={(e) => setIsStandaloneBookable(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded text-teal-600 focus:ring-teal-500 border-slate-300"
+                className="mt-0.5 h-4 w-4 rounded text-pharmako-care focus:ring-pharmako-care border-slate-300"
               />
               <div className="flex flex-col">
-                <label htmlFor="standalone-checkbox" className="text-sm font-semibold text-slate-900 cursor-pointer">
+                <label
+                  htmlFor="standalone-checkbox"
+                  className="text-xs font-semibold text-slate-900 cursor-pointer"
+                >
                   Permitir agendamiento directo
                 </label>
-                <span className="text-xs text-slate-500 mt-0.5 leading-normal">
-                  Los pacientes podrán agendar este servicio directamente desde el portal (ej: ir por un eco o toma de muestras) sin requerir una consulta médica previa.
+                <span className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                  Los pacientes podrán agendar este servicio directamente desde
+                  el portal sin requerir una consulta previa.
                 </span>
               </div>
             </div>
@@ -363,13 +520,13 @@ export function ServiceManager({ providerUuid, providerType }: ServiceManagerPro
                 type="button"
                 variant="outline"
                 onClick={() => setIsDialogOpen(false)}
-                className="rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50"
+                className="h-10 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 shadow-none text-xs font-medium px-4"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl"
+                className="h-10 bg-pharmako-care hover:bg-pharmako-care-hover text-white font-semibold rounded-xl shadow-none text-xs border-none px-5"
                 disabled={saveMutation.isPending}
               >
                 {saveMutation.isPending ? "Guardando..." : "Guardar Servicio"}

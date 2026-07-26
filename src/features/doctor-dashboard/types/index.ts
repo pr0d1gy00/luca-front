@@ -70,4 +70,4 @@ export interface ActionItem {
   completed: boolean;
 }
 
-export type DashboardView = "resumen" | "flujo" | "seguimiento";
+export type DashboardView = "resumen" | "flujo" | "seguimiento" | "servicios";
