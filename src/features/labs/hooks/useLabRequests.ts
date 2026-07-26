@@ -13,8 +13,8 @@ import { useAuthStore } from "@/store/auth";
 export const labRequestKeys = {
   all: ["lab-requests"] as const,
   lists: () => [...labRequestKeys.all, "list"] as const,
-  list: (patientUuid?: string, page = 1, perPage = 10) =>
-    [...labRequestKeys.lists(), { patientUuid, page, perPage }] as const,
+  list: (patientUuid?: string, page = 1, perPage = 10, status = "ALL", search = "") =>
+    [...labRequestKeys.lists(), { patientUuid, page, perPage, status, search }] as const,
   details: () => [...labRequestKeys.all, "detail"] as const,
   detail: (uuid: string) => [...labRequestKeys.details(), uuid] as const,
 };
@@ -22,12 +22,18 @@ export const labRequestKeys = {
 /**
  * Get all laboratory requests — prefers server data, falls back to local
  */
-export function useLabRequests(patientUuid?: string, page = 1, perPage = 10) {
+export function useLabRequests(
+  patientUuid?: string,
+  page = 1,
+  perPage = 10,
+  status = "ALL",
+  search = "",
+) {
   return useQuery({
-    queryKey: labRequestKeys.list(patientUuid, page, perPage),
+    queryKey: labRequestKeys.list(patientUuid, page, perPage, status, search),
     queryFn: async () => {
       try {
-        const response = await labRequestApi.getAll(patientUuid, page, perPage);
+        const response = await labRequestApi.getAll(patientUuid, page, perPage, status, search);
         const mappedList = response.data.map((req) => ({
           ...req,
           consultationUuid:

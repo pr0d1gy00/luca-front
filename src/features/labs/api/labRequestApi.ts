@@ -37,18 +37,34 @@ export interface LabRequestsResponse {
 
 export const labRequestApi = {
   /**
-   * Get all lab requests for current doctor, optionally filtered by patient UUID, paginated
+   * Get all lab requests for current doctor, optionally filtered by patient UUID, status, search, paginated
    */
   getAll: async (
     patientUuid?: string,
     page = 1,
     perPage = 10,
+    status?: string,
+    search?: string,
   ): Promise<LabRequestsResponse> => {
     const params = new URLSearchParams();
     params.set("page", page.toString());
     params.set("per_page", perPage.toString());
     if (patientUuid) {
       params.set("patient_uuid", patientUuid);
+    }
+    if (status && status !== "ALL") {
+      const lowerStatus = status.toLowerCase();
+      params.set("status", lowerStatus);
+      if (status.toUpperCase() === "COMPLETED") {
+        params.set("is_completed", "1");
+      } else if (status.toUpperCase() === "PENDING") {
+        params.set("is_completed", "0");
+      }
+    }
+    if (search && search.trim() !== "") {
+      const q = search.trim();
+      params.set("search", q);
+      params.set("q", q);
     }
 
     const response = await apiClient.get<Record<string, unknown>>(

@@ -55,7 +55,12 @@ export function LabRequestModal({
   useEffect(() => {
     if (isOpen) {
       if (existingRequest) {
-        setSelectedPatientUuid(existingRequest.patientUuid);
+        const pUuid =
+          existingRequest.patientUuid ||
+          (existingRequest as unknown as { patient_uuid?: string }).patient_uuid ||
+          (existingRequest as unknown as { patient?: { uuid?: string } }).patient?.uuid ||
+          "";
+        setSelectedPatientUuid(pUuid);
         setSelectedExams(existingRequest.examsList || []);
         setInstructions(existingRequest.instructions || "");
       } else {
@@ -99,7 +104,12 @@ export function LabRequestModal({
     e.preventDefault();
     e.stopPropagation();
 
-    if (!selectedPatientUuid) {
+    const finalPatientUuid =
+      selectedPatientUuid ||
+      (existingRequest as unknown as { patient_uuid?: string })?.patient_uuid ||
+      (existingRequest as unknown as { patient?: { uuid?: string } })?.patient?.uuid;
+
+    if (!finalPatientUuid) {
       toast.error("Por favor, selecciona un paciente.");
       return;
     }
@@ -128,7 +138,7 @@ export function LabRequestModal({
         } else {
           // Create
           await createMutation.mutateAsync({
-            patientUuid: selectedPatientUuid,
+            patientUuid: finalPatientUuid,
             consultationUuid,
             examsList: selectedExams,
             instructions,
@@ -153,7 +163,32 @@ export function LabRequestModal({
     );
   });
 
-  const selectedPatientData = patients.find((p) => p.uuid === selectedPatientUuid);
+  const rawPatientFromReq = (existingRequest as unknown as {
+    patient?: {
+      firstName?: string;
+      first_name?: string;
+      lastName?: string;
+      last_name?: string;
+      nationalId?: string;
+      national_id?: string;
+    };
+  })?.patient;
+
+  const foundPatient = patients.find((p) => p.uuid === selectedPatientUuid);
+
+  const selectedPatientData = foundPatient
+    ? {
+        name: `${foundPatient.firstName} ${foundPatient.lastName}`,
+        nationalId: foundPatient.nationalId,
+      }
+    : rawPatientFromReq
+    ? {
+        name: `${rawPatientFromReq.firstName || rawPatientFromReq.first_name || ""} ${
+          rawPatientFromReq.lastName || rawPatientFromReq.last_name || ""
+        }`.trim() || "Paciente",
+        nationalId: rawPatientFromReq.nationalId || rawPatientFromReq.national_id || "N/A",
+      }
+    : null;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -173,19 +208,19 @@ export function LabRequestModal({
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-700">
                 Paciente</label>
-              {patientUuid ? (
+              {patientUuid || existingRequest ? (
                 // Display Read-only preselected patient
                 <div className="p-4 border border-slate-200 rounded-xl flex items-center justify-between mt-2">
                   <div>
                     <span className="font-bold text-slate-800">
-                      {selectedPatientData ? `${selectedPatientData.firstName} ${selectedPatientData.lastName}` : "Cargando..."}
+                      {selectedPatientData ? selectedPatientData.name : "Paciente Seleccionado"}
                     </span>
                     <span className="text-xs text-slate-500 block mt-0.5">
-                      DNI: {selectedPatientData?.nationalId}
+                      DNI: {selectedPatientData?.nationalId ?? "N/A"}
                     </span>
                   </div>
                   <Badge variant="outline" className="bg-teal-50/50 border-teal-150 text-pharmako-care">
-                    Preseleccionado
+                    {existingRequest ? "Paciente de la orden" : "Preseleccionado"}
                   </Badge>
                 </div>
               ) : (

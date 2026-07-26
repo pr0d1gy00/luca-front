@@ -19,8 +19,6 @@ import {
   Trash2,
   CheckCircle,
   Clock,
-  Cloud,
-  CloudOff,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { LabRequest } from "@/features/offline/database/schema";
@@ -30,7 +28,13 @@ export function LabRequestsList() {
   const [page, setPage] = useState(1);
   const perPage = 10;
 
-  const { data, isLoading } = useLabRequests(undefined, page, perPage);
+  // Search & Filter State
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "PENDING" | "COMPLETED"
+  >("ALL");
+
+  const { data, isLoading } = useLabRequests(undefined, page, perPage, statusFilter, search);
   const labRequests = data?.data ?? [];
   const pagination = data?.pagination;
 
@@ -38,21 +42,29 @@ export function LabRequestsList() {
   const deleteMutation = useDeleteLabRequest();
   const updateMutation = useUpdateLabRequest();
 
-  // Search & Filter State
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "ALL" | "PENDING" | "COMPLETED"
-  >("ALL");
-
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRequest, setEditingRequest] = useState<LabRequest | null>(null);
 
-  const getPatientData = (patientUuid: string) => {
-    const p = patients.find((x) => x.uuid === patientUuid);
-    return p
-      ? { name: `${p.firstName} ${p.lastName}`, nationalId: p.nationalId }
-      : { name: "Paciente Desconocido", nationalId: "N/A" };
+  const getPatientData = (req: LabRequest) => {
+    const pUuid =
+      req.patientUuid ||
+      (req as unknown as { patient_uuid?: string }).patient_uuid ||
+      (req as unknown as { patient?: { uuid?: string } }).patient?.uuid ||
+      "";
+    const p = patients.find((x) => x.uuid === pUuid);
+    if (p) {
+      return { name: `${p.firstName} ${p.lastName}`, nationalId: p.nationalId };
+    }
+    const rawPatient = (req as unknown as { patient?: { firstName?: string; first_name?: string; lastName?: string; last_name?: string; nationalId?: string; national_id?: string } }).patient;
+    if (rawPatient) {
+      const name = `${rawPatient.firstName || rawPatient.first_name || ""} ${rawPatient.lastName || rawPatient.last_name || ""}`.trim();
+      return {
+        name: name || "Paciente Desconocido",
+        nationalId: rawPatient.nationalId || rawPatient.national_id || "N/A",
+      };
+    }
+    return { name: "Paciente Desconocido", nationalId: "N/A" };
   };
 
   const handleEdit = (req: LabRequest) => {
@@ -90,25 +102,8 @@ export function LabRequestsList() {
     }
   };
 
-  const filteredRequests = labRequests.filter((req) => {
-    // 1. Soft delete filter
-    if (req.deletedAt) return false;
-
-    // 2. Patient search
-    const patient = getPatientData(req.patientUuid);
-    const matchesSearch =
-      patient.name.toLowerCase().includes(search.toLowerCase()) ||
-      patient.nationalId.includes(search) ||
-      (req.examsList || []).some((e) =>
-        e.toLowerCase().includes(search.toLowerCase()),
-      );
-
-    // 3. Status filter
-    if (statusFilter === "PENDING" && req.isCompleted) return false;
-    if (statusFilter === "COMPLETED" && !req.isCompleted) return false;
-
-    return matchesSearch;
-  });
+  // Filter out soft deleted requests locally if any
+  const filteredRequests = labRequests.filter((req) => !req.deletedAt);
 
   const formatDateString = (dateStr?: string) => {
     if (!dateStr) return "N/A";
@@ -239,9 +234,6 @@ export function LabRequestsList() {
                   <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-400">
                     Estado
                   </th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Sincronización
-                  </th>
                   <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-400">
                     Acciones
                   </th>
@@ -249,7 +241,7 @@ export function LabRequestsList() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredRequests.map((req) => {
-                  const patient = getPatientData(req.patient.uuid);
+                  const patient = getPatientData(req);
                   return (
                     <tr
                       key={req.uuid}
@@ -306,19 +298,6 @@ export function LabRequestsList() {
                             </Badge>
                           )}
                         </button>
-                      </td>
-
-                      {/* Sync Status */}
-                      <td className="px-6 py-4 text-center">
-                        {req._syncStatus === "synced" ? (
-                          <div className="inline-flex items-center gap-1.5 text-xs text-emerald-600 font-semibold bg-emerald-50/50 px-2 py-1 rounded-lg border border-emerald-100">
-                            <Cloud className="w-3.5 h-3.5" /> Sincronizado
-                          </div>
-                        ) : (
-                          <div className="inline-flex items-center gap-1.5 text-xs text-amber-600 font-semibold bg-amber-50/50 px-2 py-1 rounded-lg border border-amber-100">
-                            <CloudOff className="w-3.5 h-3.5" /> Pendiente
-                          </div>
-                        )}
                       </td>
 
                       {/* Actions */}
