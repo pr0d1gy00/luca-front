@@ -56,7 +56,10 @@ export function LoginForm() {
     if (otpStep !== "verify" || !expiryTimestamp) return;
 
     const updateTimer = () => {
-      const remaining = Math.max(0, Math.floor((expiryTimestamp - Date.now()) / 1000));
+      const remaining = Math.max(
+        0,
+        Math.floor((expiryTimestamp - Date.now()) / 1000),
+      );
       setTimeLeft(remaining);
     };
 
@@ -111,7 +114,13 @@ export function LoginForm() {
       toast.success(
         `¡Bienvenido, ${user.fullName || user.full_name || "Usuario"}!`,
       );
-      router.push("/dashboard");
+      const redirectPath = sessionStorage.getItem("redirect_after_login");
+      if (redirectPath) {
+        sessionStorage.removeItem("redirect_after_login");
+        router.push(redirectPath);
+      } else {
+        router.push("/dashboard");
+      }
     } catch (errUser: unknown) {
       const e = errUser as {
         response?: {
@@ -123,30 +132,27 @@ export function LoginForm() {
       if (e.response?.status === 401) {
         try {
           console.log("[LoginForm] Attempting patient login for:", email);
-          const resPatient = await loginPatient.mutateAsync({
+          await loginPatient.mutateAsync({
             email,
             password,
           });
-          console.log("[LoginForm] Patient login response:", resPatient);
-
-          // Obtener el perfil completo (PatientAccount) con campos adicionales
-          const { data: patientFull } = await apiClient.get<PatientAccount>(
-            "/auth/patients/me"
-          );
+          const { data: patientFull } =
+            await apiClient.get<PatientAccount>("/auth/patients/me");
           console.log("[LoginForm] /me response:", patientFull);
 
           setAuth("patient", patientFull, true);
-          console.log(
-            "[LoginForm] Store state BEFORE redirect:",
-            JSON.stringify(useAuthStore.getState()),
-          );
           toast.success(
             `¡Bienvenido, ${
               patientFull.fullName || patientFull.full_name || "Usuario"
             }!`,
           );
-          // Use router.push for client-side navigation (preserves React state)
-          router.push("/dashboard");
+          const redirectPath = sessionStorage.getItem("redirect_after_login");
+          if (redirectPath) {
+            sessionStorage.removeItem("redirect_after_login");
+            router.push(redirectPath);
+          } else {
+            router.push("/dashboard");
+          }
         } catch (err) {
           console.error("[LoginForm] Patient login failed:", err);
           toast.error("Correo electrónico o contraseña incorrectos.");
@@ -251,9 +257,8 @@ export function LoginForm() {
 
       if (detectedUserType === "patient") {
         // Obtener el perfil completo (PatientAccount)
-        const { data: patientFull } = await apiClient.get<PatientAccount>(
-          "/auth/patients/me"
-        );
+        const { data: patientFull } =
+          await apiClient.get<PatientAccount>("/auth/patients/me");
         setAuth("patient", patientFull, true);
         toast.success(
           `¡Bienvenido, ${

@@ -12,7 +12,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { SettingsIcon, LogOutIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getFullImageUrl } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useLogout } from "@/features/auth/hooks/useLogout";
 import Link from "next/link";
@@ -51,7 +51,10 @@ export function UserProfile() {
         >
           <Avatar className="size-8">
             {avatar ? (
-              <AvatarImage src={avatar} alt={name || "Usuario"} />
+              <AvatarImage
+                src={getFullImageUrl(avatar)}
+                alt={name || "Usuario"}
+              />
             ) : null}
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>

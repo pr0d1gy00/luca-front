@@ -58,12 +58,29 @@ function resolveAvatar(
   userType: "patient" | "user",
   user: PatientAccount | UserProfile | PatientProfile,
 ): string {
+  let rawUrl = "";
   if (userType === "patient") {
     const p = user as PatientAccount;
-    return p.avatar_url ?? p.avatarUrl ?? "";
+    rawUrl = p.avatar_url ?? p.avatarUrl ?? "";
+  } else {
+    const u = user as UserProfile & { avatar_url?: string; avatarUrl?: string };
+    rawUrl = u.avatar_url ?? u.avatarUrl ?? u.logo_url ?? u.logoUrl ?? "";
   }
-  const u = user as UserProfile;
-  return u.logo_url ?? u.logoUrl ?? "";
+
+  if (!rawUrl) return "";
+  if (
+    rawUrl.startsWith("http://") ||
+    rawUrl.startsWith("https://") ||
+    rawUrl.startsWith("data:")
+  ) {
+    return rawUrl;
+  }
+
+  const apiBase = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+  ).replace(/\/api\/v1\/?$/, "");
+  const cleanPath = rawUrl.startsWith("/") ? rawUrl : `/${rawUrl}`;
+  return `${apiBase}${cleanPath}`;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -89,9 +106,7 @@ export const useAuthStore = create<AuthState>()(
         const actualUser =
           user && typeof user === "object" && "user" in user
             ? ((user as Record<string, unknown>).user as
-              | PatientAccount
-              | UserProfile
-              | PatientProfile)
+                PatientAccount | UserProfile | PatientProfile)
             : user;
 
         const verified = isVerified ?? resolveIsVerified(userType, actualUser);
@@ -106,9 +121,9 @@ export const useAuthStore = create<AuthState>()(
             isVerified: verified,
             user: actualUser
               ? {
-                fullName: (actualUser as { fullName?: string }).fullName,
-                role: (actualUser as { role?: string }).role,
-              }
+                  fullName: (actualUser as { fullName?: string }).fullName,
+                  role: (actualUser as { role?: string }).role,
+                }
               : null,
           }),
         );

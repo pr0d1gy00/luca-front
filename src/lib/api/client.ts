@@ -41,8 +41,18 @@ apiClient.interceptors.request.use(
         let key = "";
         if (config.data) {
           try {
-            const parsed = typeof config.data === "string" ? JSON.parse(config.data) : config.data;
-            key = parsed.uuid || parsed.id || parsed.appointmentUuid || parsed.appointment_uuid || parsed.patientUuid || parsed.patient_uuid || "";
+            const parsed =
+              typeof config.data === "string"
+                ? JSON.parse(config.data)
+                : config.data;
+            key =
+              parsed.uuid ||
+              parsed.id ||
+              parsed.appointmentUuid ||
+              parsed.appointment_uuid ||
+              parsed.patientUuid ||
+              parsed.patient_uuid ||
+              "";
           } catch (e) {
             // Ignorar errores de parsing
           }
@@ -53,7 +63,8 @@ apiClient.interceptors.request.use(
 
     // 2. Zona Horaria del cliente
     if (typeof window !== "undefined") {
-      config.headers["X-Timezone"] = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      config.headers["X-Timezone"] =
+        Intl.DateTimeFormat().resolvedOptions().timeZone;
     }
 
     return config;
@@ -76,14 +87,14 @@ apiClient.interceptors.response.use(
     // Detectamos expiración de sesión (401)
     if (error.response?.status === 401 && !originalRequest._retry) {
       const state = useAuthStore.getState();
+      const requestUrl = originalRequest.url || "";
 
-      // Si es un endpoint de auth público, o no hay sesión activa local, rechazamos inmediatamente
+      // Si es un endpoint de autenticación público o el mismo endpoint de refresh, rechazamos inmediatamente
       if (
-        !state.userType ||
-        originalRequest.url?.includes("/login") ||
-        originalRequest.url?.includes("/refresh") ||
-        originalRequest.url?.includes("/verify-otp") ||
-        originalRequest.url?.includes("/send-otp")
+        requestUrl.includes("/login") ||
+        requestUrl.includes("/refresh") ||
+        requestUrl.includes("/verify-otp") ||
+        requestUrl.includes("/send-otp")
       ) {
         return Promise.reject(error);
       }
@@ -114,12 +125,17 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
+        // Inferimos el userType si no está en el store todavía
+        const inferredUserType =
+          state.userType ||
+          (requestUrl.includes("/patients") ? "patient" : "user");
+
         const refreshPath =
-          state.userType === "patient"
+          inferredUserType === "patient"
             ? "/auth/patients/refresh"
             : "/auth/users/refresh";
 
-        // Usamos una instancia limpia de axios con cookies
+        // Usamos una instancia limpia de axios enviando cookies de sesión
         await axios.post(
           `${apiClient.defaults.baseURL}${refreshPath}`,
           {},
@@ -137,7 +153,11 @@ apiClient.interceptors.response.use(
         processQueue(refreshError);
         state.clearAuth();
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          const currentPath = window.location.pathname + window.location.search;
+          if (currentPath && !currentPath.includes("/login")) {
+            sessionStorage.setItem("redirect_after_login", currentPath);
+          }
+          window.location.href = "/login?expired=1";
         }
         return Promise.reject(refreshError);
       } finally {

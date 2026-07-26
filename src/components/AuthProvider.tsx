@@ -1,20 +1,34 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
 import apiClient from "@/lib/api/client";
 
-const PUBLIC_PATHS = ["/login", "/register", "/doctors", "/pharmacies", "/clinics", "/"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/register",
+  "/doctors",
+  "/pharmacies",
+  "/clinics",
+  "/",
+];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
   const clearAuth = useAuthStore((s) => s.clearAuth);
 
   useEffect(() => {
     let active = true;
+
+    // No intentar recuperar sesión en rutas públicas — evita el bucle
+    // que ocurre cuando el interceptor falla el refresh y redirige a /login.
+    const currentPath = window.location.pathname;
+    const isPublicRoute = PUBLIC_PATHS.some(
+      (route) => currentPath === route || currentPath.startsWith(route + "/"),
+    );
+    if (isPublicRoute) return;
 
     async function recoverSession() {
       try {
@@ -34,15 +48,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const isVerified = user.isVerified ?? user.is_verified ?? false;
 
         setAuth(userType, user, isVerified);
-
-        const currentPath = window.location.pathname;
-        const isPublicRoute = PUBLIC_PATHS.some(
-          (route) => currentPath === route || currentPath.startsWith(route + "/"),
-        );
-
-        if (isPublicRoute) {
-          router.replace("/dashboard");
-        }
       } catch (err) {
         if (!active) return;
         console.error("[AuthProvider] Session recovery failed:", err);
@@ -56,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [pathname]);
 
   return <>{children}</>;
 }
