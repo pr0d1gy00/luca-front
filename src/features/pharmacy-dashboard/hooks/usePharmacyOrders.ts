@@ -1,74 +1,39 @@
-"use client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import apiClient from "@/lib/api/client";
+import type { PharmacyOrder } from "../types/pharmacy.types";
 
-import type { PharmacyOrder } from "../types";
+export function usePharmacyOrders() {
+  return [
+    {
+      id: "ORD-001",
+      customerName: "María García",
+      medication: "Amoxicilina 500mg",
+      status: "pending",
+      time: "Hace 10 min",
+    },
+    {
+      id: "ORD-002",
+      customerName: "Carlos Rodríguez",
+      medication: "Ibuprofeno 600mg",
+      status: "ready",
+      time: "Hace 25 min",
+    },
+  ];
+}
 
-const MOCK_ORDERS: PharmacyOrder[] = [
-  {
-    id: "ORD-001",
-    patientName: "María López",
-    prescription: "Amoxicilina 500mg",
-    time: "09:30",
-    status: "pendiente",
-    fulfillmentType: "presencial",
-  },
-  {
-    id: "ORD-002",
-    patientName: "Carlos Fuentes",
-    prescription: "Ibuprofeno 400mg",
-    time: "09:45",
-    status: "en-preparacion",
-    fulfillmentType: "presencial",
-  },
-  {
-    id: "ORD-003",
-    patientName: "Ana Torres",
-    prescription: "Omeprazol 20mg",
-    time: "10:00",
-    status: "listo",
-    fulfillmentType: "delivery",
-  },
-  {
-    id: "ORD-004",
-    patientName: "Pedro Jiménez",
-    prescription: "Paracetamol 1g",
-    time: "10:15",
-    status: "pendiente",
-    fulfillmentType: "delivery",
-  },
-  {
-    id: "ORD-005",
-    patientName: "Sofía Ramírez",
-    prescription: "Losartán 50mg",
-    time: "10:30",
-    status: "en-preparacion",
-    fulfillmentType: "presencial",
-  },
-  {
-    id: "ORD-006",
-    patientName: "Diego Herrera",
-    prescription: "Metformina 850mg",
-    time: "11:00",
-    status: "pendiente",
-    fulfillmentType: "delivery",
-  },
-  {
-    id: "ORD-007",
-    patientName: "Valentina Ríos",
-    prescription: "Salbutamol inhalador",
-    time: "11:15",
-    status: "listo",
-    fulfillmentType: "presencial",
-  },
-  {
-    id: "ORD-008",
-    patientName: "Jorge Castillo",
-    prescription: "Atorvastatina 20mg",
-    time: "11:30",
-    status: "en-preparacion",
-    fulfillmentType: "delivery",
-  },
-];
+export function useConfirmPharmacyOrder() {
+  const queryClient = useQueryClient();
 
-export function usePharmacyOrders(): PharmacyOrder[] {
-  return MOCK_ORDERS;
+  return useMutation<PharmacyOrder, Error, number>({
+    mutationFn: async (orderId: number) => {
+      const response = await apiClient.post(
+        `/pharmacy/orders/${orderId}/confirm`,
+      );
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["pharmacy", "inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["pharmacy", "orders"] });
+    },
+  });
 }
