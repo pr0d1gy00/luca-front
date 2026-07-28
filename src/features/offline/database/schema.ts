@@ -5,6 +5,21 @@ import type {
   QueuedChange,
   SyncTimestamp,
 } from "../types/sync.types";
+import type {
+  ClinicDepartment,
+  ClinicRole,
+  ClinicStaff,
+  ClinicRoom,
+  ClinicBed,
+  Admission,
+  TreatmentNote,
+  AdministeredMedication,
+  ServiceCharge,
+  SurgicalOperation,
+  SurgeryTeamMember,
+  SupplyOrder,
+  SupplyOrderItem,
+} from "../../clinics/types";
 
 // ============================================
 // PATIENT (PatientAccount en backend)
@@ -427,6 +442,21 @@ class LucaDatabase extends Dexie {
   providerServices!: Table<ProviderServiceRecord>;
   activeDelays!: Table<ActiveDelayRecord>;
 
+  // Clinics (Phase 5)
+  clinicDepartments!: Table<ClinicDepartment>;
+  clinicRoles!: Table<ClinicRole>;
+  clinicStaff!: Table<ClinicStaff>;
+  clinicRooms!: Table<ClinicRoom>;
+  clinicBeds!: Table<ClinicBed>;
+  admissions!: Table<Admission>;
+  treatmentNotes!: Table<TreatmentNote>;
+  administeredMedications!: Table<AdministeredMedication>;
+  serviceCharges!: Table<ServiceCharge>;
+  surgicalOperations!: Table<SurgicalOperation>;
+  surgeryTeamMembers!: Table<SurgeryTeamMember>;
+  supplyOrders!: Table<SupplyOrder>;
+  supplyOrderItems!: Table<SupplyOrderItem>;
+
   constructor() {
     super("LucaOfflineDB");
 
@@ -502,6 +532,23 @@ class LucaDatabase extends Dexie {
       services: "uuid, category, updatedAt",
       providerServices: "uuid, providerUuid, serviceUuid, isActive, updatedAt",
       activeDelays: "doctorUuid, delayMinutes, updatedAt",
+    });
+
+    // v6: Add clinics module entities (Phase 5)
+    this.version(6).stores({
+      clinicDepartments: "uuid, branchId, updatedAt",
+      clinicRoles: "uuid, branchId, updatedAt",
+      clinicStaff: "uuid, branchId, userUuid, clinicRoleUuid, updatedAt, _syncStatus",
+      clinicRooms: "uuid, branchId, status, updatedAt",
+      clinicBeds: "uuid, roomUuid, status, updatedAt",
+      admissions: "uuid, branchId, patientUuid, clinicBedUuid, status, updatedAt, _syncStatus",
+      treatmentNotes: "uuid, admissionUuid, doctorUuid, updatedAt, _syncStatus",
+      administeredMedications: "uuid, admissionUuid, medicationUuid, updatedAt, _syncStatus",
+      serviceCharges: "uuid, admissionUuid, serviceUuid, updatedAt, _syncStatus",
+      surgicalOperations: "uuid, branchId, patientUuid, roomUuid, status, scheduledDate, updatedAt, _syncStatus",
+      surgeryTeamMembers: "uuid, operationUuid, staffUuid, updatedAt, _syncStatus",
+      supplyOrders: "uuid, operationUuid, providerType, status, updatedAt, _syncStatus",
+      supplyOrderItems: "uuid, supplyOrderUuid, updatedAt, _syncStatus",
     });
   }
 }
