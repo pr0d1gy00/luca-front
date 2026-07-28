@@ -8,13 +8,19 @@ import {
   BarChart3,
   UserPlus,
   ChevronRight,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CreateExternalLabOrderModal } from "@/features/laboratory/components/CreateExternalLabOrderModal";
+import { LabSettingsModal } from "@/features/laboratory/components/LabSettingsModal";
+import { useLabSettings } from "@/features/laboratory/hooks/useLabSettings";
 
 export default function LaboratoryMainDashboardPage() {
   const [isExternalModalOpen, setIsExternalModalOpen] =
     useState<boolean>(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] =
+    useState<boolean>(false);
+  const { settings } = useLabSettings();
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8">
@@ -22,18 +28,31 @@ export default function LaboratoryMainDashboardPage() {
       <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-none flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-1">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-pharmako-care-light text-pharmako-care mb-2">
-            ● LUCA Laboratory OS Active Node
+            ● LUCA Laboratory OS Active Node (
+            {settings?.is_24_hours
+              ? "Atención 24/7"
+              : `${settings?.opening_time || "07:00"} - ${settings?.closing_time || "17:00"}`}
+            )
           </div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
             Panel Principal de Laboratorio
           </h1>
           <p className="text-sm text-slate-600">
-            Cotización multimoneda, logística de cupos por fecha, resultados por
-            email y analítica de reactivos.
+            Horarios de atención, días laborables, cotización multimoneda,
+            resultados por email y analítica de reactivos.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={() => setIsSettingsModalOpen(true)}
+            className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-none rounded-xl h-11 px-4 text-xs font-semibold"
+          >
+            <Settings className="w-4 h-4 mr-2 text-slate-600" />
+            Configuración y Horario
+          </Button>
+
           <Button
             variant="outline"
             onClick={() => setIsExternalModalOpen(true)}
@@ -119,6 +138,12 @@ export default function LaboratoryMainDashboardPage() {
       <CreateExternalLabOrderModal
         isOpen={isExternalModalOpen}
         onClose={() => setIsExternalModalOpen(false)}
+      />
+
+      {/* Settings & Working Hours Modal */}
+      <LabSettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
       />
     </div>
   );

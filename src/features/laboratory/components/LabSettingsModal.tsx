@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings, X, ShieldAlert, Clock, Calendar } from "lucide-react";
+import { Settings, X, Clock, Calendar, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { usePharmacySettings } from "../hooks/usePharmacySettings";
+import { useLabSettings } from "../hooks/useLabSettings";
 
-interface PharmacySettingsModalProps {
+interface LabSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
@@ -21,21 +21,18 @@ const DAYS_OF_WEEK = [
   { id: "sunday", label: "Dom" },
 ];
 
-export function PharmacySettingsModal({
-  isOpen,
-  onClose,
-}: PharmacySettingsModalProps) {
-  const { settings, isLoading, updateSettings, isUpdating } =
-    usePharmacySettings();
+export function LabSettingsModal({ isOpen, onClose }: LabSettingsModalProps) {
+  const { settings, isLoading, updateSettings, isUpdating } = useLabSettings();
+
+  const [dailyMaxSlots, setDailyMaxSlots] = useState<number>(20);
   const [autoQuoting, setAutoQuoting] = useState<boolean>(false);
-  const [allowPartial, setAllowPartial] = useState<boolean>(true);
   const [currency, setCurrency] = useState<string>("USD");
-  const [customTerms, setCustomTerms] = useState<string>("");
+  const [instructions, setInstructions] = useState<string>("");
 
   // Schedule & 24h State
   const [is24Hours, setIs24Hours] = useState<boolean>(false);
-  const [openingTime, setOpeningTime] = useState<string>("08:00");
-  const [closingTime, setClosingTime] = useState<string>("20:00");
+  const [openingTime, setOpeningTime] = useState<string>("07:00");
+  const [closingTime, setClosingTime] = useState<string>("17:00");
   const [workingDays, setWorkingDays] = useState<string[]>([
     "monday",
     "tuesday",
@@ -48,13 +45,13 @@ export function PharmacySettingsModal({
   useEffect(() => {
     if (!settings) return;
     const timer = setTimeout(() => {
-      setAutoQuoting(settings.auto_quoting_enabled);
-      setAllowPartial(settings.allow_partial_quotes);
+      setDailyMaxSlots(settings.daily_max_slots || 20);
+      setAutoQuoting(settings.auto_quoting_enabled || false);
       setCurrency(settings.default_currency || "USD");
-      setCustomTerms(settings.custom_terms || "");
+      setInstructions(settings.instructions_for_patient || "");
       setIs24Hours(settings.is_24_hours || false);
-      setOpeningTime(settings.opening_time || "08:00");
-      setClosingTime(settings.closing_time || "20:00");
+      setOpeningTime(settings.opening_time || "07:00");
+      setClosingTime(settings.closing_time || "17:00");
       setWorkingDays(
         settings.working_days || [
           "monday",
@@ -80,10 +77,10 @@ export function PharmacySettingsModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await updateSettings({
+      daily_max_slots: dailyMaxSlots,
       auto_quoting_enabled: autoQuoting,
-      allow_partial_quotes: allowPartial,
       default_currency: currency,
-      custom_terms: customTerms,
+      instructions_for_patient: instructions,
       is_24_hours: is24Hours,
       opening_time: openingTime,
       closing_time: closingTime,
@@ -103,10 +100,10 @@ export function PharmacySettingsModal({
             </div>
             <div>
               <h2 className="text-base font-bold text-slate-900">
-                Configuración de Farmacia
+                Configuración de Laboratorio
               </h2>
               <p className="text-xs text-slate-500">
-                Horarios de atención, días laborables y cotizaciones
+                Horarios de atención, días laborables y logística de cupos
               </p>
             </div>
           </div>
@@ -118,7 +115,6 @@ export function PharmacySettingsModal({
           </button>
         </div>
 
-        {/* Content */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Operating Hours & 24h Section */}
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-4">
@@ -130,7 +126,7 @@ export function PharmacySettingsModal({
                     Atención 24 Horas (24/7)
                   </label>
                   <p className="text-xs text-slate-500">
-                    La farmacia permanece abierta de forma ininterrumpida
+                    El laboratorio realiza tomas de muestra y atención 24h
                   </p>
                 </div>
               </div>
@@ -205,75 +201,80 @@ export function PharmacySettingsModal({
             )}
           </div>
 
-          {/* Option: Cotización Automática vs Manual */}
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <label className="text-sm font-bold text-slate-900 block">
-                  Cotización Automática
-                </label>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Responde automáticamente con coincidencia exacta de inventario
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setAutoQuoting(!autoQuoting)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  autoQuoting ? "bg-pharmako-care" : "bg-slate-300"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    autoQuoting ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            </div>
-
-            {!autoQuoting && (
-              <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200/60">
-                <ShieldAlert className="w-4 h-4 shrink-0" />
-                <span>
-                  Modo Manual activo: La farmacia revisará y cotizará cada
-                  receta individualmente.
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Option: Moneda por Defecto */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-              Moneda Principal de Preferencia
+          {/* Daily Max Slots Capacity */}
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+            <label className="text-xs font-bold text-slate-900 block">
+              Límite Máximo de Cupos Diarios
             </label>
-            <select
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              className="w-full h-11 px-3 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-900 focus:outline-none focus:border-pharmako-care transition-colors"
-            >
-              <option value="USD">Dólares ($ USD)</option>
-              <option value="VES">Bolívares (Bs. VES)</option>
-              <option value="EUR">Euros (€ EUR)</option>
-              <option value="COP">Pesos Colombianos ($ COP)</option>
-            </select>
-          </div>
-
-          {/* Option: Términos / Comentarios */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-              Términos o Nota de Despacho
-            </label>
-            <textarea
-              value={customTerms}
-              onChange={(e) => setCustomTerms(e.target.value)}
-              rows={2}
-              placeholder="Ej: Entregas a domicilio disponibles en un radio de 5km."
-              className="w-full p-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-pharmako-care transition-colors"
+            <p className="text-xs text-slate-500">
+              Capacidad máxima de tomas de muestra agendadas por día
+            </p>
+            <Input
+              type="number"
+              min="1"
+              value={dailyMaxSlots}
+              onChange={(e) => setDailyMaxSlots(parseInt(e.target.value) || 1)}
+              className="h-10 border-slate-200 bg-white rounded-xl text-xs font-bold text-slate-900 shadow-none max-w-xs"
             />
           </div>
 
-          {/* Footer Actions */}
+          {/* Auto Quoting & Currency */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+                Moneda de Referencia
+              </label>
+              <select
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-900 focus:border-pharmako-care"
+              >
+                <option value="USD">Dólares ($ USD)</option>
+                <option value="VES">Bolívares (Bs. VES)</option>
+                <option value="EUR">Euros (€ EUR)</option>
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+                Cotización Automática
+              </label>
+              <button
+                type="button"
+                onClick={() => setAutoQuoting(!autoQuoting)}
+                className={`w-full h-10 px-4 rounded-xl text-xs font-bold border transition-colors flex items-center justify-between ${
+                  autoQuoting
+                    ? "bg-pharmako-care-light border-pharmako-care text-slate-900"
+                    : "bg-white border-slate-200 text-slate-700"
+                }`}
+              >
+                <span>
+                  {autoQuoting
+                    ? "Cotización Auto Activa"
+                    : "Modo Cotizador Manual"}
+                </span>
+                {autoQuoting && (
+                  <ShieldAlert className="w-4 h-4 text-pharmako-care" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Instructions */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+              Instrucciones Generales de Ayuno / Muestra
+            </label>
+            <textarea
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+              rows={2}
+              placeholder="Ej: Se requiere ayuno estricto de 8 a 12 horas para pruebas metabólicas."
+              className="w-full p-3 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:border-pharmako-care"
+            />
+          </div>
+
+          {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <Button
               type="button"
