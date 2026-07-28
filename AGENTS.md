@@ -25,23 +25,26 @@ We use a **Feature-Based Architecture**. Do NOT dump all components into `src/co
 - `src/lib/`: Utility functions, Axios instances, and configuration.
 - `src/store/`: Zustand global stores.
 
-## 4. UI/UX & Styling Rules ("Clean & Elevated")
+## 4. UI/UX & Styling Rules ("Notion-isomatic")
 
-The design language is "Clean & Elevated". It must inspire trust, hygiene, and premium technology.
+The design language is **Notion-isomatic**: flat, structured, high-density, and clean. It inspires trust, hygiene, and modern medical technology.
 
-- **Prohibited:** Neo-brutalism, thick black borders, harsh offset shadows, or pure black text (`#000000`).
-- **Surfaces:** Use `bg-slate-50` for app backgrounds, `bg-white` for cards.
-- **Borders & Shadows:** Use extremely subtle borders (`border-slate-100` or `200`) and soft, diffused shadows (`shadow-sm`, hover `shadow-md`). Corners should be rounded (`rounded-xl` or `2xl`).
-- **Typography:** Primary text is `text-slate-900`, secondary is `text-slate-500`. The project uses `Plus Jakarta Sans`.
-- **Colors:** Primary action color is Teal (`bg-teal-600`, `text-teal-600`). Success is Emerald, Warnings are Amber.
-- **Spacing:** Use generous padding (e.g., `p-6` or `p-8` on cards) to let the interface breathe.
+- **Prohibited (Zero Tolerance):**
+  - **NO SHADOWS**: Do NOT use `shadow-xs`, `shadow-sm`, `shadow-md`, `shadow-lg`, or custom `shadow-[...]`. Elevation and separation are achieved exclusively through 1px crisp borders (`border-slate-200`) and surface background contrast (`bg-white` vs `bg-slate-50`).
+  - **NO PURE BLACK**: Do NOT use `#000000` or `text-black` / `bg-black`. Use `text-slate-900` or `pharmako-text-primary`.
+  - **NO THICK BORDERS**: Do NOT use `border-2` or `border-4` on cards or containers. All borders must be 1px (`border` / `border-slate-200`).
+  - **NO BRUTALISM & NO BOUNCE ANIMATIONS**: No offset borders, no heavy dark outlines. Use `easeOut` physics or Tailwind `transition-colors duration-150`.
+- **Surfaces & Hierarchy:** Flat white cards (`bg-white` / `pharmako-surface`) on neutral light backgrounds (`bg-slate-50` / `pharmako-background`).
+- **Typography:** Primary text is `text-slate-900` (`#0F172A`), secondary is `text-slate-600` (`#475569`). Font is `Plus Jakarta Sans`.
+- **Colors:** Primary action and brand color is `pharmako-care` (`#23DCE1` / `bg-pharmako-care`), active tint `bg-pharmako-care-light`, hover `bg-pharmako-care-hover`, success is Emerald (`#10B981`), warnings are Amber (`#F59E0B`), danger is Red (`#EF4444`).
+- **Interactions:** Hover states rely on gentle background shifts (`hover:bg-slate-50`, `hover:bg-pharmako-care-hover`) without elevation changes.
 
 ## 5. Coding Conventions
 
 - **Server Components First:** All Next.js pages and layouts must be Server Components. Only add `'use client'` at the lowest possible leaf node in the component tree (e.g., interactive buttons, forms).
 - **Strict Typing:** Never use `any`. Always define explicit interfaces or use inferred Zod types (`z.infer<typeof schema>`).
 - **Data Fetching:** Do NOT use `useEffect` for data fetching. Always use TanStack Query custom hooks located in the respective feature folder (e.g., `useGetPrescriptions.ts`).
-- **Animations:** Use Tailwind's `animate-in fade-in slide-in-from-bottom-4` for simple micro-interactions (hovers, dropdowns). Use `framer-motion` exclusively for layout transitions, smart component mounting, or complex dialogs. Use `easeOut` physics, never `linear`.
+- **Animations:** Use Tailwind's `transition-colors duration-150` for crisp micro-interactions. Use `framer-motion` exclusively for layout transitions, smart component mounting, or complex dialogs. Use `easeOut` physics, never `linear` or `bounce`.
 
 ## 6. Execution Command
 
