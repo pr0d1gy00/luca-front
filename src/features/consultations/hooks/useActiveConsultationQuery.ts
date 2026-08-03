@@ -37,6 +37,12 @@ export interface ActiveConsultationData {
       channel: "EMAIL" | "WHATSAPP" | "INTERNAL_CHAT" | "MANUAL_CALL";
       messageTemplate?: string | null;
     };
+    servicesPerformed?: {
+      providerServiceUuid: string;
+      price: number;
+      quantity: number;
+      notes?: string;
+    }[];
   };
   patient: {
     id: string;
@@ -246,6 +252,9 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
                     messageTemplate: followUpDb.messageTemplate,
                   }
                 : undefined,
+              servicesPerformed:
+                (consDb as { servicesPerformed?: unknown[] })
+                  .servicesPerformed || [],
             }
           : {
               motivoConsulta: apt.reason || "",
@@ -254,6 +263,7 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
               treatment_plan: "",
               status: "IN_PROGRESS",
               prescriptions: [],
+              servicesPerformed: [],
             },
         patient: {
           id: pat.uuid,
@@ -462,14 +472,23 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
                           ).oxygen_sat?.toString() || "",
                       }
                     : undefined,
-                followUp: (apt.consultation.follow_ups || apt.consultation.followUps)?.[0]
+                followUp: (apt.consultation.follow_ups ||
+                  apt.consultation.followUps)?.[0]
                   ? {
-                      uuid: (apt.consultation.follow_ups || apt.consultation.followUps)[0].uuid,
-                      scheduledDate: (apt.consultation.follow_ups || apt.consultation.followUps)[0].scheduled_date,
-                      channel: (apt.consultation.follow_ups || apt.consultation.followUps)[0].channel,
-                      messageTemplate: (apt.consultation.follow_ups || apt.consultation.followUps)[0].message_template,
+                      uuid: (apt.consultation.follow_ups ||
+                        apt.consultation.followUps)[0].uuid,
+                      scheduledDate: (apt.consultation.follow_ups ||
+                        apt.consultation.followUps)[0].scheduled_date,
+                      channel: (apt.consultation.follow_ups ||
+                        apt.consultation.followUps)[0].channel,
+                      messageTemplate: (apt.consultation.follow_ups ||
+                        apt.consultation.followUps)[0].message_template,
                     }
                   : undefined,
+                servicesPerformed:
+                  apt.consultation.services_performed ||
+                  apt.consultation.servicesPerformed ||
+                  [],
               }
             : {
                 motivoConsulta: apt.reason || "",
@@ -477,6 +496,7 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
                 diagnostico: "",
                 treatment_plan: "",
                 status: "IN_PROGRESS",
+                servicesPerformed: [],
               },
           patient: {
             id: patientData?.uuid,

@@ -38,7 +38,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Select, { components } from "react-select";
 import apiClient from "@/lib/api/client";
 import { db } from "@/features/offline/database/schema";
-import { useLabRequests, useDeleteLabRequest, useUpdateLabRequest } from "@/features/labs/hooks/useLabRequests";
+import { useLabRequests } from "@/features/labs/hooks/useLabRequests";
 import { LabRequestModal } from "@/features/labs/components/LabRequestModal";
 import { Badge } from "@/components/ui/badge";
 import { Dna, Layers } from "lucide-react";
@@ -48,9 +48,18 @@ import { useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
 import { useProviderServices, useGlobalServices } from "@/features/services";
 
+interface MedOption {
+  id: string;
+  activePrinciple: string;
+  commercialName: string;
+  concentration: string;
+  presentation: string;
+  administrationRoute: string;
+}
+
 interface ClinicalNotesFormProps {
   onSubmit: (data: Consultation) => void;
-  onGeneratePrescription: (data: Consultation) => Promise<any>;
+  onGeneratePrescription: (data: Consultation) => Promise<unknown>;
   patient?: Patient;
   doctor?: Doctor;
   medicationsCatalog?: {
@@ -58,12 +67,7 @@ interface ClinicalNotesFormProps {
     activePrinciple: string;
     concentration: string;
     presentation:
-    | "CAPSULA"
-    | "TABLETA"
-    | "JARABE"
-    | "GOTAS"
-    | "AMPOLLA"
-    | "CREMA";
+      "CAPSULA" | "TABLETA" | "JARABE" | "GOTAS" | "AMPOLLA" | "CREMA";
   }[];
   defaultValues?: {
     uuid?: string;
@@ -98,6 +102,12 @@ interface ClinicalNotesFormProps {
       channel: "EMAIL" | "WHATSAPP" | "INTERNAL_CHAT" | "MANUAL_CALL";
       messageTemplate?: string | null;
     };
+    servicesPerformed?: {
+      providerServiceUuid: string;
+      price: number;
+      quantity: number;
+      notes?: string;
+    }[];
   };
   isSubmitting?: boolean;
 }
@@ -139,14 +149,30 @@ export function ClinicalNotesForm({
   onGeneratePrescription,
   patient,
   doctor,
-  medicationsCatalog,
   defaultValues,
   isSubmitting = false,
 }: ClinicalNotesFormProps) {
   const searchParams = useSearchParams();
   const activeTabParam = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState("notes");
+  const [activeTabState, setActiveTabState] = useState("notes");
   const [hasFollowUp, setHasFollowUp] = useState(false);
+
+  const activeTab =
+    activeTabParam &&
+    [
+      "notes",
+      "vitals",
+      "prescription",
+      "labs",
+      "seguimiento",
+      "procedures",
+    ].includes(activeTabParam)
+      ? activeTabParam
+      : activeTabState;
+
+  const setActiveTab = (tab: string) => {
+    setActiveTabState(tab);
+  };
 
   // Servicios extra states
   const { user } = useAuthStore();
@@ -157,20 +183,16 @@ export function ClinicalNotesForm({
   const [serviceNotes, setServiceNotes] = useState("");
   const [serviceQty, setServiceQty] = useState(1);
 
-  useEffect(() => {
-    if (activeTabParam && ["notes", "vitals", "prescription", "labs", "seguimiento", "procedures"].includes(activeTabParam)) {
-      setActiveTab(activeTabParam);
-    }
-  }, [activeTabParam]);
-
-  const getDefaultMessage = (dateStr: string) => {
-    const patientName = patient ? `${patient.firstName} ${patient.lastName}` : "Paciente";
+  const getDefaultMessage = () => {
+    const patientName = patient
+      ? `${patient.firstName} ${patient.lastName}`
+      : "Paciente";
     const doctorName = doctor ? doctor.name : "su médico";
     const dx = watch("diagnostico") || "su tratamiento";
     return `Hola ${patientName}, te saluda el equipo del Dr. ${doctorName}. Queremos recordar/dar seguimiento a tu evolución de "${dx}". ¿Cómo te has sentido?`;
   };
 
-  const [medsOptions, setMedsOptions] = useState<any[]>([]);
+  const [medsOptions, setMedsOptions] = useState<MedOption[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -182,7 +204,9 @@ export function ClinicalNotesForm({
   const [showPrescription, setShowPrescription] = useState(false);
   const [submittedData, setSubmittedData] = useState<Consultation | null>(null);
   const [isLabModalOpen, setIsLabModalOpen] = useState(false);
-  const [editingLabRequest, setEditingLabRequest] = useState<LabRequest | null>(null);
+  const [editingLabRequest, setEditingLabRequest] = useState<LabRequest | null>(
+    null,
+  );
   const { data: combosData } = usePrescriptionTemplates();
 
   const parseQuantity = (doseStr: string): string => {
@@ -209,10 +233,19 @@ export function ClinicalNotesForm({
     return { value, unit };
   };
 
-  const handleApplyCombo = (combo: any) => {
+  const handleApplyCombo = (combo: {
+    title: string;
+    items: Array<{
+      medicationId: string;
+      dose: string;
+      frequency: string;
+      duration: string;
+      notes?: string;
+    }>;
+  }) => {
     const newMedForms = [...medForms];
 
-    combo.items.forEach((item: any) => {
+    combo.items.forEach((item) => {
       const qty = parseQuantity(item.dose);
       const freq = parseFrequency(item.frequency);
       const { value: durVal, unit: durUnit } = parseDuration(item.duration);
@@ -258,7 +291,7 @@ export function ClinicalNotesForm({
           })
           .toArray();
 
-        const formatted = localMeds.map((m) => ({
+        const formatted: MedOption[] = localMeds.map((m) => ({
           id: m.uuid,
           activePrinciple: m.activePrinciple || m.name || "",
           commercialName: m.commercialName || "",
@@ -284,19 +317,21 @@ export function ClinicalNotesForm({
       const lastPage = apiData?.last_page ?? 1;
       const currentPageNum = apiData?.current_page ?? 1;
 
-      const formatted = fetchedItems.map((m: any) => ({
-        id: m.uuid,
-        activePrinciple: m.active_principle || m.name || "",
-        commercialName: m.commercial_name || "",
-        concentration: m.concentration || "—",
-        presentation: m.presentation || "TABLETA",
-        administrationRoute: m.administration_route || "ORAL",
-      }));
+      const formatted: MedOption[] = fetchedItems.map(
+        (m: Record<string, string>) => ({
+          id: m.uuid,
+          activePrinciple: m.active_principle || m.name || "",
+          commercialName: m.commercial_name || "",
+          concentration: m.concentration || "—",
+          presentation: m.presentation || "TABLETA",
+          administrationRoute: m.administration_route || "ORAL",
+        }),
+      );
 
       if (append) {
         setMedsOptions((prev) => {
           const existingIds = new Set(prev.map((x) => x.id));
-          const newItems = formatted.filter((x: any) => !existingIds.has(x.id));
+          const newItems = formatted.filter((x) => !existingIds.has(x.id));
           return [...prev, ...newItems];
         });
       } else {
@@ -308,7 +343,7 @@ export function ClinicalNotesForm({
           selectedIds.includes(m.id),
         );
 
-        const existingIds = new Set(formatted.map((x: any) => x.id));
+        const existingIds = new Set(formatted.map((x) => x.id));
         const keptMeds = selectedMeds.filter((m) => !existingIds.has(m.id));
 
         setMedsOptions([...formatted, ...keptMeds]);
@@ -365,14 +400,16 @@ export function ClinicalNotesForm({
         const lastPage = apiData?.last_page ?? 1;
         const currentPageNum = apiData?.current_page ?? 1;
 
-        const formatted = fetchedItems.map((m: any) => ({
-          id: m.uuid,
-          activePrinciple: m.active_principle || m.name || "",
-          commercialName: m.commercial_name || "",
-          concentration: m.concentration || "—",
-          presentation: m.presentation || "TABLETA",
-          administrationRoute: m.administration_route || "ORAL",
-        }));
+        const formatted: MedOption[] = fetchedItems.map(
+          (m: Record<string, string>) => ({
+            id: m.uuid,
+            activePrinciple: m.active_principle || m.name || "",
+            commercialName: m.commercial_name || "",
+            concentration: m.concentration || "—",
+            presentation: m.presentation || "TABLETA",
+            administrationRoute: m.administration_route || "ORAL",
+          }),
+        );
 
         let finalMeds = [...formatted];
 
@@ -409,7 +446,7 @@ export function ClinicalNotesForm({
           );
           const validMissing = fetchedMissing.filter(
             (m) => m !== null,
-          ) as any[];
+          ) as MedOption[];
           finalMeds = [...finalMeds, ...validMissing];
         }
 
@@ -443,7 +480,9 @@ export function ClinicalNotesForm({
     }
   };
 
-  const MenuList = (props: any) => {
+  const MenuList = (
+    props: React.ComponentPropsWithoutRef<typeof components.MenuList>,
+  ) => {
     return (
       <components.MenuList {...props}>
         {props.children}
@@ -470,7 +509,10 @@ export function ClinicalNotesForm({
   };
 
   const customSelectStyles = {
-    control: (provided: any, state: any) => ({
+    control: (
+      provided: Record<string, unknown>,
+      state: { isFocused: boolean },
+    ) => ({
       ...provided,
       backgroundColor: "white",
       borderColor: state.isFocused ? "#0d9488" : "#e2e8f0",
@@ -484,7 +526,10 @@ export function ClinicalNotesForm({
       fontSize: "0.875rem",
       color: "#0f172a",
     }),
-    option: (provided: any, state: any) => ({
+    option: (
+      provided: Record<string, unknown>,
+      state: { isSelected: boolean; isFocused: boolean },
+    ) => ({
       ...provided,
       backgroundColor: state.isSelected
         ? "#0d9488"
@@ -499,15 +544,15 @@ export function ClinicalNotesForm({
         color: "white",
       },
     }),
-    singleValue: (provided: any) => ({
+    singleValue: (provided: Record<string, unknown>) => ({
       ...provided,
       color: "#0f172a",
     }),
-    placeholder: (provided: any) => ({
+    placeholder: (provided: Record<string, unknown>) => ({
       ...provided,
       color: "#94a3b8",
     }),
-    menu: (provided: any) => ({
+    menu: (provided: Record<string, unknown>) => ({
       ...provided,
       borderRadius: "0.75rem",
       boxShadow:
@@ -571,20 +616,26 @@ export function ClinicalNotesForm({
   }, [defaultUuid, setValue, watch]);
 
   const currentConsultationUuid = watch("uuid") || defaultUuid;
-  const { data: labRequestsResponse, isLoading: isLoadingLabs } = useLabRequests(patient?.uuid, 1, 100);
+  const { data: labRequestsResponse, isLoading: isLoadingLabs } =
+    useLabRequests(patient?.uuid, 1, 100);
   const allLabRequests = labRequestsResponse?.data ?? [];
   const consultationLabs = Array.isArray(allLabRequests)
     ? allLabRequests.filter(
-      (req) =>
-        (req.consultationUuid === currentConsultationUuid ||
-          (req as unknown as { consultation?: { uuid?: string } }).consultation?.uuid === currentConsultationUuid) &&
-        !req.deletedAt
-    )
+        (req) =>
+          (req.consultationUuid === currentConsultationUuid ||
+            (req as unknown as { consultation?: { uuid?: string } })
+              .consultation?.uuid === currentConsultationUuid) &&
+          !req.deletedAt,
+      )
     : [];
 
   // Initialize form laboratorios from database when loaded
   useEffect(() => {
-    if (consultationLabs.length > 0 && (!watch("laboratorios") || watch("laboratorios")?.length === 0)) {
+    const currentLaboratorios = getValues("laboratorios");
+    if (
+      consultationLabs.length > 0 &&
+      (!currentLaboratorios || currentLaboratorios.length === 0)
+    ) {
       setValue(
         "laboratorios",
         consultationLabs.map((req) => ({
@@ -592,23 +643,27 @@ export function ClinicalNotesForm({
           examsList: req.examsList,
           instructions: req.instructions,
           _syncStatus: req._syncStatus,
-        }))
+        })),
       );
     }
   }, [consultationLabs, setValue]);
 
   const handleDeleteLabRequest = (uuid: string) => {
-    if (confirm("¿Estás seguro de que quieres eliminar este pedido de laboratorio de la consulta?")) {
+    if (
+      confirm(
+        "¿Estás seguro de que quieres eliminar este pedido de laboratorio de la consulta?",
+      )
+    ) {
       const currentLabs = watch("laboratorios") || [];
       setValue(
         "laboratorios",
-        currentLabs.filter((l) => l.uuid !== uuid)
+        currentLabs.filter((l) => l.uuid !== uuid),
       );
       toast.success("Pedido de laboratorio removido de la consulta.");
     }
   };
 
-  const handleEditLabRequest = (req: any) => {
+  const handleEditLabRequest = (req: LabRequest) => {
     setEditingLabRequest({
       ...req,
       patientUuid: patient?.uuid || "",
@@ -628,11 +683,10 @@ export function ClinicalNotesForm({
       if (shouldReset) {
         hasInitialized.current = true;
         reset(defaultValues);
-        if (defaultValues.followUp?.scheduledDate) {
-          setHasFollowUp(true);
-        } else {
-          setHasFollowUp(false);
-        }
+        const hasDate = Boolean(defaultValues.followUp?.scheduledDate);
+        queueMicrotask(() => {
+          setHasFollowUp(hasDate);
+        });
 
         // Intentar re-popular las variables estructuradas medForms para cada récipe cargado
         if (
@@ -788,7 +842,8 @@ export function ClinicalNotesForm({
             Confirmación de Récipes y Órdenes
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 max-w-lg mx-auto">
-            Revisá el récipe de medicamentos y órdenes de exámenes clínicos antes de finalizar la consulta.
+            Revisá el récipe de medicamentos y órdenes de exámenes clínicos
+            antes de finalizar la consulta.
           </p>
         </div>
 
@@ -800,7 +855,10 @@ export function ClinicalNotesForm({
                 <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Récipe de Medicamentos
                 </h3>
-                <Badge variant="outline" className="rounded-full bg-teal-50 text-pharmako-care border-pharmako-care text-xs">
+                <Badge
+                  variant="outline"
+                  className="rounded-full bg-teal-50 text-pharmako-care border-pharmako-care text-xs"
+                >
                   Vista Previa Oficial
                 </Badge>
               </div>
@@ -832,7 +890,9 @@ export function ClinicalNotesForm({
             ) : (
               <div className="p-6 bg-slate-50 border border-slate-200/60 rounded-2xl text-slate-400 text-center select-none flex items-center justify-center gap-3">
                 <Dna className="w-5 h-5 text-slate-300" />
-                <p className="text-xs font-medium">No se agregaron órdenes de laboratorio para esta consulta.</p>
+                <p className="text-xs font-medium">
+                  No se agregaron órdenes de laboratorio para esta consulta.
+                </p>
               </div>
             )}
           </div>
@@ -849,34 +909,66 @@ export function ClinicalNotesForm({
               <div className="space-y-3 text-xs">
                 <div className="flex justify-between text-slate-600">
                   <span>Consulta Médica General:</span>
-                  <span className="font-semibold text-slate-900">50.00 USD</span>
+                  <span className="font-semibold text-slate-900">
+                    50.00 USD
+                  </span>
                 </div>
-                {submittedData.servicesPerformed && submittedData.servicesPerformed.map((val: { providerServiceUuid: string; price: number; quantity: number }, idx: number) => {
-                  const pSvc = myServices.find((s) => s.uuid === val.providerServiceUuid);
-                  const baseSvc = pSvc ? globalServices.find((s) => s.uuid === pSvc.serviceUuid) : null;
-                  const name = pSvc?.customName || baseSvc?.name || "Servicio extra";
-                  return (
-                    <div key={idx} className="flex justify-between text-slate-600 pl-3 border-l-2 border-teal-500/30">
-                      <span className="truncate max-w-[160px]">{name} (x{val.quantity}):</span>
-                      <span className="font-semibold text-slate-900">{(val.price * val.quantity).toFixed(2)} USD</span>
-                    </div>
-                  );
-                })}
+                {submittedData.servicesPerformed &&
+                  submittedData.servicesPerformed.map(
+                    (
+                      val: {
+                        providerServiceUuid: string;
+                        price: number;
+                        quantity: number;
+                      },
+                      idx: number,
+                    ) => {
+                      const pSvc = myServices.find(
+                        (s) => s.uuid === val.providerServiceUuid,
+                      );
+                      const baseSvc = pSvc
+                        ? globalServices.find(
+                            (s) => s.uuid === pSvc.serviceUuid,
+                          )
+                        : null;
+                      const name =
+                        pSvc?.customName || baseSvc?.name || "Servicio extra";
+                      return (
+                        <div
+                          key={idx}
+                          className="flex justify-between text-slate-600 pl-3 border-l-2 border-teal-500/30"
+                        >
+                          <span className="truncate max-w-[160px]">
+                            {name} (x{val.quantity}):
+                          </span>
+                          <span className="font-semibold text-slate-900">
+                            {(val.price * val.quantity).toFixed(2)} USD
+                          </span>
+                        </div>
+                      );
+                    },
+                  )}
                 <div className="flex justify-between text-sm font-bold text-slate-900 border-t border-slate-100 pt-3 mt-2">
                   <span>Total Honorarios:</span>
                   <span className="text-teal-600">
                     {(
                       50 +
                       (submittedData.servicesPerformed || []).reduce(
-                        (acc: number, val: { price: number; quantity: number }) => acc + val.price * val.quantity,
-                        0
+                        (
+                          acc: number,
+                          val: { price: number; quantity: number },
+                        ) => acc + val.price * val.quantity,
+                        0,
                       )
-                    ).toFixed(2)} USD
+                    ).toFixed(2)}{" "}
+                    USD
                   </span>
                 </div>
               </div>
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-[10px] text-slate-400 leading-relaxed">
-                * Este documento es un registro interno para la administración del profesional y la clínica. No representa una factura fiscal de cobro al paciente.
+                * Este documento es un registro interno para la administración
+                del profesional y la clínica. No representa una factura fiscal
+                de cobro al paciente.
               </div>
 
               <div className="flex flex-col gap-2.5 pt-2 border-t border-slate-100">
@@ -1225,16 +1317,18 @@ export function ClinicalNotesForm({
                           value={
                             selectedMedId
                               ? {
-                                value: selectedMedId,
-                                label: selectedMed
-                                  ? selectedMed.commercialName
-                                    ? `${selectedMed.commercialName} (${selectedMed.activePrinciple}) ${selectedMed.concentration}`
-                                    : `${selectedMed.activePrinciple} ${selectedMed.concentration}`
-                                  : "Seleccionado",
-                              }
+                                  value: selectedMedId,
+                                  label: selectedMed
+                                    ? selectedMed.commercialName
+                                      ? `${selectedMed.commercialName} (${selectedMed.activePrinciple}) ${selectedMed.concentration}`
+                                      : `${selectedMed.activePrinciple} ${selectedMed.concentration}`
+                                    : "Seleccionado",
+                                }
                               : null
                           }
-                          onChange={(option: any) => {
+                          onChange={(
+                            option: { value: string; label: string } | null,
+                          ) => {
                             handleMedSelect(index, option ? option.value : "");
                           }}
                           onInputChange={handleInputChange}
@@ -1295,14 +1389,14 @@ export function ClinicalNotesForm({
                           <span className="text-sm text-slate-500">
                             {selectedMed
                               ? presentationLabels[
-                                selectedMed.presentation as
-                                | "CAPSULA"
-                                | "TABLETA"
-                                | "JARABE"
-                                | "GOTAS"
-                                | "AMPOLLA"
-                                | "CREMA"
-                              ].toLowerCase()
+                                  selectedMed.presentation as
+                                    | "CAPSULA"
+                                    | "TABLETA"
+                                    | "JARABE"
+                                    | "GOTAS"
+                                    | "AMPOLLA"
+                                    | "CREMA"
+                                ].toLowerCase()
                               : "unidad"}
                           </span>
                         </div>
@@ -1420,7 +1514,9 @@ export function ClinicalNotesForm({
                 <div className="relative group">
                   <select
                     onChange={(e) => {
-                      const selected = combosData.data.find(c => c.uuid === e.target.value);
+                      const selected = combosData.data.find(
+                        (c) => c.uuid === e.target.value,
+                      );
                       if (selected) {
                         handleApplyCombo(selected);
                         e.target.value = ""; // Reset select
@@ -1448,10 +1544,7 @@ export function ClinicalNotesForm({
           </section>
         </TabsContent>
 
-        <TabsContent
-          value="labs"
-          className="focus-visible:outline-none"
-        >
+        <TabsContent value="labs" className="focus-visible:outline-none">
           {/* ── Exámenes de Laboratorio ──────────────────────── */}
           <section className="flex flex-col gap-5">
             <div className="flex items-center gap-3">
@@ -1509,22 +1602,33 @@ export function ClinicalNotesForm({
                         </div>
                         {req.instructions && (
                           <p className="text-xs text-slate-500 mt-2 font-medium">
-                            <span className="font-bold text-slate-700">Indicaciones: </span>
+                            <span className="font-bold text-slate-700">
+                              Indicaciones:{" "}
+                            </span>
                             {req.instructions}
                           </p>
                         )}
                       </div>
                       <div className="flex items-center gap-1.5">
                         {req._syncStatus === "synced" ? (
-                          <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 text-sm rounded-md mr-2 py-1 h-7">
+                          <Badge
+                            variant="secondary"
+                            className="bg-emerald-50 text-emerald-700 text-sm rounded-md mr-2 py-1 h-7"
+                          >
                             Sincronizado
                           </Badge>
                         ) : req._syncStatus === "pending" ? (
-                          <Badge variant="secondary" className="bg-amber-50 text-amber-700 text-sm rounded-md mr-2 py-1 h-7">
+                          <Badge
+                            variant="secondary"
+                            className="bg-amber-50 text-amber-700 text-sm rounded-md mr-2 py-1 h-7"
+                          >
                             Pendiente Sinc.
                           </Badge>
                         ) : (
-                          <Badge variant="secondary" className="bg-blue-50 text-blue-700 text-sm rounded-md mr-2 py-1 h-7">
+                          <Badge
+                            variant="secondary"
+                            className="bg-blue-50 text-blue-700 text-sm rounded-md mr-2 py-1 h-7"
+                          >
                             Por guardar
                           </Badge>
                         )}
@@ -1563,8 +1667,13 @@ export function ClinicalNotesForm({
                 <Calendar className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900">Programar Seguimiento Médico</h3>
-                <p className="text-xs text-slate-500">Define cuándo y cómo volver a contactar al paciente después de esta consulta.</p>
+                <h3 className="text-base font-bold text-slate-900">
+                  Programar Seguimiento Médico
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Define cuándo y cómo volver a contactar al paciente después de
+                  esta consulta.
+                </p>
               </div>
             </div>
 
@@ -1581,14 +1690,20 @@ export function ClinicalNotesForm({
                     const formatted = defaultDate.toISOString().split("T")[0];
                     setValue("followUp.scheduledDate", formatted);
                     setValue("followUp.channel", "MANUAL_CALL");
-                    setValue("followUp.messageTemplate", getDefaultMessage(formatted));
+                    setValue(
+                      "followUp.messageTemplate",
+                      getDefaultMessage(formatted),
+                    );
                   } else {
                     setValue("followUp", undefined);
                   }
                 }}
                 className="rounded border-slate-300 text-teal-600 focus:ring-teal-500 h-4.5 w-4.5"
               />
-              <label htmlFor="has_follow_up" className="text-sm font-semibold text-slate-700 cursor-pointer select-none">
+              <label
+                htmlFor="has_follow_up"
+                className="text-sm font-semibold text-slate-700 cursor-pointer select-none"
+              >
                 Activar seguimiento programado para este paciente
               </label>
             </div>
@@ -1603,7 +1718,9 @@ export function ClinicalNotesForm({
                     </label>
                     <input
                       type="date"
-                      {...register("followUp.scheduledDate", { required: hasFollowUp })}
+                      {...register("followUp.scheduledDate", {
+                        required: hasFollowUp,
+                      })}
                       className="rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                     />
                   </div>
@@ -1620,20 +1737,31 @@ export function ClinicalNotesForm({
                         { value: "EMAIL", label: "Correo" },
                         { value: "INTERNAL_CHAT", label: "Chat LUCA" },
                       ].map((chan) => {
-                        const isSelected = watch("followUp.channel") === chan.value;
+                        const isSelected =
+                          watch("followUp.channel") === chan.value;
                         return (
                           <button
                             key={chan.value}
                             type="button"
                             onClick={() => {
-                              setValue("followUp.channel", chan.value as any);
+                              setValue(
+                                "followUp.channel",
+                                chan.value as
+                                  | "MANUAL_CALL"
+                                  | "WHATSAPP"
+                                  | "EMAIL"
+                                  | "INTERNAL_CHAT",
+                              );
                             }}
-                            className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all ${isSelected
-                              ? "border-teal-600 bg-teal-50/50 text-teal-600"
-                              : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                              }`}
+                            className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all ${
+                              isSelected
+                                ? "border-teal-600 bg-teal-50/50 text-teal-600"
+                                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                            }`}
                           >
-                            <span className="text-xs font-bold">{chan.label}</span>
+                            <span className="text-xs font-bold">
+                              {chan.label}
+                            </span>
                           </button>
                         );
                       })}
@@ -1653,7 +1781,19 @@ export function ClinicalNotesForm({
                       className="rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 min-h-[100px]"
                     />
                     <p className="text-xxs text-slate-400">
-                      Podés usar tags como <code className="font-semibold text-slate-500">{"{{paciente}}"}</code>, <code className="font-semibold text-slate-500">{"{{doctor}}"}</code> o <code className="font-semibold text-slate-500">{"{{diagnostico}}"}</code> que se autocompletarán al enviar.
+                      Podés usar tags como{" "}
+                      <code className="font-semibold text-slate-500">
+                        {"{{paciente}}"}
+                      </code>
+                      ,{" "}
+                      <code className="font-semibold text-slate-500">
+                        {"{{doctor}}"}
+                      </code>{" "}
+                      o{" "}
+                      <code className="font-semibold text-slate-500">
+                        {"{{diagnostico}}"}
+                      </code>{" "}
+                      que se autocompletarán al enviar.
                     </p>
                   </div>
                 )}
@@ -1666,15 +1806,18 @@ export function ClinicalNotesForm({
           value="procedures"
           className="flex flex-col gap-6 focus-visible:outline-none"
         >
-          <section className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col gap-6 shadow-sm">
+          <section className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col gap-6 shadow-none">
             <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-              <div className="bg-teal-50 rounded-xl p-2.5">
-                <Layers className="w-5 h-5 text-teal-600" />
+              <div className="bg-pharmako-care-light rounded-xl p-2.5">
+                <Layers className="w-5 h-5 text-pharmako-care" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900">Servicios y Procedimientos Realizados</h3>
+                <h3 className="text-base font-bold text-slate-900">
+                  Servicios y Procedimientos Realizados
+                </h3>
                 <p className="text-xs text-slate-500">
-                  Agregá los servicios o procedimientos adicionales realizados al paciente durante esta consulta.
+                  Agregá los servicios o procedimientos adicionales realizados
+                  al paciente durante esta consulta.
                 </p>
               </div>
             </div>
@@ -1688,14 +1831,17 @@ export function ClinicalNotesForm({
                 <select
                   value={selectedServiceUuid}
                   onChange={(e) => setSelectedServiceUuid(e.target.value)}
-                  className="rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white"
+                  className="w-full truncate text-ellipsis rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-pharmako-care/20 focus:border-pharmako-care bg-white"
                 >
                   <option value="">-- Elegí un servicio --</option>
                   {myServices.map((pSvc) => {
-                    const base = globalServices.find((s) => s.uuid === pSvc.serviceUuid);
+                    const base = globalServices.find(
+                      (s) => s.uuid === pSvc.serviceUuid,
+                    );
                     return (
                       <option key={pSvc.uuid} value={pSvc.uuid}>
-                        {pSvc.customName || base?.name || "Servicio"} - {pSvc.price} USD ({pSvc.durationMinutes} min)
+                        {pSvc.customName || base?.name || "Servicio"} -{" "}
+                        {pSvc.price} USD ({pSvc.durationMinutes} min)
                       </option>
                     );
                   })}
@@ -1703,7 +1849,9 @@ export function ClinicalNotesForm({
               </div>
 
               <div className="md:col-span-5 flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500">Notas sobre el Procedimiento</label>
+                <label className="text-xs font-semibold text-slate-500">
+                  Notas sobre el Procedimiento
+                </label>
                 <input
                   type="text"
                   placeholder="Ej: Se realiza sin complicaciones, sutura de 3 puntos..."
@@ -1714,7 +1862,9 @@ export function ClinicalNotesForm({
               </div>
 
               <div className="md:col-span-2 flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500">Cantidad</label>
+                <label className="text-xs font-semibold text-slate-500">
+                  Cantidad
+                </label>
                 <input
                   type="number"
                   min="1"
@@ -1732,7 +1882,9 @@ export function ClinicalNotesForm({
                       toast.error("Por favor selecciona un servicio.");
                       return;
                     }
-                    const selected = myServices.find((s) => s.uuid === selectedServiceUuid);
+                    const selected = myServices.find(
+                      (s) => s.uuid === selectedServiceUuid,
+                    );
                     if (!selected) return;
 
                     appendService({
@@ -1746,20 +1898,27 @@ export function ClinicalNotesForm({
                     if (selected.durationMinutes > 0) {
                       toast.info(
                         `Se registrará un retraso estimado de ${selected.durationMinutes * serviceQty} minutos en tu agenda para los pacientes del día.`,
-                        { duration: 5000 }
+                        { duration: 5000 },
                       );
 
                       // Guardar alerta en Dexie para DelayBanner
                       db.activeDelays.get(doctorUuid).then((existingDelay) => {
                         const currentDelay = existingDelay?.delayMinutes || 0;
-                        db.activeDelays.put({
-                          doctorUuid,
-                          doctorName: doctor?.name || "Dr. Ricardo García",
-                          delayMinutes: currentDelay + (selected.durationMinutes * serviceQty),
-                          updatedAt: new Date().toISOString(),
-                        }).catch((err) => {
-                          console.error("Error setting delay alert in Dexie", err);
-                        });
+                        db.activeDelays
+                          .put({
+                            doctorUuid,
+                            doctorName: doctor?.name || "Dr. Ricardo García",
+                            delayMinutes:
+                              currentDelay +
+                              selected.durationMinutes * serviceQty,
+                            updatedAt: new Date().toISOString(),
+                          })
+                          .catch((err) => {
+                            console.error(
+                              "Error setting delay alert in Dexie",
+                              err,
+                            );
+                          });
                       });
                     }
 
@@ -1769,7 +1928,7 @@ export function ClinicalNotesForm({
                     setServiceQty(1);
                     toast.success("Procedimiento agregado.");
                   }}
-                  className="w-full bg-teal-600 hover:bg-teal-700 text-white rounded-xl h-11"
+                  className="w-full bg-pharmako-care hover:bg-pharmako-care-hover text-slate-900 shadow-none font-semibold rounded-xl h-11"
                 >
                   <Plus className="w-5 h-5" />
                 </Button>
@@ -1778,17 +1937,28 @@ export function ClinicalNotesForm({
 
             {/* Listado de servicios agregados */}
             <div className="mt-4">
-              <h4 className="text-sm font-semibold text-slate-700 mb-3">Servicios a registrar:</h4>
+              <h4 className="text-sm font-semibold text-slate-700 mb-3">
+                Servicios a registrar:
+              </h4>
               {serviceFields.length === 0 ? (
-                <p className="text-sm text-slate-400 italic">No se han registrado procedimientos extra en esta consulta.</p>
+                <p className="text-sm text-slate-400 italic">
+                  No se han registrado procedimientos extra en esta consulta.
+                </p>
               ) : (
                 <div className="space-y-3">
                   {serviceFields.map((field, index) => {
                     const val = watch(`servicesPerformed.${index}`);
                     if (!val) return null;
-                    const pSvc = myServices.find((s) => s.uuid === val.providerServiceUuid);
-                    const baseSvc = pSvc ? globalServices.find((s) => s.uuid === pSvc.serviceUuid) : null;
-                    const name = pSvc?.customName || baseSvc?.name || "Servicio desconocido";
+                    const pSvc = myServices.find(
+                      (s) => s.uuid === val.providerServiceUuid,
+                    );
+                    const baseSvc = pSvc
+                      ? globalServices.find((s) => s.uuid === pSvc.serviceUuid)
+                      : null;
+                    const name =
+                      pSvc?.customName ||
+                      baseSvc?.name ||
+                      "Servicio desconocido";
 
                     return (
                       <div
@@ -1797,13 +1967,16 @@ export function ClinicalNotesForm({
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-800 text-sm">{name}</span>
+                            <span className="font-bold text-slate-800 text-sm">
+                              {name}
+                            </span>
                             <Badge className="bg-slate-200 text-slate-700 hover:bg-slate-200 font-normal border-none rounded">
                               Cant: {val.quantity}
                             </Badge>
                             {pSvc && (
                               <Badge className="bg-teal-50 text-teal-700 hover:bg-teal-50 font-normal border-none rounded flex items-center gap-1">
-                                <Clock className="w-3 h-3" /> {pSvc.durationMinutes * val.quantity} min
+                                <Clock className="w-3 h-3" />{" "}
+                                {pSvc.durationMinutes * val.quantity} min
                               </Badge>
                             )}
                           </div>
@@ -1833,12 +2006,19 @@ export function ClinicalNotesForm({
 
                   {/* Delay summary alert */}
                   {(() => {
-                    const totalDuration = serviceFields.reduce((sum, _, index) => {
-                      const val = watch(`servicesPerformed.${index}`);
-                      if (!val) return sum;
-                      const pSvc = myServices.find((s) => s.uuid === val.providerServiceUuid);
-                      return sum + (pSvc ? pSvc.durationMinutes * val.quantity : 0);
-                    }, 0);
+                    const totalDuration = serviceFields.reduce(
+                      (sum, _, index) => {
+                        const val = watch(`servicesPerformed.${index}`);
+                        if (!val) return sum;
+                        const pSvc = myServices.find(
+                          (s) => s.uuid === val.providerServiceUuid,
+                        );
+                        return (
+                          sum + (pSvc ? pSvc.durationMinutes * val.quantity : 0)
+                        );
+                      },
+                      0,
+                    );
 
                     if (totalDuration === 0) return null;
 
@@ -1846,10 +2026,15 @@ export function ClinicalNotesForm({
                       <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl text-amber-800 text-xs flex items-start gap-2.5 mt-4">
                         <Info className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="font-semibold">Aviso de extensión de consulta</p>
+                          <p className="font-semibold">
+                            Aviso de extensión de consulta
+                          </p>
                           <p className="mt-0.5 leading-relaxed text-amber-700">
-                            Has agregado procedimientos que incrementan el tiempo de esta consulta en **{totalDuration} minutos**.
-                            Al finalizar la consulta, el sistema enviará alertas de retraso a los pacientes agendados a continuación.
+                            Has agregado procedimientos que incrementan el
+                            tiempo de esta consulta en **{totalDuration}{" "}
+                            minutos**. Al finalizar la consulta, el sistema
+                            enviará alertas de retraso a los pacientes agendados
+                            a continuación.
                           </p>
                         </div>
                       </div>
@@ -1878,9 +2063,13 @@ export function ClinicalNotesForm({
               "laboratorios",
               currentLabs.map((l) =>
                 l.uuid === editingLabRequest.uuid
-                  ? { ...l, examsList: labData.examsList, instructions: labData.instructions }
-                  : l
-              )
+                  ? {
+                      ...l,
+                      examsList: labData.examsList,
+                      instructions: labData.instructions,
+                    }
+                  : l,
+              ),
             );
             toast.success("Pedido de laboratorio actualizado en la consulta.");
           } else {
