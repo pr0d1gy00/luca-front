@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { motion, type Variants } from "framer-motion";
-import { Target, Heart, Users, Shield, Star } from "lucide-react";
+import { motion, type Variants } from "motion/react";
+import { Target, Heart, Users, Shield } from "lucide-react";
 import PharmakoAbout from "../../../public/PharmakoPersonMiddleBodyExtraLarge-PNG.png";
 
 // ─────────────────────────────────────────────────────────────
