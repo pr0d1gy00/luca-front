@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -38,7 +39,8 @@ interface DetailedAppointment {
   doctorUuid: string;
   clinicBranchUuid: string;
   date: string;
-  time: string;
+  time?: string;
+  slot_time?: string;
   type: "IN_PERSON" | "ONLINE";
   status: string;
   notes?: string;
@@ -70,8 +72,15 @@ export function PatientAppointmentsView() {
     isFetching,
   } = usePatientAppointmentsQuery(page, activeTab);
 
-  const appointments = paginatedData?.data || [];
-  const totalPages: number = paginatedData?.last_page || 1;
+  const appointments = Array.isArray(paginatedData?.data?.data)
+    ? paginatedData.data.data
+    : Array.isArray(paginatedData?.data)
+    ? paginatedData.data
+    : Array.isArray(paginatedData)
+    ? paginatedData
+    : [];
+  const totalPages: number =
+    paginatedData?.data?.last_page || paginatedData?.last_page || 1;
 
   const [selectedApt, setSelectedApt] = useState<DetailedAppointment | null>(
     null,
@@ -287,6 +296,7 @@ export function PatientAppointmentsView() {
                   year: "numeric",
                   month: "long",
                   day: "numeric",
+                  timeZone: "UTC",
                 },
               );
 
@@ -323,7 +333,7 @@ export function PatientAppointmentsView() {
                     </div>
                     <div className="flex items-center gap-2.5">
                       <Clock className="h-4 w-4 text-pharmako-text-muted shrink-0" />
-                      <span>{apt.time.slice(0, 5)} HS</span>
+                      <span>{(apt.slot_time || apt.time || "").slice(0, 5)} HS</span>
                     </div>
                     <div className="flex items-center gap-2.5">
                       <MapPin className="h-4 w-4 text-pharmako-text-muted shrink-0" />
@@ -350,35 +360,17 @@ export function PatientAppointmentsView() {
 
           {/* Controles de Paginación */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-pharmako-border-soft pt-4 mt-2">
-              <p className="text-xs text-pharmako-text-secondary font-medium">
-                Total de páginas: {totalPages}
-              </p>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 1}
-                  className="rounded-lg border-pharmako-border hover:bg-pharmako-background text-xs h-8 px-3 flex items-center gap-1"
-                >
-                  <ChevronLeft className="size-3.5" />
-                  Anterior
-                </Button>
-                <span className="text-xs font-semibold text-pharmako-care bg-pharmako-care-light px-3 py-1.5 rounded-lg border border-pharmako-care/20">
-                  Pág. {page}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page >= totalPages}
-                  className="rounded-lg border-pharmako-border hover:bg-pharmako-background text-xs h-8 px-3 flex items-center gap-1"
-                >
-                  Siguiente
-                  <ChevronRight className="size-3.5" />
-                </Button>
-              </div>
+            <div className="pt-4 mt-2">
+              <Pagination
+                currentPage={page}
+                lastPage={totalPages}
+                total={paginatedData?.data?.total || paginatedData?.total || 0}
+                perPage={paginatedData?.data?.per_page || paginatedData?.per_page || 10}
+                from={paginatedData?.data?.from || paginatedData?.from || null}
+                to={paginatedData?.data?.to || paginatedData?.to || null}
+                onPageChange={handlePageChange}
+                variant="care"
+              />
             </div>
           )}
         </div>
@@ -425,13 +417,14 @@ export function PatientAppointmentsView() {
                               day: "numeric",
                               month: "long",
                               year: "numeric",
+                              timeZone: "UTC",
                             },
                           )}
                         </span>
                       </div>
                       <div className="flex items-center gap-2.5 text-sm text-pharmako-text-secondary">
                         <Clock className="h-4 w-4 text-pharmako-care shrink-0" />
-                        <span>{detailedApt.time.slice(0, 5)} HS</span>
+                        <span>{(detailedApt.slot_time || detailedApt.time || "").slice(0, 5)} HS</span>
                       </div>
                       <div className="flex items-center gap-2.5 text-xs font-medium text-pharmako-text-primary border-t border-pharmako-border-soft/60 pt-2.5">
                         {detailedApt.type === "ONLINE" ? (

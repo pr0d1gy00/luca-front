@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { fadeUpVariant } from "@/app/lib/animations";
@@ -80,7 +81,8 @@ interface AppointmentRecord {
   doctorUuid: string;
   clinicBranchUuid: string;
   date: string;
-  time: string;
+  time?: string;
+  slot_time?: string;
   type: string;
   status: string;
   notes?: string;
@@ -126,8 +128,16 @@ export function DoctorAppointmentsView() {
     isFetching,
   } = useDoctorAppointmentsQuery(page, timeframe, statusFilter, debouncedSearch);
 
-  const appointments: AppointmentRecord[] = (paginatedData?.data || []) as AppointmentRecord[];
-  const totalPages: number = paginatedData?.last_page || 1;
+  const extractedData = Array.isArray(paginatedData?.data?.data)
+    ? paginatedData.data.data
+    : Array.isArray(paginatedData?.data)
+    ? paginatedData.data
+    : Array.isArray(paginatedData)
+    ? paginatedData
+    : [];
+  const appointments: AppointmentRecord[] = extractedData as AppointmentRecord[];
+  const totalPages: number =
+    paginatedData?.data?.last_page || paginatedData?.last_page || 1;
 
   // Auto-seleccionar la primera cita de la lista al cambiar de pestaña si existe
   useEffect(() => {
@@ -360,7 +370,7 @@ export function DoctorAppointmentsView() {
                         <div className="flex items-center gap-2">
                           <Clock className="h-3.5 w-3.5 text-pharmako-text-muted shrink-0" />
                           <span className="font-semibold text-pharmako-text-primary tabular-nums">
-                            {apt.time.slice(0, 5)} HS
+                            {(apt.slot_time || apt.time || "").slice(0, 5)} HS
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -379,32 +389,17 @@ export function DoctorAppointmentsView() {
 
               {/* Controles de Paginación */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between border-t border-pharmako-border-soft pt-4 mt-2">
-                  <p className="text-sm text-pharmako-text-muted font-medium">
-                    Página {page} de {totalPages}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(page - 1)}
-                      disabled={page === 1}
-                      className="rounded-lg border-pharmako-border text-sm h-8 px-3 flex items-center gap-1"
-                    >
-                      <ChevronLeft className="size-3.5" />
-                      Anterior
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(page + 1)}
-                      disabled={page >= totalPages}
-                      className="rounded-lg border-pharmako-border text-sm h-8 px-3 flex items-center gap-1"
-                    >
-                      Siguiente
-                      <ChevronRight className="size-3.5" />
-                    </Button>
-                  </div>
+                <div className="pt-4 mt-2">
+                  <Pagination
+                    currentPage={page}
+                    lastPage={totalPages}
+                    total={paginatedData?.data?.total || paginatedData?.total || 0}
+                    perPage={paginatedData?.data?.per_page || paginatedData?.per_page || 10}
+                    from={paginatedData?.data?.from || paginatedData?.from || null}
+                    to={paginatedData?.data?.to || paginatedData?.to || null}
+                    onPageChange={handlePageChange}
+                    variant="primary"
+                  />
                 </div>
               )}
             </div>
