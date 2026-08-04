@@ -10,8 +10,6 @@ import {
   Video,
   AlertCircle,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   Search,
   Building,
   Mail,
@@ -93,6 +91,23 @@ interface AppointmentRecord {
     national_id: string;
     phone: string;
     email: string;
+    clinical_summary?: {
+      allergies?: string;
+      chronic_conditions?: string;
+      lifestyle?: {
+        smoking_status: string;
+        alcohol_consumption: string;
+      };
+      surgical_history?: string[];
+      family_history?: string[];
+      active_medications?: string[];
+      recent_history?: {
+        date: string;
+        doctor_name: string;
+        diagnosis: string;
+        reason?: string;
+      }[];
+    };
   };
   clinic_branch?: {
     name: string;
@@ -108,7 +123,9 @@ export function DoctorAppointmentsView() {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [searchVal, setSearchVal] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [selectedApt, setSelectedApt] = useState<AppointmentRecord | null>(null);
+  const [selectedApt, setSelectedApt] = useState<AppointmentRecord | null>(
+    null,
+  );
   const [isFollowUpOpen, setIsFollowUpOpen] = useState(false);
   const [, startTransition] = useTransition();
 
@@ -126,22 +143,29 @@ export function DoctorAppointmentsView() {
     isLoading,
     isError,
     isFetching,
-  } = useDoctorAppointmentsQuery(page, timeframe, statusFilter, debouncedSearch);
+  } = useDoctorAppointmentsQuery(
+    page,
+    timeframe,
+    statusFilter,
+    debouncedSearch,
+  );
 
   const extractedData = Array.isArray(paginatedData?.data?.data)
     ? paginatedData.data.data
     : Array.isArray(paginatedData?.data)
-    ? paginatedData.data
-    : Array.isArray(paginatedData)
-    ? paginatedData
-    : [];
-  const appointments: AppointmentRecord[] = extractedData as AppointmentRecord[];
+      ? paginatedData.data
+      : Array.isArray(paginatedData)
+        ? paginatedData
+        : [];
+  const appointments: AppointmentRecord[] =
+    extractedData as AppointmentRecord[];
   const totalPages: number =
     paginatedData?.data?.last_page || paginatedData?.last_page || 1;
 
   // Auto-seleccionar la primera cita de la lista al cambiar de pestaña si existe
   useEffect(() => {
     if (appointments.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedApt(appointments[0]);
     } else {
       setSelectedApt(null);
@@ -205,7 +229,7 @@ export function DoctorAppointmentsView() {
       <span
         className={cn(
           "inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-semibold border",
-          config.className
+          config.className,
         )}
       >
         {config.label}
@@ -221,7 +245,8 @@ export function DoctorAppointmentsView() {
           Agenda de Citas Médicas
         </h1>
         <p className="text-sm text-pharmako-text-secondary">
-          Gestioná tus pacientes citados, visualizá sus expedientes e iniciá las consultas clínicas.
+          Gestioná tus pacientes citados, visualizá sus expedientes e iniciá las
+          consultas clínicas.
         </p>
       </div>
 
@@ -241,7 +266,7 @@ export function DoctorAppointmentsView() {
                 "px-4 py-1.5 text-sm font-semibold transition-all duration-200",
                 timeframe === tf
                   ? " text-pharmako-care border-b border-pharmako-care "
-                  : "text-pharmako-text-muted hover:text-pharmako-text-secondary"
+                  : "text-pharmako-text-muted hover:text-pharmako-text-secondary",
               )}
             >
               {tf === "today" && "Agenda de Hoy"}
@@ -304,23 +329,32 @@ export function DoctorAppointmentsView() {
           {isLoading || (isFetching && appointments.length === 0) ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-32 bg-pharmako-surface border border-pharmako-border-soft rounded-xl animate-pulse" />
+                <div
+                  key={i}
+                  className="h-32 bg-pharmako-surface border border-pharmako-border-soft rounded-xl animate-pulse"
+                />
               ))}
             </div>
           ) : isError ? (
             <div className="flex flex-col items-center justify-center py-12 text-center bg-pharmako-surface border border-pharmako-border-soft rounded-xl p-6">
               <AlertCircle className="h-10 w-10 text-pharmako-danger mb-3" />
-              <p className="text-sm font-bold text-pharmako-text-primary">Error al cargar la agenda</p>
+              <p className="text-sm font-bold text-pharmako-text-primary">
+                Error al cargar la agenda
+              </p>
               <p className="text-sm text-pharmako-text-secondary mt-1 max-w-sm">
-                No pudimos conectar con el servidor. Revisá tu conexión de red o continuá trabajando sin conexión.
+                No pudimos conectar con el servidor. Revisá tu conexión de red o
+                continuá trabajando sin conexión.
               </p>
             </div>
           ) : appointments.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center bg-pharmako-surface border border-pharmako-border-soft rounded-xl p-8">
               <Calendar className="h-12 w-12 text-pharmako-text-muted mb-4" />
-              <p className="text-sm font-bold text-pharmako-text-primary">No se encontraron citas</p>
+              <p className="text-sm font-bold text-pharmako-text-primary">
+                No se encontraron citas
+              </p>
               <p className="text-sm text-pharmako-text-secondary mt-1 max-w-sm">
-                No hay registros que coincidan con los filtros seleccionados para este período.
+                No hay registros que coincidan con los filtros seleccionados
+                para este período.
               </p>
             </div>
           ) : (
@@ -330,7 +364,8 @@ export function DoctorAppointmentsView() {
                   const patientName = apt.patient
                     ? `${apt.patient.first_name} ${apt.patient.last_name}`
                     : "Paciente";
-                  const clinicName = apt.clinic_branch?.name || "Sede Principal";
+                  const clinicName =
+                    apt.clinic_branch?.name || "Sede Principal";
                   const isSelected = selectedApt?.uuid === apt.uuid;
 
                   return (
@@ -341,17 +376,19 @@ export function DoctorAppointmentsView() {
                         "bg-pharmako-surface rounded-xl border p-5 cursor-pointer transition-all duration-200",
                         isSelected
                           ? "border-pharmako-care ring-1 ring-pharmako-care/20"
-                          : "border-pharmako-border-soft hover:border-pharmako-border hover:bg-pharmako-canvas/40"
+                          : "border-pharmako-border-soft hover:border-pharmako-border hover:bg-pharmako-canvas/40",
                       )}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-center gap-3">
-                          <div className={cn(
-                            "p-2.5 rounded-xl shrink-0",
-                            isSelected
-                              ? "text-pharmako-care"
-                              : "bg-pharmako-canvas text-pharmako-text-muted"
-                          )}>
+                          <div
+                            className={cn(
+                              "p-2.5 rounded-xl shrink-0",
+                              isSelected
+                                ? "text-pharmako-care"
+                                : "bg-pharmako-canvas text-pharmako-text-muted",
+                            )}
+                          >
                             <User className="h-6 w-6" />
                           </div>
                           <div>
@@ -393,9 +430,17 @@ export function DoctorAppointmentsView() {
                   <Pagination
                     currentPage={page}
                     lastPage={totalPages}
-                    total={paginatedData?.data?.total || paginatedData?.total || 0}
-                    perPage={paginatedData?.data?.per_page || paginatedData?.per_page || 10}
-                    from={paginatedData?.data?.from || paginatedData?.from || null}
+                    total={
+                      paginatedData?.data?.total || paginatedData?.total || 0
+                    }
+                    perPage={
+                      paginatedData?.data?.per_page ||
+                      paginatedData?.per_page ||
+                      10
+                    }
+                    from={
+                      paginatedData?.data?.from || paginatedData?.from || null
+                    }
                     to={paginatedData?.data?.to || paginatedData?.to || null}
                     onPageChange={handlePageChange}
                     variant="primary"
@@ -441,7 +486,10 @@ export function DoctorAppointmentsView() {
                 <div className="space-y-2.5 text-sm text-pharmako-text-secondary">
                   <div className="flex items-center gap-2">
                     <Building className="h-4 w-4 text-pharmako-text-muted shrink-0" />
-                    <span>Cédula/DNI: <strong>{selectedApt.patient?.national_id || "—"}</strong></span>
+                    <span>
+                      Cédula/DNI:{" "}
+                      <strong>{selectedApt.patient?.national_id || "—"}</strong>
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-pharmako-text-muted shrink-0" />
@@ -449,20 +497,28 @@ export function DoctorAppointmentsView() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-pharmako-text-muted shrink-0" />
-                    <span className="truncate">Correo: {selectedApt.patient?.email || "—"}</span>
+                    <span className="truncate">
+                      Correo: {selectedApt.patient?.email || "—"}
+                    </span>
                   </div>
 
                   {/* Alertas Clínicas Rápidas */}
-                  {(selectedApt.patient as any)?.clinical_summary && (
+                  {selectedApt.patient?.clinical_summary && (
                     <div className="flex flex-wrap gap-1.5 pt-2">
-                      {((selectedApt.patient as any).clinical_summary.allergies) && (
+                      {selectedApt.patient.clinical_summary.allergies && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-100">
-                          Alergia: {(selectedApt.patient as any).clinical_summary.allergies}
+                          Alergia:{" "}
+                          {selectedApt.patient.clinical_summary.allergies}
                         </span>
                       )}
-                      {((selectedApt.patient as any).clinical_summary.chronic_conditions) && (
+                      {selectedApt.patient.clinical_summary
+                        .chronic_conditions && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-100">
-                          Crónica: {(selectedApt.patient as any).clinical_summary.chronic_conditions}
+                          Crónica:{" "}
+                          {
+                            selectedApt.patient.clinical_summary
+                              .chronic_conditions
+                          }
                         </span>
                       )}
                     </div>
@@ -470,7 +526,7 @@ export function DoctorAppointmentsView() {
                 </div>
 
                 {/* Resumen Clínico Pre-Consulta */}
-                {(selectedApt.patient as any)?.clinical_summary && (
+                {selectedApt.patient?.clinical_summary && (
                   <div className="space-y-4 border-t border-pharmako-border-soft pt-4 text-xs">
                     {/* Antecedentes y Hábitos */}
                     <div className="space-y-1.5">
@@ -478,32 +534,54 @@ export function DoctorAppointmentsView() {
                         Antecedentes y Hábitos
                       </h4>
                       <div className="space-y-1.5 text-pharmako-text-secondary font-medium pl-1">
-                        {(selectedApt.patient as any).clinical_summary.lifestyle && (
+                        {selectedApt.patient.clinical_summary.lifestyle && (
                           <p className="flex items-center gap-1.5">
                             <span className="inline-block size-1 bg-slate-400 rounded-full" />
                             <span>
-                              {resolveSmokingLabel((selectedApt.patient as any).clinical_summary.lifestyle.smoking_status)}
+                              {resolveSmokingLabel(
+                                selectedApt.patient.clinical_summary.lifestyle
+                                  .smoking_status,
+                              )}
                               {" • "}
-                              {resolveAlcoholLabel((selectedApt.patient as any).clinical_summary.lifestyle.alcohol_consumption)}
+                              {resolveAlcoholLabel(
+                                selectedApt.patient.clinical_summary.lifestyle
+                                  .alcohol_consumption,
+                              )}
                             </span>
                           </p>
                         )}
-                        {(selectedApt.patient as any).clinical_summary.surgical_history?.length > 0 && (
+                        {selectedApt.patient.clinical_summary.surgical_history
+                          ?.length > 0 && (
                           <p className="flex items-start gap-1.5">
                             <span className="inline-block size-1 bg-slate-400 rounded-full mt-1.5 shrink-0" />
-                            <span>Quirúrgicos: {(selectedApt.patient as any).clinical_summary.surgical_history.join(", ")}</span>
+                            <span>
+                              Quirúrgicos:{" "}
+                              {selectedApt.patient.clinical_summary.surgical_history.join(
+                                ", ",
+                              )}
+                            </span>
                           </p>
                         )}
-                        {(selectedApt.patient as any).clinical_summary.family_history?.length > 0 && (
+                        {selectedApt.patient.clinical_summary.family_history
+                          ?.length > 0 && (
                           <p className="flex items-start gap-1.5">
                             <span className="inline-block size-1 bg-slate-400 rounded-full mt-1.5 shrink-0" />
-                            <span>Familiares: {(selectedApt.patient as any).clinical_summary.family_history.join(", ")}</span>
+                            <span>
+                              Familiares:{" "}
+                              {selectedApt.patient.clinical_summary.family_history.join(
+                                ", ",
+                              )}
+                            </span>
                           </p>
                         )}
-                        {!(selectedApt.patient as any).clinical_summary.lifestyle &&
-                          (selectedApt.patient as any).clinical_summary.surgical_history?.length === 0 &&
-                          (selectedApt.patient as any).clinical_summary.family_history?.length === 0 && (
-                            <span className="text-pharmako-text-muted italic">Sin antecedentes registrados</span>
+                        {!selectedApt.patient.clinical_summary.lifestyle &&
+                          selectedApt.patient.clinical_summary.surgical_history
+                            ?.length === 0 &&
+                          selectedApt.patient.clinical_summary.family_history
+                            ?.length === 0 && (
+                            <span className="text-pharmako-text-muted italic">
+                              Sin antecedentes registrados
+                            </span>
                           )}
                       </div>
                     </div>
@@ -514,15 +592,20 @@ export function DoctorAppointmentsView() {
                         Medicamentos Activos
                       </h4>
                       <div className="space-y-1.5 text-pharmako-text-secondary font-medium pl-1">
-                        {(selectedApt.patient as any).clinical_summary.active_medications?.length > 0 ? (
-                          (selectedApt.patient as any).clinical_summary.active_medications.map((med: string, idx: number) => (
-                            <p key={idx} className="flex items-start gap-1.5">
-                              <span className="inline-block size-1 bg-emerald-500 rounded-full mt-1.5 shrink-0" />
-                              <span>{med}</span>
-                            </p>
-                          ))
+                        {selectedApt.patient.clinical_summary.active_medications
+                          ?.length > 0 ? (
+                          selectedApt.patient.clinical_summary.active_medications.map(
+                            (med: string, idx: number) => (
+                              <p key={idx} className="flex items-start gap-1.5">
+                                <span className="inline-block size-1 bg-emerald-500 rounded-full mt-1.5 shrink-0" />
+                                <span>{med}</span>
+                              </p>
+                            ),
+                          )
                         ) : (
-                          <span className="text-pharmako-text-muted italic">Sin medicamentos activos en receta</span>
+                          <span className="text-pharmako-text-muted italic">
+                            Sin medicamentos activos en receta
+                          </span>
                         )}
                       </div>
                     </div>
@@ -533,25 +616,43 @@ export function DoctorAppointmentsView() {
                         Últimas Consultas
                       </h4>
                       <div className="space-y-2">
-                        {(selectedApt.patient as any).clinical_summary.recent_history?.length > 0 ? (
-                          (selectedApt.patient as any).clinical_summary.recent_history.map((c: any, idx: number) => (
-                            <div key={idx} className="p-2.5 bg-pharmako-canvas rounded-lg border border-pharmako-border-soft space-y-1">
-                              <div className="flex items-center justify-between text-[10px] text-pharmako-text-muted font-semibold">
-                                <span>{formatDateCompact(c.date)}</span>
-                                <span className="max-w-[120px] truncate">{c.doctor_name}</span>
-                              </div>
-                              <p className="text-[11px] font-bold text-pharmako-text-primary leading-tight">
-                                {c.diagnosis}
-                              </p>
-                              {c.reason && (
-                                <p className="text-[10px] text-pharmako-text-secondary italic truncate">
-                                  Motivo: {c.reason}
+                        {selectedApt.patient.clinical_summary.recent_history
+                          ?.length > 0 ? (
+                          selectedApt.patient.clinical_summary.recent_history.map(
+                            (
+                              c: {
+                                date: string;
+                                doctor_name: string;
+                                diagnosis: string;
+                                reason?: string;
+                              },
+                              idx: number,
+                            ) => (
+                              <div
+                                key={idx}
+                                className="p-2.5 bg-pharmako-canvas rounded-lg border border-pharmako-border-soft space-y-1"
+                              >
+                                <div className="flex items-center justify-between text-[10px] text-pharmako-text-muted font-semibold">
+                                  <span>{formatDateCompact(c.date)}</span>
+                                  <span className="max-w-[120px] truncate">
+                                    {c.doctor_name}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] font-bold text-pharmako-text-primary leading-tight">
+                                  {c.diagnosis}
                                 </p>
-                              )}
-                            </div>
-                          ))
+                                {c.reason && (
+                                  <p className="text-[10px] text-pharmako-text-secondary italic truncate">
+                                    Motivo: {c.reason}
+                                  </p>
+                                )}
+                              </div>
+                            ),
+                          )
                         ) : (
-                          <span className="text-pharmako-text-muted italic">Sin consultas previas registradas</span>
+                          <span className="text-pharmako-text-muted italic">
+                            Sin consultas previas registradas
+                          </span>
                         )}
                       </div>
                     </div>
@@ -586,18 +687,27 @@ export function DoctorAppointmentsView() {
                 <div className="space-y-3 border-t border-pharmako-border-soft pt-4 text-sm text-pharmako-text-secondary">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-pharmako-text-muted shrink-0" />
-                    <span>Sede: <strong>{selectedApt.clinic_branch?.name || "Sede Principal"}</strong></span>
+                    <span>
+                      Sede:{" "}
+                      <strong>
+                        {selectedApt.clinic_branch?.name || "Sede Principal"}
+                      </strong>
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     {selectedApt.type === "ONLINE" ? (
                       <>
                         <Video className="h-4 w-4 text-pharmako-care shrink-0" />
-                        <span className="font-semibold text-pharmako-care">Consulta Virtual (Telemedicina)</span>
+                        <span className="font-semibold text-pharmako-care">
+                          Consulta Virtual (Telemedicina)
+                        </span>
                       </>
                     ) : (
                       <>
                         <CheckCircle2 className="h-4 w-4 text-pharmako-success shrink-0" />
-                        <span className="font-semibold text-pharmako-success">Consulta Presencial</span>
+                        <span className="font-semibold text-pharmako-success">
+                          Consulta Presencial
+                        </span>
                       </>
                     )}
                   </div>
@@ -608,7 +718,11 @@ export function DoctorAppointmentsView() {
                   {selectedApt.status.toLowerCase() === "completed" ? (
                     <div className="flex flex-col gap-2 w-full">
                       <Button
-                        onClick={() => router.push(`/dashboard/consultations/${selectedApt.uuid}`)}
+                        onClick={() =>
+                          router.push(
+                            `/dashboard/consultations/${selectedApt.uuid}`,
+                          )
+                        }
                         className="w-full bg-pharmako-canvas hover:bg-pharmako-border-soft text-pharmako-text-primary font-semibold rounded-lg text-sm h-9 transition-colors flex items-center justify-center gap-2 h-12"
                       >
                         <FileText className="w-3.5 h-3.5" />
@@ -632,7 +746,11 @@ export function DoctorAppointmentsView() {
                     </Button>
                   ) : (
                     <Button
-                      onClick={() => router.push(`/dashboard/consultations/${selectedApt.uuid}`)}
+                      onClick={() =>
+                        router.push(
+                          `/dashboard/consultations/${selectedApt.uuid}`,
+                        )
+                      }
                       className="w-full bg-pharmako-care hover:bg-pharmako-care-hover text-white font-semibold rounded-lg text-sm h-11 transition-colors flex items-center justify-center gap-2"
                     >
                       <Stethoscope className="w-3.5 h-3.5" />
@@ -648,7 +766,8 @@ export function DoctorAppointmentsView() {
                   Detalle del Paciente
                 </p>
                 <p className="text-[11px] text-pharmako-text-secondary max-w-[180px] mx-auto">
-                  Seleccioná cualquier cita de la lista para visualizar su expediente clínico.
+                  Seleccioná cualquier cita de la lista para visualizar su
+                  expediente clínico.
                 </p>
               </div>
             )}

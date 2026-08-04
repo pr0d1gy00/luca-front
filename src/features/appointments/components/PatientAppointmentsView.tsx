@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useCallback } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { usePatientAppointmentsQuery } from "@/features/appointments/hooks/usePatientAppointmentsQuery";
 import { appointmentApi } from "@/features/appointments/api/appointmentApi";
 import { useAuthStore } from "@/store/auth";
@@ -12,8 +12,6 @@ import {
   Video,
   AlertCircle,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   Plus,
   Mail,
   Phone,
@@ -75,10 +73,10 @@ export function PatientAppointmentsView() {
   const appointments = Array.isArray(paginatedData?.data?.data)
     ? paginatedData.data.data
     : Array.isArray(paginatedData?.data)
-    ? paginatedData.data
-    : Array.isArray(paginatedData)
-    ? paginatedData
-    : [];
+      ? paginatedData.data
+      : Array.isArray(paginatedData)
+        ? paginatedData
+        : [];
   const totalPages: number =
     paginatedData?.data?.last_page || paginatedData?.last_page || 1;
 
@@ -333,7 +331,9 @@ export function PatientAppointmentsView() {
                     </div>
                     <div className="flex items-center gap-2.5">
                       <Clock className="h-4 w-4 text-pharmako-text-muted shrink-0" />
-                      <span>{(apt.slot_time || apt.time || "").slice(0, 5)} HS</span>
+                      <span>
+                        {(apt.slot_time || apt.time || "").slice(0, 5)} HS
+                      </span>
                     </div>
                     <div className="flex items-center gap-2.5">
                       <MapPin className="h-4 w-4 text-pharmako-text-muted shrink-0" />
@@ -365,7 +365,9 @@ export function PatientAppointmentsView() {
                 currentPage={page}
                 lastPage={totalPages}
                 total={paginatedData?.data?.total || paginatedData?.total || 0}
-                perPage={paginatedData?.data?.per_page || paginatedData?.per_page || 10}
+                perPage={
+                  paginatedData?.data?.per_page || paginatedData?.per_page || 10
+                }
                 from={paginatedData?.data?.from || paginatedData?.from || null}
                 to={paginatedData?.data?.to || paginatedData?.to || null}
                 onPageChange={handlePageChange}
@@ -424,7 +426,14 @@ export function PatientAppointmentsView() {
                       </div>
                       <div className="flex items-center gap-2.5 text-sm text-pharmako-text-secondary">
                         <Clock className="h-4 w-4 text-pharmako-care shrink-0" />
-                        <span>{(detailedApt.slot_time || detailedApt.time || "").slice(0, 5)} HS</span>
+                        <span>
+                          {(
+                            detailedApt.slot_time ||
+                            detailedApt.time ||
+                            ""
+                          ).slice(0, 5)}{" "}
+                          HS
+                        </span>
                       </div>
                       <div className="flex items-center gap-2.5 text-xs font-medium text-pharmako-text-primary border-t border-pharmako-border-soft/60 pt-2.5">
                         {detailedApt.type === "ONLINE" ? (
