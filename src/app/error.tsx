@@ -21,7 +21,7 @@ export default function GlobalRouteSegmentError({
       digest: error.digest,
     });
   }, [error]);
-
+  console.log(process.env.NODE_ENV);
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 text-center space-y-6 ">
       <Image
