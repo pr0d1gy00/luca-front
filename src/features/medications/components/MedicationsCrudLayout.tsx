@@ -48,6 +48,7 @@ import {
   useUpdateMedication,
   useDeleteMedication,
   useTopPrescribedMedications,
+  useMedicationStats,
 } from "../hooks/useMedications";
 import {
   usePrescriptionTemplates,
@@ -69,7 +70,7 @@ export function MedicationsCrudLayout() {
   const [mode, setMode] = useState<Mode | null>(null);
   const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
   const [selectedCombo, setSelectedCombo] = useState<PrescriptionTemplate | null>(null);
-  
+
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [deleteType, setDeleteType] = useState<"medication" | "combo">("medication");
 
@@ -79,6 +80,7 @@ export function MedicationsCrudLayout() {
   // React Query Hooks
   const { data: medsData, isLoading: isLoadingMeds } = useMedications(search, page);
   const { data: topPrescribedData, isLoading: isLoadingTop } = useTopPrescribedMedications();
+  const { data: statsData, isLoading: isLoadingStats } = useMedicationStats();
   const createMedication = useCreateMedication();
   const updateMedication = useUpdateMedication();
   const deleteMedication = useDeleteMedication();
@@ -168,7 +170,7 @@ export function MedicationsCrudLayout() {
     setSelectedCombo(null);
   };
 
-  if (isLoadingMeds || isLoadingCombos || isLoadingTop) {
+  if (isLoadingMeds || isLoadingCombos || isLoadingTop || isLoadingStats) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
         <Clock className="w-8 h-8 animate-spin text-pharmako-care" />
@@ -209,14 +211,14 @@ export function MedicationsCrudLayout() {
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex items-center gap-1 p-1 bg-white border border-slate-200 rounded-xl w-fit">
+      <div className="flex items-center p-1 w-fit">
         <button
           onClick={() => setActiveTab("resumen")}
           className={cn(
-            "px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer",
+            "px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer",
             activeTab === "resumen"
-              ? "bg-slate-50 text-pharmako-care"
-              : "text-slate-400 hover:text-slate-650",
+              ? "text-pharmako-care border-b border-pharmako-care "
+              : "text-slate-400 hover:text-slate-650 border-b border-slate-300",
           )}
         >
           Resumen
@@ -224,10 +226,10 @@ export function MedicationsCrudLayout() {
         <button
           onClick={() => setActiveTab("lista")}
           className={cn(
-            "px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer",
+            "px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer",
             activeTab === "lista"
-              ? "bg-slate-50 text-pharmako-care"
-              : "text-slate-400 hover:text-slate-650",
+              ? "text-pharmako-care border-b border-pharmako-care"
+              : "text-slate-400 hover:text-slate-650 border-b border-slate-300",
           )}
         >
           Lista
@@ -235,10 +237,10 @@ export function MedicationsCrudLayout() {
         <button
           onClick={() => setActiveTab("combos")}
           className={cn(
-            "px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer",
+            "px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer",
             activeTab === "combos"
-              ? "bg-slate-50 text-pharmako-care"
-              : "text-slate-400 hover:text-slate-650",
+              ? "text-pharmako-care border-b border-pharmako-care"
+              : "text-slate-400 hover:text-slate-650 border-b border-slate-300",
           )}
         >
           Combos de Prescripción
@@ -291,7 +293,7 @@ export function MedicationsCrudLayout() {
             </button>
 
             <button
-              onClick={() => {}}
+              onClick={() => { }}
               className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between text-left transition-all duration-200 hover:border-pharmako-care hover:bg-pharmako-care-light/5 hover:-translate-y-0.5 group cursor-pointer animate-pulse"
             >
               <div className="flex items-center gap-3">
@@ -325,7 +327,7 @@ export function MedicationsCrudLayout() {
               </div>
               <div className="mt-4">
                 <span className="text-3xl font-bold text-slate-900 tracking-tight">
-                  {medsList.length}
+                  {statsData?.total || 0}
                 </span>
                 <span className="block text-xs text-slate-400 mt-1">
                   Activos en tu catálogo
@@ -346,7 +348,7 @@ export function MedicationsCrudLayout() {
               <div className="mt-4 flex items-center justify-between gap-4">
                 <div>
                   <span className="text-2xl font-bold text-slate-900">
-                    {medsList.filter((m) => m.requiresPrescription).length}
+                    {statsData?.prescription_required || 0}
                   </span>
                   <span className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
                     <span className="size-2 rounded-full bg-amber-400 inline-block" />
@@ -356,7 +358,7 @@ export function MedicationsCrudLayout() {
                 <div className="h-8 w-px bg-slate-100" />
                 <div>
                   <span className="text-2xl font-bold text-slate-900">
-                    {medsList.filter((m) => !m.requiresPrescription).length}
+                    {statsData?.prescription_free || 0}
                   </span>
                   <span className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
                     <span className="size-2 rounded-full bg-emerald-400 inline-block" />
@@ -431,31 +433,19 @@ export function MedicationsCrudLayout() {
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="bg-slate-50 rounded-lg p-2">
                   <span className="block text-sm font-bold text-slate-800">
-                    {medsList.filter((m) => m.administrationRoute === "ORAL").length}
+                    {statsData?.routes_distribution?.["ORAL"] || 0}
                   </span>
                   <span className="text-[10px] text-slate-400">Oral</span>
                 </div>
                 <div className="bg-slate-50 rounded-lg p-2">
                   <span className="block text-sm font-bold text-slate-800">
-                    {
-                      medsList.filter(
-                        (m) =>
-                          m.administrationRoute === "INTRAVENOSA" ||
-                          m.administrationRoute === "INTRAMUSCULAR",
-                      ).length
-                    }
+                    {(statsData?.routes_distribution?.["INTRAVENOSA"] || 0) + (statsData?.routes_distribution?.["INTRAMUSCULAR"] || 0)}
                   </span>
                   <span className="text-[10px] text-slate-400">Inyect.</span>
                 </div>
                 <div className="bg-slate-50 rounded-lg p-2">
                   <span className="block text-sm font-bold text-slate-800">
-                    {
-                      medsList.filter(
-                        (m) =>
-                          m.administrationRoute === "TOPICA" ||
-                          m.administrationRoute === "OFTALMICA",
-                      ).length
-                    }
+                    {(statsData?.routes_distribution?.["TOPICA"] || 0) + (statsData?.routes_distribution?.["OFTALMICA"] || 0)}
                   </span>
                   <span className="text-[10px] text-slate-400">Local</span>
                 </div>
@@ -473,30 +463,27 @@ export function MedicationsCrudLayout() {
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                {medsList
-                  .slice(-2)
-                  .reverse()
-                  .map((med, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-slate-50 rounded-lg p-2.5 border border-slate-100 flex items-center justify-between gap-3"
-                    >
-                      <div className="min-w-0">
-                        <span className="block text-xs font-bold text-slate-850 truncate">
-                          {med.activePrinciple}
-                        </span>
-                        <span className="block text-[9px] text-slate-450 truncate mt-0.5">
-                          {med.commercialName || "Genérico"} — {med.concentration}
-                        </span>
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className="text-[8px] px-1.5 py-0 bg-white border-slate-200 text-slate-500 rounded-full font-medium"
-                      >
-                        {med.administrationRoute.toLowerCase()}
-                      </Badge>
+                {(statsData?.recent || []).map((med: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="bg-slate-50 rounded-lg p-2.5 border border-slate-100 flex items-center justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <span className="block text-xs font-bold text-slate-850 truncate">
+                        {med.active_principle}
+                      </span>
+                      <span className="block text-[9px] text-slate-450 truncate mt-0.5">
+                        {med.commercial_name || "Genérico"} — {med.concentration}
+                      </span>
                     </div>
-                  ))}
+                    <Badge
+                      variant="outline"
+                      className="text-[8px] px-1.5 py-0 bg-white border-slate-200 text-slate-500 rounded-full font-medium"
+                    >
+                      {(med.administration_route || "").toLowerCase()}
+                    </Badge>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -550,7 +537,7 @@ export function MedicationsCrudLayout() {
                       </Button>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 space-y-2 max-h-[140px] overflow-y-auto pr-1">
                     {combo.items.map((item, idx) => {
                       const med = medsList.find((m) => m.uuid === item.medicationId);
