@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { motion, type Variants } from "framer-motion";
+import { motion, type Variants } from "motion/react";
 import PharmakoPersonMiddleBody from "../../../public/PharmakoPersonBodyExtraLarge-PNG.png";
 
 // ─────────────────────────────────────────────────────────────
