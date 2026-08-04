@@ -47,6 +47,7 @@ import { usePrescriptionTemplates } from "@/features/medications/hooks/usePrescr
 import { useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
 import { useProviderServices, useGlobalServices } from "@/features/services";
+import { Textarea } from "@/components/ui/textarea";
 
 interface MedOption {
   id: string;
@@ -976,7 +977,12 @@ export function ClinicalNotesForm({
                 <Button
                   type="button"
                   disabled={isSubmitting}
-                  onClick={() => onSubmit(submittedData)}
+                  onClick={() =>
+                    onSubmit({
+                      ...submittedData,
+                      servicesPerformed: getValues("servicesPerformed") ?? [],
+                    })
+                  }
                   className="w-full rounded-xl bg-pharmako-care hover:bg-pharmako-care-hover text-white font-semibold h-12 flex items-center justify-center gap-2 disabled:opacity-50 shadow-sm"
                 >
                   {isSubmitting ? (
@@ -1824,8 +1830,8 @@ export function ClinicalNotesForm({
             </div>
 
             {/* Selector de servicio y notas */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-              <div className="md:col-span-4 flex flex-col gap-1.5">
+            <div className="flex flex-col gap-4 ">
+              <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
                   Seleccionar Servicio
                 </label>
@@ -1853,8 +1859,7 @@ export function ClinicalNotesForm({
                 <label className="text-xs font-semibold text-slate-500">
                   Notas sobre el Procedimiento
                 </label>
-                <input
-                  type="text"
+                <Textarea
                   placeholder="Ej: Se realiza sin complicaciones, sutura de 3 puntos..."
                   value={serviceNotes}
                   onChange={(e) => setServiceNotes(e.target.value)}
@@ -1931,7 +1936,7 @@ export function ClinicalNotesForm({
                   }}
                   className="w-full bg-pharmako-care hover:bg-pharmako-care-hover text-slate-900 shadow-none font-semibold rounded-xl h-11"
                 >
-                  <Plus className="w-5 h-5" />
+                  Confirmar servicio
                 </Button>
               </div>
             </div>

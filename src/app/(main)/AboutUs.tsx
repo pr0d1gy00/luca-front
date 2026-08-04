@@ -158,7 +158,7 @@ export default function AboutUs() {
                        leading-relaxed"
           >
             En <strong>Pharmako</strong> creemos que la salud no debería ser
-            complicated. Somos un equipo de médicos, ingenieros y diseñadores
+            complicada. Somos un equipo de médicos, ingenieros y diseñadores
             unidos por una misma misión: hacer que gestionar tu salud sea
             simple, accesible y humana.
           </motion.p>
