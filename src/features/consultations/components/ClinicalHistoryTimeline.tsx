@@ -96,21 +96,35 @@ export function ClinicalHistoryTimeline({
         let detailData: any = null;
 
         // 1. Intentar buscar en Dexie local
-        const localConsult = await db.consultations.where("uuid").equals(selectedId).first();
+        const localConsult = await db.consultations
+          .where("uuid")
+          .equals(selectedId)
+          .first();
         if (localConsult) {
-          const localVitals = await db.vitalSigns.where("consultationUuid").equals(selectedId).first();
+          const localVitals = await db.vitalSigns
+            .where("consultationUuid")
+            .equals(selectedId)
+            .first();
           const allPrescriptions = await db.prescriptions.toArray();
           const localPrescriptions = allPrescriptions.filter(
-            (rx) => rx.consultationUuid === selectedId
+            (rx) => rx.consultationUuid === selectedId,
           );
           const items: any[] = [];
 
           for (const rx of localPrescriptions) {
-            const rxItems = await db.prescriptionItems.where("prescriptionUuid").equals(rx.uuid).toArray();
+            const rxItems = await db.prescriptionItems
+              .where("prescriptionUuid")
+              .equals(rx.uuid)
+              .toArray();
             for (const item of rxItems) {
-              const med = await db.medications.where("uuid").equals(item.medicationUuid).first();
+              const med = await db.medications
+                .where("uuid")
+                .equals(item.medicationUuid)
+                .first();
               items.push({
-                name: med ? `${med.activePrinciple} (${med.commercialName})` : "Medicamento",
+                name: med
+                  ? `${med.activePrinciple} (${med.commercialName})`
+                  : "Medicamento",
                 dose: item.dose || "",
                 freq: item.frequency || "",
                 dur: item.duration || "",
@@ -120,19 +134,42 @@ export function ClinicalHistoryTimeline({
 
           const vitalsList: { label: string; value: string }[] = [];
           if (localVitals) {
-            if (localVitals.weight) vitalsList.push({ label: "Peso", value: `${localVitals.weight} kg` });
-            if (localVitals.height) vitalsList.push({ label: "Talla", value: `${localVitals.height} m` });
+            if (localVitals.weight)
+              vitalsList.push({
+                label: "Peso",
+                value: `${localVitals.weight} kg`,
+              });
+            if (localVitals.height)
+              vitalsList.push({
+                label: "Talla",
+                value: `${localVitals.height} m`,
+              });
             if (localVitals.systolicBp && localVitals.diastolicBp) {
-              vitalsList.push({ label: "Presión Arterial", value: `${localVitals.systolicBp}/${localVitals.diastolicBp} mmHg` });
+              vitalsList.push({
+                label: "Presión Arterial",
+                value: `${localVitals.systolicBp}/${localVitals.diastolicBp} mmHg`,
+              });
             }
-            if (localVitals.heartRate) vitalsList.push({ label: "Frecuencia Cardíaca", value: `${localVitals.heartRate} bpm` });
-            if (localVitals.temperature) vitalsList.push({ label: "Temperatura", value: `${localVitals.temperature} °C` });
-            if (localVitals.oxygenSat) vitalsList.push({ label: "Saturación O₂", value: `${localVitals.oxygenSat} %` });
+            if (localVitals.heartRate)
+              vitalsList.push({
+                label: "Frecuencia Cardíaca",
+                value: `${localVitals.heartRate} bpm`,
+              });
+            if (localVitals.temperature)
+              vitalsList.push({
+                label: "Temperatura",
+                value: `${localVitals.temperature} °C`,
+              });
+            if (localVitals.oxygenSat)
+              vitalsList.push({
+                label: "Saturación O₂",
+                value: `${localVitals.oxygenSat} %`,
+              });
           }
 
           const allLabRequests = await db.labRequests.toArray();
           const localLabs = allLabRequests.filter(
-            (req) => req.consultationUuid === selectedId && !req.deletedAt
+            (req) => req.consultationUuid === selectedId && !req.deletedAt,
           );
           const labsList = localLabs.map((l) => ({
             examsList: l.examsList || [],
@@ -141,9 +178,11 @@ export function ClinicalHistoryTimeline({
 
           detailData = {
             motivo: localConsult.reason || "Sin motivo registrado",
-            examenFisico: localConsult.physicalExam || "Sin hallazgos registrados",
+            examenFisico:
+              localConsult.physicalExam || "Sin hallazgos registrados",
             diagnostico: localConsult.diagnosis || "Sin diagnóstico registrado",
-            tratamiento: localConsult.treatmentPlan || "Sin indicaciones registradas",
+            tratamiento:
+              localConsult.treatmentPlan || "Sin indicaciones registradas",
             medicamentos: items,
             vitalSigns: vitalsList,
             laboratorios: labsList,
@@ -152,21 +191,46 @@ export function ClinicalHistoryTimeline({
 
         // 2. Intentar buscar en la API online para tener los datos frescos
         try {
-          const { data: res } = await apiClient.get(`/consultations/${selectedId}`);
+          const { data: res } = await apiClient.get(
+            `/consultations/${selectedId}`,
+          );
           const apiConsult = res.data;
 
           if (apiConsult) {
             const vitalsList: { label: string; value: string }[] = [];
             const apiVitals = apiConsult.vital_sign;
             if (apiVitals) {
-              if (apiVitals.weight) vitalsList.push({ label: "Peso", value: `${apiVitals.weight} kg` });
-              if (apiVitals.height) vitalsList.push({ label: "Talla", value: `${apiVitals.height} m` });
+              if (apiVitals.weight)
+                vitalsList.push({
+                  label: "Peso",
+                  value: `${apiVitals.weight} kg`,
+                });
+              if (apiVitals.height)
+                vitalsList.push({
+                  label: "Talla",
+                  value: `${apiVitals.height} m`,
+                });
               if (apiVitals.systolic_bp && apiVitals.diastolic_bp) {
-                vitalsList.push({ label: "Presión Arterial", value: `${apiVitals.systolic_bp}/${apiVitals.diastolic_bp} mmHg` });
+                vitalsList.push({
+                  label: "Presión Arterial",
+                  value: `${apiVitals.systolic_bp}/${apiVitals.diastolic_bp} mmHg`,
+                });
               }
-              if (apiVitals.heart_rate) vitalsList.push({ label: "Frecuencia Cardíaca", value: `${apiVitals.heart_rate} bpm` });
-              if (apiVitals.temperature) vitalsList.push({ label: "Temperatura", value: `${apiVitals.temperature} °C` });
-              if (apiVitals.oxygen_sat) vitalsList.push({ label: "Saturación O₂", value: `${apiVitals.oxygen_sat} %` });
+              if (apiVitals.heart_rate)
+                vitalsList.push({
+                  label: "Frecuencia Cardíaca",
+                  value: `${apiVitals.heart_rate} bpm`,
+                });
+              if (apiVitals.temperature)
+                vitalsList.push({
+                  label: "Temperatura",
+                  value: `${apiVitals.temperature} °C`,
+                });
+              if (apiVitals.oxygen_sat)
+                vitalsList.push({
+                  label: "Saturación O₂",
+                  value: `${apiVitals.oxygen_sat} %`,
+                });
             }
 
             const items: any[] = [];
@@ -175,7 +239,9 @@ export function ClinicalHistoryTimeline({
               for (const item of apiRx.items) {
                 const med = item.medication;
                 items.push({
-                  name: med ? `${med.active_principle} (${med.commercial_name})` : "Medicamento",
+                  name: med
+                    ? `${med.active_principle} (${med.commercial_name})`
+                    : "Medicamento",
                   dose: item.dose || "",
                   freq: item.frequency || "",
                   dur: item.duration || "",
@@ -183,27 +249,35 @@ export function ClinicalHistoryTimeline({
               }
             }
 
-            const labsList: { examsList: string[], instructions: string }[] = [];
-            const apiLab = apiConsult.lab_request;
-            if (apiLab) {
-              labsList.push({
-                examsList: apiLab.exams_list || [],
-                instructions: apiLab.instructions || "",
-              });
+            const labsList: { examsList: string[]; instructions: string }[] =
+              [];
+            const apiLabs = apiConsult.lab_requests;
+            if (Array.isArray(apiLabs)) {
+              for (const apiLab of apiLabs) {
+                labsList.push({
+                  examsList: apiLab.exams_list || [],
+                  instructions: apiLab.instructions || "",
+                });
+              }
             }
 
             detailData = {
               motivo: apiConsult.reason || "Sin motivo registrado",
-              examenFisico: apiConsult.physical_exam || "Sin hallazgos registrados",
+              examenFisico:
+                apiConsult.physical_exam || "Sin hallazgos registrados",
               diagnostico: apiConsult.diagnosis || "Sin diagnóstico registrado",
-              tratamiento: apiConsult.treatment_plan || "Sin indicaciones registradas",
+              tratamiento:
+                apiConsult.treatment_plan || "Sin indicaciones registradas",
               medicamentos: items,
               vitalSigns: vitalsList,
               laboratorios: labsList,
             };
           }
         } catch (apiErr) {
-          console.warn("Could not fetch consultation detail from API, using local/cached version:", apiErr);
+          console.warn(
+            "Could not fetch consultation detail from API, using local/cached version:",
+            apiErr,
+          );
         }
 
         if (detailData) {
@@ -283,7 +357,9 @@ export function ClinicalHistoryTimeline({
             {isLoadingPreview ? (
               <div className="flex flex-col items-center justify-center p-16 gap-3 bg-white min-h-[300px]">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pharmako-care"></div>
-                <span className="text-xs text-slate-500 font-medium">Cargando detalles de consulta...</span>
+                <span className="text-xs text-slate-500 font-medium">
+                  Cargando detalles de consulta...
+                </span>
               </div>
             ) : previewData ? (
               <ConsultationPreview
@@ -293,7 +369,9 @@ export function ClinicalHistoryTimeline({
               />
             ) : (
               <div className="flex flex-col items-center justify-center p-16 gap-3 bg-white min-h-[300px]">
-                <span className="text-xs text-slate-400 font-medium">No se encontraron detalles para esta consulta.</span>
+                <span className="text-xs text-slate-400 font-medium">
+                  No se encontraron detalles para esta consulta.
+                </span>
               </div>
             )}
           </AnimatePresence>
@@ -438,7 +516,9 @@ function ConsultationPreview({
                   </div>
                   {l.instructions && (
                     <p className="text-xs text-slate-500 mt-2">
-                      <span className="font-semibold text-slate-700">Indicaciones: </span>
+                      <span className="font-semibold text-slate-700">
+                        Indicaciones:{" "}
+                      </span>
                       {l.instructions}
                     </p>
                   )}
