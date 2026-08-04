@@ -60,16 +60,20 @@ export default function Welcome() {
       <motion.div
         variants={IMAGE_VARIANTS}
         className="w-full lg:w-1/2 
-                   flex items-center justify-center
-                   lg:pr-8 xl:pr-12"
+                   flex flex-col items-center justify-center
+                   lg:pr-8 xl:pb-16 xl:pr-12"
       >
         <Image
           src={PharmakoPersonMiddleBody}
           alt="Bienvenido a Pharmako"
           priority
           className="w-54 h-54 sm:w-72 sm:h-72 md:w-78 md:h-78 lg:w-84 lg:h-84 xl:w-110 xl:h-110 2xl:w-130 2xl:h-130
-                     object-contain"
+                     object-contain pr-24"
         />
+        <p className="text-base sm:text-lg md:text-xl lg:text-xl xl:text-2xl
+                     text-slate-600 md:text-slate-700 text-center font-bold
+                     leading-relaxed sm:leading-relaxed md:leading-loose
+                     max-w-xs sm:max-w-sm md:max-w-lg lg:max-w-md xl:max-w-xl">Estamos aquí para ayudarte a cuidar de tu salud de manera más fácil y conveniente</p>
       </motion.div>
 
       {/* Texto — derecha, responsive */}
@@ -97,10 +101,9 @@ export default function Welcome() {
         >
           Bienvenido a{" "}
           <span className="font-semibold text-slate-800">Pharmako</span>, un
-          sistema de salud friendly healthcare, para ti. Donde nos preocupamos
+          sistema de atención médica amigable, para ti. Donde nos preocupamos
           por tu bienestar. Registrate y accede a tu perfil para gestionar tus
-          medicamentos, citas médicas y mucho más. Estamos aquí para ayudarte a
-          cuidar de tu salud de manera fácil y conveniente.
+          medicamentos, citas médicas y mucho más.
         </motion.p>
       </motion.div>
     </motion.div>

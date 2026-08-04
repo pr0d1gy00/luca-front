@@ -583,6 +583,7 @@ export function ClinicalNotesForm({
     setValue,
     formState: { errors, isValid, isDirty },
     watch,
+    getValues,
     reset,
   } = useForm<Consultation>({
     resolver: zodResolver(consultationSchema),
