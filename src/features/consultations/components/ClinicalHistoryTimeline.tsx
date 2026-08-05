@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Clock, X, Stethoscope, Pill, FileText, Dna } from "lucide-react";
+import { Clock, X, Stethoscope, Pill, FileText, Dna, Layers, Download, Image as ImageIcon, File as FileIcon, Maximize2 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { HistoryEntry } from "../schemas";
@@ -31,6 +31,8 @@ const MOCK_FULL_HISTORY: Record<
     tratamiento: string;
     medicamentos: { name: string; dose: string; freq: string; dur: string }[];
     vitalSigns: { label: string; value: string }[];
+    laboratorios?: { examsList: string[]; instructions: string }[];
+    procedimientos?: { name: string; price: number; quantity: number; notes?: string }[];
   }
 > = {
   "hist-1": {
@@ -123,7 +125,7 @@ export function ClinicalHistoryTimeline({
                 .first();
               items.push({
                 name: med
-                  ? `${med.activePrinciple} (${med.commercialName})`
+                  ? `${(med as any).activePrinciple || (med as any).active_principle || ""} (${(med as any).commercialName || (med as any).commercial_name || ""})`
                   : "Medicamento",
                 dose: item.dose || "",
                 freq: item.frequency || "",
@@ -176,7 +178,49 @@ export function ClinicalHistoryTimeline({
             instructions: l.instructions || "",
           }));
 
+          const localServicesPerformed =
+            (localConsult as any).services_performed ||
+            (localConsult as any).servicesPerformed ||
+            [];
+          const procedimientosListLocal: {
+            name: string;
+            price: number;
+            quantity: number;
+            notes?: string;
+          }[] = [];
+
+          if (
+            Array.isArray(localServicesPerformed) &&
+            localServicesPerformed.length > 0
+          ) {
+            const providerSvcs = await db.providerServices.toArray();
+            const globalSvcs = await db.services.toArray();
+            for (const item of localServicesPerformed) {
+              let name = "";
+              const pSvc = providerSvcs.find(
+                (s) => s.uuid === item.providerServiceUuid,
+              );
+              if (pSvc) {
+                name = pSvc.customName || "";
+                if (!name) {
+                  const baseSvc = globalSvcs.find(
+                    (s) => s.uuid === pSvc.serviceUuid,
+                  );
+                  name = baseSvc?.name || "";
+                }
+              }
+              procedimientosListLocal.push({
+                name: name || "Procedimiento / Servicio Médico",
+                price: Number(item.price) || 0,
+                quantity: Number(item.quantity) || 1,
+                notes: item.notes || "",
+                attachments: item.attachments || [],
+              });
+            }
+          }
+
           detailData = {
+            uuid: (localConsult as any).uuid || id,
             motivo: localConsult.reason || "Sin motivo registrado",
             examenFisico:
               localConsult.physicalExam || "Sin hallazgos registrados",
@@ -186,6 +230,7 @@ export function ClinicalHistoryTimeline({
             medicamentos: items,
             vitalSigns: vitalsList,
             laboratorios: labsList,
+            procedimientos: procedimientosListLocal,
           };
         }
 
@@ -261,16 +306,76 @@ export function ClinicalHistoryTimeline({
               }
             }
 
+            const procedimientosListApi: {
+              name: string;
+              price: number;
+              quantity: number;
+              notes?: string;
+            }[] = [];
+            const apiServicesPerformed =
+              apiConsult.services_performed ||
+              apiConsult.servicesPerformed ||
+              [];
+
+            if (
+              Array.isArray(apiServicesPerformed) &&
+              apiServicesPerformed.length > 0
+            ) {
+              let providerSvcs = await db.providerServices.toArray();
+              let globalSvcs = await db.services.toArray();
+
+              if (globalSvcs.length === 0) {
+                try {
+                  const { data: gRes } =
+                    await apiClient.get("/services/global");
+                  globalSvcs = Array.isArray(gRes?.data)
+                    ? gRes.data
+                    : Array.isArray(gRes)
+                      ? gRes
+                      : [];
+                } catch {
+                  // ignore
+                }
+              }
+
+              for (const item of apiServicesPerformed) {
+                let name = "";
+                const pSvc = providerSvcs.find(
+                  (s: any) => s.uuid === item.providerServiceUuid,
+                );
+                if (pSvc) {
+                  name = pSvc.customName || "";
+                  if (!name) {
+                    const baseSvc = globalSvcs.find(
+                      (s: any) => s.uuid === pSvc.serviceUuid,
+                    );
+                    name = baseSvc?.name || "";
+                  }
+                }
+
+                procedimientosListApi.push({
+                  name: name || "Procedimiento / Servicio Médico",
+                  price: Number(item.price) || 0,
+                  quantity: Number(item.quantity) || 1,
+                  notes: item.notes || "",
+                  attachments: item.attachments || [],
+                });
+              }
+            }
+
             detailData = {
+              uuid: apiConsult.uuid || id,
               motivo: apiConsult.reason || "Sin motivo registrado",
               examenFisico:
                 apiConsult.physical_exam || "Sin hallazgos registrados",
-              diagnostico: apiConsult.diagnosis || "Sin diagnóstico registrado",
+              diagnostico:
+                apiConsult.diagnosis || "Sin diagnóstico registrado",
               tratamiento:
                 apiConsult.treatment_plan || "Sin indicaciones registradas",
               medicamentos: items,
               vitalSigns: vitalsList,
               laboratorios: labsList,
+              procedimientos: procedimientosListApi,
             };
           }
         } catch (apiErr) {
@@ -389,6 +494,7 @@ function ConsultationPreview({
   onClose: () => void;
 }) {
   const {
+    uuid,
     motivo,
     examenFisico,
     diagnostico,
@@ -396,6 +502,25 @@ function ConsultationPreview({
     medicamentos,
     vitalSigns,
   } = data;
+
+  const [previewAttachment, setPreviewAttachment] = useState<{ url: string; isPdf: boolean } | null>(null);
+
+  const handleDownloadZip = async (serviceIndex: number) => {
+    try {
+      const response = await apiClient.get(`/consultations/${uuid}/services/${serviceIndex}/download-attachments`, {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `attachments_service_${serviceIndex}.zip`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+    } catch (error) {
+      console.error("Error downloading zip", error);
+    }
+  };
 
   return (
     <motion.div
@@ -527,7 +652,146 @@ function ConsultationPreview({
             </div>
           </div>
         )}
+
+        {/* Procedimientos y Servicios Realizados */}
+        {data.procedimientos && data.procedimientos.length > 0 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="rounded-lg p-1.5">
+                <Layers className="w-6 h-6 text-pharmako-care" />
+              </div>
+              <h3 className="text-sm font-semibold text-slate-900">
+                Procedimientos y Servicios Realizados
+              </h3>
+            </div>
+
+            <div className="divide-y divide-slate-100">
+              {data.procedimientos.map((p: any, i: number) => (
+                <div key={i} className="py-3 first:pt-0 last:pb-0">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-bold text-slate-900">{p.name}</p>
+                    <span className="text-xs font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md">
+                      {p.price * (p.quantity || 1)} USD
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
+                    <span>Cantidad: {p.quantity || 1}</span>
+                    {p.price > 0 && (
+                      <>
+                        <span>·</span>
+                        <span>Precio unitario: {p.price} USD</span>
+                      </>
+                    )}
+                  </div>
+                  {p.notes && (
+                    <p className="text-xs text-slate-500 mt-1 italic">
+                      Nota: {p.notes}
+                    </p>
+                  )}
+                  {p.attachments && p.attachments.length > 0 && (
+                    <div className="mt-4 pt-3 border-t border-slate-100">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs font-semibold text-slate-700">
+                          Archivos Adjuntos
+                        </p>
+                        <button
+                          onClick={() => handleDownloadZip(i)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-pharmako-care bg-pharmako-care/10 hover:bg-pharmako-care/20 rounded-md transition-colors"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          Descargar todos (.zip)
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {p.attachments.map((url: string, attIdx: number) => {
+                          const cleanUrl = url.split('?')[0].toLowerCase();
+                          const isPdf = cleanUrl.endsWith('.pdf');
+                          return (
+                            <div key={attIdx} className="relative group rounded-lg overflow-hidden border border-slate-200 aspect-video bg-slate-50 flex flex-col justify-center items-center">
+                              {isPdf ? (
+                                <div className="flex flex-col items-center justify-center p-2 text-center w-full h-full">
+                                  <FileIcon className="w-8 h-8 text-red-400 mb-1" />
+                                  <span className="text-[10px] text-slate-500 truncate w-full px-1">{cleanUrl.split('/').pop()}</span>
+                                </div>
+                              ) : (
+                                <img src={url} alt={`Adjunto ${attIdx + 1}`} className="w-full h-full object-cover" />
+                              )}
+                              
+                              <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                                <button
+                                  onClick={() => setPreviewAttachment({ url, isPdf })}
+                                  className="size-8 bg-white/90 hover:bg-white text-slate-700 rounded-full flex items-center justify-center shadow-sm transition-transform hover:scale-105"
+                                  title="Vista previa"
+                                >
+                                  <Maximize2 className="w-4 h-4" />
+                                </button>
+                                <a
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="size-8 bg-white/90 hover:bg-white text-pharmako-care rounded-full flex items-center justify-center shadow-sm transition-transform hover:scale-105"
+                                  title="Descargar archivo"
+                                  download
+                                >
+                                  <Download className="w-4 h-4" />
+                                </a>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Lightbox / Preview Modal */}
+      {previewAttachment && (
+        <Dialog open={true} onOpenChange={() => setPreviewAttachment(null)}>
+          <DialogContent className="max-w-[95vw] md:max-w-[85vw] lg:max-w-5xl p-0 overflow-hidden bg-transparent border-none shadow-none" showCloseButton={false}>
+            <div className="w-full flex flex-col gap-3 items-center justify-center">
+              {/* Header / Actions (Floating Bar) */}
+              <div className="w-full flex items-center justify-between px-5 py-3 bg-black/60 backdrop-blur-xl rounded-xl border border-white/10 shadow-lg">
+                <h3 className="text-white text-sm font-medium truncate pr-4 drop-shadow-md">
+                  {previewAttachment.url.split('?')[0].split('/').pop()}
+                </h3>
+                <div className="flex items-center gap-3">
+                  <a
+                    href={previewAttachment.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="size-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all border border-transparent hover:border-white/10"
+                    download
+                    title="Descargar"
+                  >
+                    <Download className="w-4 h-4" />
+                  </a>
+                  <button
+                    onClick={() => setPreviewAttachment(null)}
+                    className="size-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all border border-transparent hover:border-white/10"
+                    title="Cerrar"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              
+              {/* Content */}
+              <div className="w-full flex items-center justify-center bg-black/60 backdrop-blur-xl rounded-xl overflow-hidden border border-white/10 shadow-2xl" style={{ minHeight: '300px' }}>
+                {previewAttachment.isPdf ? (
+                  <iframe src={previewAttachment.url} className="w-full h-[80vh] bg-white" title="PDF Preview" />
+                ) : (
+                  <img src={previewAttachment.url} alt="Preview" className="max-w-full max-h-[80vh] object-contain" />
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </motion.div>
   );
 }
