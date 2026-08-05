@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Providers } from "@/components/Providers";
 import { OfflineProvider } from "@/components/OfflineProvider";
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 
 const newsReader = Newsreader({
   variable: "--font-news-reader",
@@ -15,7 +15,7 @@ const newsReader = Newsreader({
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-jakarta",
+  variable: "--font-sans",
 });
 export const viewport = {
   width: "device-width",

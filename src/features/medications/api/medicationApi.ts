@@ -20,6 +20,14 @@ export const medicationApi = {
   },
 
   /**
+   * Get global stats for dashboard
+   */
+  getStats: async (): Promise<any> => {
+    const response = await apiClient.get<any>("/medications/stats");
+    return response.data?.data ?? response.data ?? {};
+  },
+
+  /**
    * Get all medications (paginated and filtered by search)
    */
   getAll: async (search?: string, page = 1): Promise<{ data: Medication[]; lastPage: number }> => {

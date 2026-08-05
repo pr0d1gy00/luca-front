@@ -1,6 +1,6 @@
 # Multi-stage production build for Next.js with PNPM
 FROM node:20-alpine AS base
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.17.1 --activate
 WORKDIR /app
 
 FROM base AS deps

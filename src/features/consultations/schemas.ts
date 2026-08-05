@@ -89,6 +89,7 @@ export const consultationSchema = z.object({
         price: z.number().min(0),
         quantity: z.number().int().min(1).default(1),
         notes: z.string().optional(),
+        attachments: z.array(z.string()).max(6, "Máximo 6 archivos").optional(),
       })
     )
     .optional()

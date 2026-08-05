@@ -37,6 +37,12 @@ export interface ActiveConsultationData {
       channel: "EMAIL" | "WHATSAPP" | "INTERNAL_CHAT" | "MANUAL_CALL";
       messageTemplate?: string | null;
     };
+    servicesPerformed?: {
+      providerServiceUuid: string;
+      price: number;
+      quantity: number;
+      notes?: string;
+    }[];
   };
   patient: {
     id: string;
@@ -63,6 +69,11 @@ export interface ActiveConsultationData {
       respiratory_rate?: number;
       temperature?: number;
       oxygen_sat?: number;
+    } | null;
+    upcomingFollowUp?: {
+      uuid: string;
+      scheduled_date: string;
+      status: string;
     } | null;
   };
   doctor: {
@@ -246,6 +257,9 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
                     messageTemplate: followUpDb.messageTemplate,
                   }
                 : undefined,
+              servicesPerformed:
+                (consDb as { servicesPerformed?: unknown[] })
+                  .servicesPerformed || [],
             }
           : {
               motivoConsulta: apt.reason || "",
@@ -254,6 +268,7 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
               treatment_plan: "",
               status: "IN_PROGRESS",
               prescriptions: [],
+              servicesPerformed: [],
             },
         patient: {
           id: pat.uuid,
@@ -285,6 +300,7 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
                 oxygen_sat: vitalsDb.oxygenSat ?? undefined,
               }
             : null,
+          upcomingFollowUp: null, // offline fallback
         },
         doctor: {
           name: "Dr. Ricardo García",
@@ -336,6 +352,23 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
 
         const consultations: ApiHistoryConsultation[] =
           histRes?.data?.data ?? histRes?.data ?? [];
+
+        // 3. Obtener seguimiento agendado
+        let upcomingFollowUp = null;
+        try {
+          if (apt.patient?.uuid) {
+            const { data: followUpsRes } = await apiClient.get("/follow-ups", {
+              params: {
+                patient_uuid: apt.patient.uuid,
+              },
+            });
+            const followUps = followUpsRes?.data?.data || followUpsRes?.data || [];
+            // Buscar si hay alguno pendiente
+            upcomingFollowUp = followUps.find((f: { status: string }) => f.status === 'PENDING') || null;
+          }
+        } catch (e) {
+          console.error("Error fetching follow-ups", e);
+        }
 
         // Mapear historial clínico
         const history = consultations
@@ -462,14 +495,23 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
                           ).oxygen_sat?.toString() || "",
                       }
                     : undefined,
-                followUp: (apt.consultation.follow_ups || apt.consultation.followUps)?.[0]
+                followUp: (apt.consultation.follow_ups ||
+                  apt.consultation.followUps)?.[0]
                   ? {
-                      uuid: (apt.consultation.follow_ups || apt.consultation.followUps)[0].uuid,
-                      scheduledDate: (apt.consultation.follow_ups || apt.consultation.followUps)[0].scheduled_date,
-                      channel: (apt.consultation.follow_ups || apt.consultation.followUps)[0].channel,
-                      messageTemplate: (apt.consultation.follow_ups || apt.consultation.followUps)[0].message_template,
+                      uuid: (apt.consultation.follow_ups ||
+                        apt.consultation.followUps)[0].uuid,
+                      scheduledDate: (apt.consultation.follow_ups ||
+                        apt.consultation.followUps)[0].scheduled_date,
+                      channel: (apt.consultation.follow_ups ||
+                        apt.consultation.followUps)[0].channel,
+                      messageTemplate: (apt.consultation.follow_ups ||
+                        apt.consultation.followUps)[0].message_template,
                     }
                   : undefined,
+                servicesPerformed:
+                  apt.consultation.services_performed ||
+                  apt.consultation.servicesPerformed ||
+                  [],
               }
             : {
                 motivoConsulta: apt.reason || "",
@@ -477,6 +519,7 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
                 diagnostico: "",
                 treatment_plan: "",
                 status: "IN_PROGRESS",
+                servicesPerformed: [],
               },
           patient: {
             id: patientData?.uuid,
@@ -495,6 +538,7 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
             emergencyContactName: patientData?.emergency_contact_name || "",
             emergencyContactPhone: patientData?.emergency_contact_phone || "",
             latest_vital_signs: patientData?.latest_vital_signs,
+            upcomingFollowUp,
           },
           doctor: {
             name: apt.doctor?.full_name || "Dr. Ricardo García",

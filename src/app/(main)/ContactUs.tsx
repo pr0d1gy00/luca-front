@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { motion, type Variants } from "framer-motion";
+import { motion, type Variants } from "motion/react";
 import { Mail, MessageCircle, Phone, MapPin } from "lucide-react";
 import { FaInstagram } from "react-icons/fa";
 import { CiLinkedin, CiTwitter } from "react-icons/ci";

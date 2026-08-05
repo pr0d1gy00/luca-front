@@ -34,6 +34,17 @@ export function useTopPrescribedMedications() {
   });
 }
 
+export function useMedicationStats() {
+  return useQuery({
+    queryKey: [...medicationKeys.all, "stats"],
+    queryFn: async () => {
+      const res = await medicationApi.getStats();
+      return res;
+    },
+    staleTime: 60 * 1000,
+  });
+}
+
 export function useCreateMedication() {
   const queryClient = useQueryClient();
 

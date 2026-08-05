@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Pagination } from "@/components/ui/pagination";
 import {
   Dialog,
   DialogContent,
@@ -109,8 +110,15 @@ export default function PatientConsultationsPage() {
     isFetching,
   } = usePatientConsultationsQuery(page, debouncedSearch, specialtyVal);
 
-  const consultations = paginatedData?.data || [];
-  const totalPages: number = paginatedData?.last_page || 1;
+  const consultations = Array.isArray(paginatedData?.data?.data)
+    ? paginatedData.data.data
+    : Array.isArray(paginatedData?.data)
+    ? paginatedData.data
+    : Array.isArray(paginatedData)
+    ? paginatedData
+    : [];
+  const totalPages: number =
+    paginatedData?.data?.last_page || paginatedData?.last_page || 1;
 
   const [selectedConsult, setSelectedConsult] =
     useState<DetailedConsultation | null>(null);
@@ -311,35 +319,17 @@ export default function PatientConsultationsPage() {
 
           {/* Controles de Paginación */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-pharmako-border-soft pt-4 mt-4">
-              <span className="text-xs text-pharmako-text-secondary">
-                Página {page} de {totalPages}
-              </span>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page <= 1}
-                  className="rounded-lg border-pharmako-border hover:bg-pharmako-background text-xs h-8 px-3 flex items-center gap-1"
-                >
-                  <ChevronLeft className="size-3.5" />
-                  Anterior
-                </Button>
-                <span className="text-xs font-semibold text-pharmako-primary bg-pharmako-primary-light px-3 py-1.5 rounded-lg border border-pharmako-primary-muted/20">
-                  Pág. {page}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page >= totalPages}
-                  className="rounded-lg border-pharmako-border hover:bg-pharmako-background text-xs h-8 px-3 flex items-center gap-1"
-                >
-                  Siguiente
-                  <ChevronRight className="size-3.5" />
-                </Button>
-              </div>
+            <div className="pt-4 mt-4">
+              <Pagination
+                currentPage={page}
+                lastPage={totalPages}
+                total={paginatedData?.data?.total || paginatedData?.total || 0}
+                perPage={paginatedData?.data?.per_page || paginatedData?.per_page || 10}
+                from={paginatedData?.data?.from || paginatedData?.from || null}
+                to={paginatedData?.data?.to || paginatedData?.to || null}
+                onPageChange={handlePageChange}
+                variant="care"
+              />
             </div>
           )}
         </div>

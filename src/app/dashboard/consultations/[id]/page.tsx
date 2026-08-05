@@ -32,7 +32,7 @@ export default function ConsultationDetailPage({
   const { data: medicationsCatalog } = useMedicationsCatalog();
   const router = useRouter();
   const hasTriggeredInit = useRef(false);
-
+  console.log("Details", detail);
   // Auto-iniciar la consulta si no existe un registro previo
   useEffect(() => {
     if (
@@ -98,38 +98,41 @@ export default function ConsultationDetailPage({
   const rawVitals = patient.latest_vital_signs;
   const formattedVitals = rawVitals
     ? {
-      weight: rawVitals.weight ? `${rawVitals.weight} kg` : undefined,
-      height: rawVitals.height ? `${rawVitals.height} m` : undefined,
-      bloodPressure:
-        rawVitals.systolic_bp && rawVitals.diastolic_bp
-          ? `${rawVitals.systolic_bp}/${rawVitals.diastolic_bp} mmHg`
+        weight: rawVitals.weight ? `${rawVitals.weight} kg` : undefined,
+        height: rawVitals.height ? `${rawVitals.height} m` : undefined,
+        bloodPressure:
+          rawVitals.systolic_bp && rawVitals.diastolic_bp
+            ? `${rawVitals.systolic_bp}/${rawVitals.diastolic_bp} mmHg`
+            : undefined,
+        heartRate: rawVitals.heart_rate
+          ? `${rawVitals.heart_rate} lpm`
           : undefined,
-      heartRate: rawVitals.heart_rate
-        ? `${rawVitals.heart_rate} lpm`
-        : undefined,
-      temperature: rawVitals.temperature
-        ? `${rawVitals.temperature}°C`
-        : undefined,
-      respiratoryRate: rawVitals.respiratory_rate
-        ? `${rawVitals.respiratory_rate} rpm`
-        : undefined,
-      oxygenSat: rawVitals.oxygen_sat
-        ? `${rawVitals.oxygen_sat}%`
-        : undefined,
-    }
+        temperature: rawVitals.temperature
+          ? `${rawVitals.temperature}°C`
+          : undefined,
+        respiratoryRate: rawVitals.respiratory_rate
+          ? `${rawVitals.respiratory_rate} rpm`
+          : undefined,
+        oxygenSat: rawVitals.oxygen_sat
+          ? `${rawVitals.oxygen_sat}%`
+          : undefined,
+      }
     : undefined;
 
-  const syncLabRequests = async (activeUuid: string, data: any) => {
+  const syncLabRequests = async (activeUuid: string, data: Consultation) => {
     const finalLabs = [...(data.laboratorios || [])];
     const existingLabs = await db.labRequests
       .where("consultationUuid")
       .equals(activeUuid)
       .toArray();
 
-    const isOnline = typeof window !== "undefined" ? window.navigator.onLine : false;
+    const isOnline =
+      typeof window !== "undefined" ? window.navigator.onLine : false;
 
     // Delete removed ones
-    const finalLabUuids = new Set(finalLabs.map((l: any) => l.uuid).filter(Boolean));
+    const finalLabUuids = new Set(
+      finalLabs.map((l: { uuid?: string }) => l.uuid).filter(Boolean),
+    );
     for (const ex of existingLabs) {
       if (!finalLabUuids.has(ex.uuid)) {
         if (isOnline) {
@@ -302,11 +305,17 @@ export default function ConsultationDetailPage({
           price: s.price,
           quantity: s.quantity,
           notes: s.notes,
+          attachments: s.attachments || [],
         })),
       });
       await syncLabRequests(activeUuid, data);
 
-      const totalInvoice = 50 + (data.servicesPerformed || []).reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const totalInvoice =
+        50 +
+        (data.servicesPerformed || []).reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0,
+        );
       toast.success("Consulta finalizada con éxito.", {
         description: `Factura Interna Nº LUCA-${activeUuid.slice(0, 6).toUpperCase()} emitida (Total: ${totalInvoice.toFixed(2)} USD).`,
         duration: 6000,
@@ -316,7 +325,7 @@ export default function ConsultationDetailPage({
       console.error("Error al finalizar consulta:", err);
     }
   };
-
+  console.log(consultation);
   // Preparar valores iniciales (si ya hay borrador guardado)
   const defaultFormValues = {
     uuid: consultation.uuid || startConsultation.data?.data?.uuid || "",
@@ -326,23 +335,23 @@ export default function ConsultationDetailPage({
     diagnostico: consultation.diagnostico || "",
     prescriptions: consultation.uuid
       ? detail.consultation?.prescriptions || [
-        {
-          medicationId: "",
-          dose: "",
-          frequency: "",
-          duration: "",
-          notes: "",
-        },
-      ]
+          {
+            medicationId: "",
+            dose: "",
+            frequency: "",
+            duration: "",
+            notes: "",
+          },
+        ]
       : [
-        {
-          medicationId: "",
-          dose: "",
-          frequency: "",
-          duration: "",
-          notes: "",
-        },
-      ],
+          {
+            medicationId: "",
+            dose: "",
+            frequency: "",
+            duration: "",
+            notes: "",
+          },
+        ],
     vitals: detail.consultation?.vitals || {
       weight: "",
       height: "",
@@ -354,9 +363,22 @@ export default function ConsultationDetailPage({
       oxygen_sat: "",
     },
     followUp: detail.consultation?.followUp || undefined,
-    servicesPerformed: (detail.consultation as any)?.servicesPerformed || [],
+    servicesPerformed:
+      (
+        detail.consultation as {
+          services_performed?: unknown[];
+          servicesPerformed?: unknown[];
+        }
+      )?.services_performed ||
+      (
+        detail.consultation as {
+          services_performed?: unknown[];
+          servicesPerformed?: unknown[];
+        }
+      )?.servicesPerformed ||
+      [],
   };
-
+  console.log(defaultFormValues);
   return (
     <motion.div
       variants={fadeUpVariant}

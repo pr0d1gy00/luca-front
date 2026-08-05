@@ -23,16 +23,16 @@ export function DashboardSwitcher({
   onChange,
 }: DashboardSwitcherProps) {
   return (
-    <div className="flex items-center gap-1 p-1 bg-slate-100/80 border border-slate-200/60 rounded-xl w-fit">
+    <div className="flex items-center p-1 w-full">
       {VIEWS.map((view) => (
         <button
           key={view.id}
           onClick={() => onChange(view.id)}
           className={cn(
-            "px-3.5 py-1.5 rounded-lg text-xs transition-colors duration-150 shadow-none font-medium",
+            "px-3.5 py-1.5 text-sm transition-colors duration-150 shadow-none font-medium",
             activeView === view.id
-              ? "bg-white text-slate-900 font-semibold border border-slate-200/80"
-              : "text-slate-600 hover:text-slate-900 border border-transparent",
+              ? "border-pharmako-care border-b-2 font-semibold text-pharmako-care"
+              : "border-b border-slate-300",
           )}
         >
           {view.label}

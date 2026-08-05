@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { motion, type Variants } from "framer-motion";
-import { Target, Heart, Users, Shield, Star } from "lucide-react";
+import { motion, type Variants } from "motion/react";
+import { Target, Heart, Users, Shield } from "lucide-react";
 import PharmakoAbout from "../../../public/PharmakoPersonMiddleBodyExtraLarge-PNG.png";
 
 // ─────────────────────────────────────────────────────────────
@@ -157,8 +157,8 @@ export default function AboutUs() {
             className="text-base sm:text-lg text-slate-500 max-w-md
                        leading-relaxed"
           >
-            En <strong>LucaMed</strong> creemos que la salud no debería ser
-            complicated. Somos un equipo de médicos, ingenieros y diseñadores
+            En <strong>Pharmako</strong> creemos que la salud no debería ser
+            complicada. Somos un equipo de médicos, ingenieros y diseñadores
             unidos por una misma misión: hacer que gestionar tu salud sea
             simple, accesible y humana.
           </motion.p>
