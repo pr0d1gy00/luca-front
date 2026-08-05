@@ -20,6 +20,7 @@ import {
   Hash,
   Pencil,
   Trash2,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,7 +48,8 @@ import { usePrescriptionTemplates } from "@/features/medications/hooks/usePrescr
 import { useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
 import { useProviderServices, useGlobalServices } from "@/features/services";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { FileUploader } from "@/components/ui/file-uploader";
 
 interface MedOption {
   id: string;
@@ -183,6 +185,39 @@ export function ClinicalNotesForm({
   const [selectedServiceUuid, setSelectedServiceUuid] = useState("");
   const [serviceNotes, setServiceNotes] = useState("");
   const [serviceQty, setServiceQty] = useState(1);
+  const [serviceAttachments, setServiceAttachments] = useState<Array<{ url: string; file?: File; isUploading?: boolean; name?: string }>>([]);
+
+  const handleServiceFilesAdded = async (acceptedFiles: File[]) => {
+    const newAttachments = acceptedFiles.map((file) => ({
+      url: "",
+      file,
+      isUploading: true,
+      name: file.name,
+    }));
+    
+    setServiceAttachments((prev) => [...prev, ...newAttachments]);
+
+    for (const file of acceptedFiles) {
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        
+        const response = await apiClient.post("/consultations/service-attachments/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        const url = response.data.url;
+        
+        setServiceAttachments((prev) => 
+          prev.map((att) => att.file === file ? { ...att, isUploading: false, url } : att)
+        );
+      } catch (error) {
+        console.error("Upload error", error);
+        toast.error(`Error al subir el archivo ${file.name}`);
+        setServiceAttachments((prev) => prev.filter((att) => att.file !== file));
+      }
+    }
+  };
 
   const getDefaultMessage = () => {
     const patientName = patient
@@ -1684,6 +1719,21 @@ export function ClinicalNotesForm({
               </div>
             </div>
 
+            {(patient as Patient & { upcomingFollowUp?: { scheduled_date: string } })?.upcomingFollowUp && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 items-start">
+                <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-bold text-amber-800">
+                    Seguimiento ya agendado
+                  </h4>
+                  <p className="text-xs text-amber-700 mt-1">
+                    Este paciente ya tiene un seguimiento pendiente programado para el <strong>{new Date((patient as Patient & { upcomingFollowUp?: { scheduled_date: string } }).upcomingFollowUp!.scheduled_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' })}</strong>.
+                    Por favor verificá si es necesario agregar otro.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center gap-3">
               <input
                 type="checkbox"
@@ -1859,11 +1909,24 @@ export function ClinicalNotesForm({
                 <label className="text-xs font-semibold text-slate-500">
                   Notas sobre el Procedimiento
                 </label>
-                <Textarea
-                  placeholder="Ej: Se realiza sin complicaciones, sutura de 3 puntos..."
+                <RichTextEditor
                   value={serviceNotes}
-                  onChange={(e) => setServiceNotes(e.target.value)}
-                  className="rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                  onChange={setServiceNotes}
+                  className="rounded-xl border border-slate-200"
+                />
+              </div>
+
+              <div className="md:col-span-5 flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-slate-500">
+                  Archivos Adjuntos (Opcional)
+                </label>
+                <FileUploader
+                  files={serviceAttachments}
+                  onFilesAdded={handleServiceFilesAdded}
+                  onFileRemove={(index) => {
+                    setServiceAttachments(prev => prev.filter((_, i) => i !== index));
+                  }}
+                  maxFiles={6}
                 />
               </div>
 
@@ -1893,11 +1956,17 @@ export function ClinicalNotesForm({
                     );
                     if (!selected) return;
 
+                    if (serviceAttachments.some(a => a.isUploading)) {
+                      toast.error("Espera a que los archivos terminen de subir.");
+                      return;
+                    }
+
                     appendService({
                       providerServiceUuid: selected.uuid,
                       price: selected.price,
                       quantity: serviceQty,
                       notes: serviceNotes || undefined,
+                      attachments: serviceAttachments.map(a => a.url).filter(Boolean),
                     });
 
                     // Si la duración es mayor a 0, notificar retraso estimado
@@ -1932,6 +2001,7 @@ export function ClinicalNotesForm({
                     setSelectedServiceUuid("");
                     setServiceNotes("");
                     setServiceQty(1);
+                    setServiceAttachments([]);
                     toast.success("Procedimiento agregado.");
                   }}
                   className="w-full bg-pharmako-care hover:bg-pharmako-care-hover text-slate-900 shadow-none font-semibold rounded-xl h-11"
@@ -1987,9 +2057,20 @@ export function ClinicalNotesForm({
                             )}
                           </div>
                           {val.notes && (
-                            <p className="text-xs text-slate-500 mt-1 italic">
-                              Nota: {val.notes}
-                            </p>
+                            <div className="text-xs text-slate-600 mt-2 p-3 bg-white rounded-lg border border-slate-100 prose prose-sm max-w-none shadow-none" dangerouslySetInnerHTML={{ __html: val.notes }} />
+                          )}
+                          {val.attachments && val.attachments.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {val.attachments.map((url, i) => {
+                                const isImage = url.match(/\.(jpeg|jpg|png)$/i);
+                                return (
+                                  <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs font-medium text-pharmako-care bg-pharmako-care-light px-2 py-1 rounded-md border border-pharmako-care/20 hover:bg-pharmako-care hover:text-white transition-colors shadow-none">
+                                    {isImage ? <ImageIcon className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
+                                    Adjunto {i + 1}
+                                  </a>
+                                );
+                              })}
+                            </div>
                           )}
                         </div>
                         <div className="flex items-center gap-4">

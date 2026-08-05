@@ -70,6 +70,11 @@ export interface ActiveConsultationData {
       temperature?: number;
       oxygen_sat?: number;
     } | null;
+    upcomingFollowUp?: {
+      uuid: string;
+      scheduled_date: string;
+      status: string;
+    } | null;
   };
   doctor: {
     name: string;
@@ -295,6 +300,7 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
                 oxygen_sat: vitalsDb.oxygenSat ?? undefined,
               }
             : null,
+          upcomingFollowUp: null, // offline fallback
         },
         doctor: {
           name: "Dr. Ricardo García",
@@ -346,6 +352,23 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
 
         const consultations: ApiHistoryConsultation[] =
           histRes?.data?.data ?? histRes?.data ?? [];
+
+        // 3. Obtener seguimiento agendado
+        let upcomingFollowUp = null;
+        try {
+          if (apt.patient?.uuid) {
+            const { data: followUpsRes } = await apiClient.get("/follow-ups", {
+              params: {
+                patient_uuid: apt.patient.uuid,
+              },
+            });
+            const followUps = followUpsRes?.data?.data || followUpsRes?.data || [];
+            // Buscar si hay alguno pendiente
+            upcomingFollowUp = followUps.find((f: { status: string }) => f.status === 'PENDING') || null;
+          }
+        } catch (e) {
+          console.error("Error fetching follow-ups", e);
+        }
 
         // Mapear historial clínico
         const history = consultations
@@ -515,6 +538,7 @@ export function useActiveConsultationQuery(appointmentUuid: string | null) {
             emergencyContactName: patientData?.emergency_contact_name || "",
             emergencyContactPhone: patientData?.emergency_contact_phone || "",
             latest_vital_signs: patientData?.latest_vital_signs,
+            upcomingFollowUp,
           },
           doctor: {
             name: apt.doctor?.full_name || "Dr. Ricardo García",

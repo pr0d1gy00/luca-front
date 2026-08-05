@@ -305,6 +305,7 @@ export default function ConsultationDetailPage({
           price: s.price,
           quantity: s.quantity,
           notes: s.notes,
+          attachments: s.attachments || [],
         })),
       });
       await syncLabRequests(activeUuid, data);

@@ -49,6 +49,7 @@ interface UpdateConsultationPayload {
     price: number;
     quantity: number;
     notes?: string;
+    attachments?: string[];
   }[];
 }
 
