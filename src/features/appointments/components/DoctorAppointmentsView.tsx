@@ -91,6 +91,7 @@ interface AppointmentRecord {
     national_id: string;
     phone: string;
     email: string;
+    avatar_url?: string;
     clinical_summary?: {
       allergies?: string;
       chronic_conditions?: string;
@@ -383,13 +384,17 @@ export function DoctorAppointmentsView() {
                         <div className="flex items-center gap-3">
                           <div
                             className={cn(
-                              "p-2.5 rounded-xl shrink-0",
+                              "size-11 rounded-xl shrink-0 flex items-center justify-center overflow-hidden",
                               isSelected
-                                ? "text-pharmako-care"
+                                ? "text-pharmako-care bg-pharmako-care/10 ring-1 ring-pharmako-care/20"
                                 : "bg-pharmako-canvas text-pharmako-text-muted",
                             )}
                           >
-                            <User className="h-6 w-6" />
+                            {apt.patient?.avatar_url ? (
+                              <img src={apt.patient.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                              <User className="h-6 w-6" />
+                            )}
                           </div>
                           <div>
                             <h3 className="text-sm font-semibold text-pharmako-text-primary truncate max-w-[200px] sm:max-w-xs">
@@ -466,8 +471,12 @@ export function DoctorAppointmentsView() {
                 {/* Header del Paciente */}
                 <div className="pb-4 border-b border-pharmako-border-soft">
                   <div className="flex items-center gap-3">
-                    <div className="size-11 rounded-full flex items-center justify-center shrink-0">
-                      <UserCheck className="w-6 h-6 text-pharmako-care" />
+                    <div className="size-11 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-pharmako-canvas border border-pharmako-border-soft">
+                      {selectedApt.patient?.avatar_url ? (
+                        <img src={selectedApt.patient.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        <UserCheck className="w-5 h-5 text-pharmako-care" />
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="text-sm font-bold text-pharmako-text-primary leading-tight truncate">
