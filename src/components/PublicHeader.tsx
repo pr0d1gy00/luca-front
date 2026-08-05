@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useSyncExternalStore } from "react";
 import { motion, type Variants, AnimatePresence } from "motion/react";
 import {
   MenuIcon,
@@ -16,6 +16,9 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
+import React from "react";
+
+const emptySubscribe = () => () => {};
 
 // ─────────────────────────────────────────────────────────────
 // Animation Variants — same as landing page
@@ -171,13 +174,12 @@ export default function PublicHeader() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const [mounted, setMounted] = useState(false);
-  const role = useAuthStore((state) => state.role);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
+  const token = useAuthStore((state) => state.token);
 
   // Click outside listener for dropdown
   useEffect(() => {
@@ -193,7 +195,7 @@ export default function PublicHeader() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const isLoggedIn = mounted && !!role;
+  const isLoggedIn = mounted && !!token;
 
   const baseLinks = [
     { label: "Inicio", href: "/", icon: Home },
