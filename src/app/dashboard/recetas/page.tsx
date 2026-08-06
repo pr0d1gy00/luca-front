@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
+import { CheckoutModal } from "@/features/prescriptions/components/CheckoutModal";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -131,6 +133,7 @@ export default function PatientPrescriptionsPage() {
   const [detailedPresc, setDetailedPresc] =
     useState<DetailedPrescription | null>(null);
   const [copied, setCopied] = useState(false);
+  const [checkoutOffer, setCheckoutOffer] = useState<Record<string, unknown> | null>(null);
 
   // Sincronizar el estado del detalle en el macro-task
   useEffect(() => {
@@ -163,8 +166,11 @@ export default function PatientPrescriptionsPage() {
     >;
     const associatedQuote = quotes.find((q) => {
       const prescObj = (q.prescription as Record<string, unknown>) || {};
-      const pId = prescObj.id ?? prescObj.uuid ?? q.prescription_id;
-      return String(pId) === String(prescId);
+      return (
+        String(prescObj.uuid) === String(prescId) ||
+        String(prescObj.id) === String(prescId) ||
+        String(q.prescription_id) === String(prescId)
+      );
     });
     return (associatedQuote?.offers as QuoteOffer[]) || [];
   };
@@ -629,9 +635,9 @@ export default function PatientPrescriptionsPage() {
                                       </div>
                                     )}
 
-                                    {/* Botón interactivo de Google Maps */}
-                                    {offer.pharmacy?.address && (
-                                      <div className="pt-1.5">
+                                    {/* Botón de Checkout/Reserva y Botón de Maps */}
+                                    <div className="pt-2 flex items-center justify-between gap-2 border-t border-pharmako-border-soft/60 mt-2">
+                                      {offer.pharmacy?.address ? (
                                         <a
                                           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
                                             (offer.pharmacy.commercialName ||
@@ -646,8 +652,18 @@ export default function PatientPrescriptionsPage() {
                                           <MapPin className="h-3 w-3 text-pharmako-care shrink-0" />
                                           Cómo llegar (Google Maps)
                                         </a>
-                                      </div>
-                                    )}
+                                      ) : (
+                                        <div />
+                                      )}
+                                      
+                                      <Button
+                                        size="sm"
+                                        onClick={() => setCheckoutOffer(offer)}
+                                        className="h-7 text-[10px] px-3 bg-pharmako-primary text-white hover:bg-pharmako-primary-hover rounded-lg shadow-sm"
+                                      >
+                                        Reservar en esta Farmacia
+                                      </Button>
+                                    </div>
                                   </div>
                                 )}
                               </div>
@@ -679,6 +695,17 @@ export default function PatientPrescriptionsPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Checkout / Reserva */}
+      <CheckoutModal
+        offer={checkoutOffer}
+        open={!!checkoutOffer}
+        onOpenChange={(open) => !open && setCheckoutOffer(null)}
+        onSuccess={() => {
+          toast.success("¡Reserva completada con éxito!");
+          // Opcional: Refrescar data o redirigir
+        }}
+      />
     </div>
   );
 }

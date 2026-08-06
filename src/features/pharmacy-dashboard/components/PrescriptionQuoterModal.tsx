@@ -373,6 +373,49 @@ export function PrescriptionQuoterModal({
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
           <div className="p-6 space-y-6 overflow-y-auto flex-1">
+            {/* Patient & Doctor Context */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Patient Card */}
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-white border border-slate-200 shadow-none">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
+                  {quoteRequest?.patient?.avatar_url ? (
+                    <img src={quoteRequest.patient.avatar_url} alt="Paciente" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-slate-600 font-semibold">{quoteRequest?.patient?.first_name?.charAt(0) || "P"}</span>
+                  )}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Paciente</span>
+                  <span className="text-sm font-bold text-slate-900">{quoteRequest?.patient?.first_name} {quoteRequest?.patient?.last_name}</span>
+                  <span className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                    {quoteRequest?.patient?.gender === 'MALE' ? 'Masculino' : quoteRequest?.patient?.gender === 'FEMALE' ? 'Femenino' : 'No especificado'}
+                    {quoteRequest?.patient?.blood_type && ` • Sangre: ${quoteRequest.patient.blood_type.replace('_POSITIVE', '+').replace('_NEGATIVE', '-')}`}
+                  </span>
+                </div>
+              </div>
+
+              {/* Doctor Card */}
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-white border border-slate-200 shadow-none">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
+                  {quoteRequest?.prescription?.user?.logo_url ? (
+                    <img src={quoteRequest.prescription.user.logo_url} alt="Doctor" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-slate-600 font-semibold">{quoteRequest?.prescription?.user?.full_name?.charAt(0) || "D"}</span>
+                  )}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Médico Tratante</span>
+                  <span className="text-sm font-bold text-slate-900 line-clamp-1" title={quoteRequest?.prescription?.user?.full_name}>
+                    {quoteRequest?.prescription?.user?.full_name || "Médico no especificado"}
+                  </span>
+                  <span className="text-xs text-slate-500 mt-1 flex items-center gap-1 truncate">
+                    {quoteRequest?.prescription?.user?.role === 'DOCTOR' ? 'Especialista' : 'Profesional'}
+                    {quoteRequest?.prescription?.user?.phone && ` • ${quoteRequest.prescription.user.phone}`}
+                  </span>
+                </div>
+              </div>
+            </div>
+
             {/* Upsell Banner Suggestions */}
             {upsellSuggestions.length > 0 && (
               <div className="p-4 rounded-xl bg-pharmako-care-light/50 border border-pharmako-care/30 space-y-2">

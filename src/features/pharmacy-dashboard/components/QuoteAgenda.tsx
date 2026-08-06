@@ -93,15 +93,23 @@ export function QuoteAgenda({ limit }: { limit?: number }) {
                   }`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border ${
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden border ${
                       hasOffered 
                         ? "bg-emerald-100 border-emerald-200" 
                         : "bg-indigo-50 border-indigo-100"
                     }`}>
-                      <span className={`text-sm font-semibold ${hasOffered ? "text-emerald-700" : "text-indigo-700"}`}>
-                        {quote.patient?.first_name?.charAt(0) || "P"}
-                        {quote.patient?.last_name?.charAt(0) || ""}
-                      </span>
+                      {quote.patient?.avatar_url ? (
+                        <img 
+                          src={quote.patient.avatar_url} 
+                          alt={`${quote.patient?.first_name} ${quote.patient?.last_name}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className={`text-sm font-semibold ${hasOffered ? "text-emerald-700" : "text-indigo-700"}`}>
+                          {quote.patient?.first_name?.charAt(0) || "P"}
+                          {quote.patient?.last_name?.charAt(0) || ""}
+                        </span>
+                      )}
                     </div>
                     <div>
                       <p className={`text-sm font-semibold transition-colors ${
