@@ -23,7 +23,7 @@ export function CriticalNotifications({
         <h3 className="text-lg font-semibold text-slate-900">
           Notificaciones Críticas
         </h3>
-        <span className="bg-blue-700 text-white text-xs font-bold rounded-full px-2 py-0.5 min-w-5 h-5 flex items-center justify-center">
+        <span className="bg-pharmako-care-light text-pharmako-care text-xs font-bold rounded-full px-2 py-0.5 min-w-5 h-5 flex items-center justify-center">
           {notifications.length}
         </span>
       </div>

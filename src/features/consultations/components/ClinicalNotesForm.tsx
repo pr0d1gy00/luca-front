@@ -766,9 +766,9 @@ export function ClinicalNotesForm({
   const watchedPrescriptions = watch("prescriptions");
 
   // Build dose string from medication selection + structured form
-  const buildDoseString = (index: number, medicationId: string): string => {
+  const buildDoseString = (index: number, medicationId: string, overrideForm?: MedFormState): string => {
     const med = meds.find((m) => m.id === medicationId);
-    const form = medForms[index];
+    const form = overrideForm || medForms[index];
     if (!med) return "";
     const qty = form?.quantity || "1";
     const label = presentationLabels[med.presentation].toLowerCase();
@@ -776,15 +776,15 @@ export function ClinicalNotesForm({
   };
 
   // Build frequency string
-  const buildFreqString = (index: number): string => {
-    const form = medForms[index];
+  const buildFreqString = (index: number, overrideForm?: MedFormState): string => {
+    const form = overrideForm || medForms[index];
     if (!form) return "";
     return `Cada ${form.freqValue} ${form.freqPeriod}`;
   };
 
   // Build duration string
-  const buildDurString = (index: number): string => {
-    const form = medForms[index];
+  const buildDurString = (index: number, overrideForm?: MedFormState): string => {
+    const form = overrideForm || medForms[index];
     if (!form) return "";
     return `${form.durValue} ${form.durUnit}`;
   };
@@ -806,16 +806,17 @@ export function ClinicalNotesForm({
     updated[index] = { ...updated[index], [field]: value };
     setMedForms(updated);
 
-    // Rebuild dose strings
+    // Rebuild strings using the fresh state
+    const freshForm = updated[index];
     const medId = watchedPrescriptions[index]?.medicationId;
     if (medId && field === "quantity") {
-      setValue(`prescriptions.${index}.dose`, buildDoseString(index, medId));
+      setValue(`prescriptions.${index}.dose`, buildDoseString(index, medId, freshForm));
     }
     if (field === "freqValue" || field === "freqPeriod") {
-      setValue(`prescriptions.${index}.frequency`, buildFreqString(index));
+      setValue(`prescriptions.${index}.frequency`, buildFreqString(index, freshForm));
     }
     if (field === "durValue" || field === "durUnit") {
-      setValue(`prescriptions.${index}.duration`, buildDurString(index));
+      setValue(`prescriptions.${index}.duration`, buildDurString(index, freshForm));
     }
   };
 

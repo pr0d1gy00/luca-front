@@ -15,22 +15,19 @@ const typeConfig: Record<
   NotificationType,
   {
     icon: typeof AlertTriangle;
-    borderColor: string;
-    bgColor: string;
+    iconBg: string;
     iconColor: string;
   }
 > = {
   "stock-alert": {
     icon: AlertTriangle,
-    borderColor: "border-amber-500",
-    bgColor: "bg-amber-50",
-    iconColor: "text-amber-500",
+    iconBg: "bg-amber-50",
+    iconColor: "text-amber-600",
   },
   "prescription-error": {
     icon: XCircle,
-    borderColor: "border-blue-700",
-    bgColor: "bg-blue-50",
-    iconColor: "text-blue-700",
+    iconBg: "bg-red-50",
+    iconColor: "text-red-500",
   },
 };
 
@@ -42,14 +39,10 @@ export function NotificationAlert({ notification }: NotificationAlertProps) {
   return (
     <motion.div
       variants={fadeUpVariant}
-      className={cn(
-        "flex items-start gap-3 p-4 rounded-xl border-l-4",
-        config.borderColor,
-        config.bgColor,
-      )}
+      className="flex items-start gap-3 p-4 bg-white rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
     >
-      <div className="flex-shrink-0 mt-0.5">
-        <Icon className={cn("w-5 h-5", config.iconColor)} />
+      <div className={cn("flex-shrink-0 p-1.5 rounded-lg", config.iconBg)}>
+        <Icon className={cn("w-4 h-4", config.iconColor)} />
       </div>
 
       <div className="flex-1 min-w-0 space-y-1">
@@ -57,9 +50,9 @@ export function NotificationAlert({ notification }: NotificationAlertProps) {
         <p className="text-xs text-slate-500 leading-relaxed">{message}</p>
         <Link
           href={actionHref}
-          className="inline-block text-xs font-medium text-blue-700 hover:text-blue-800 transition-colors mt-0.5"
+          className="inline-block text-xs font-medium text-pharmako-care hover:text-pharmako-care-hover transition-colors mt-0.5"
         >
-          {actionText} →
+          {actionText} &rarr;
         </Link>
       </div>
     </motion.div>

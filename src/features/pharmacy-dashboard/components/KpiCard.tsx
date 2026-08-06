@@ -4,13 +4,22 @@ import { motion } from "motion/react";
 import { fadeUpVariant } from "@/app/lib/animations";
 import { cn } from "@/lib/utils";
 import type { PharmacyKPI } from "../types";
+import { Package, CheckCircle, Clock, AlertTriangle, HelpCircle } from "lucide-react";
 
 interface KpiCardProps {
   kpi: PharmacyKPI;
 }
 
+const iconMap: Record<string, React.ElementType> = {
+  Package,
+  CheckCircle,
+  Clock,
+  AlertTriangle,
+};
+
 export function KpiCard({ kpi }: KpiCardProps) {
-  const { label, value, trend, trendDirection, subtitle, icon: Icon } = kpi;
+  const { label, value, trend, trendDirection, subtitle, icon } = kpi;
+  const Icon = typeof icon === "string" ? (iconMap[icon] || HelpCircle) : icon;
   const isPositive = trend > 0;
   const isNegative = trend < 0;
   const trendArrow = isPositive ? "↑" : isNegative ? "↓" : "→";

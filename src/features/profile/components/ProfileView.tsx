@@ -40,6 +40,12 @@ import { useGetCities } from "@/features/auth/hooks/useGetCities";
 import { db } from "@/features/offline/database/schema";
 import { syncService } from "@/features/offline/services/syncService";
 import { DoctorScheduleView } from "@/features/doctor-dashboard/components/DoctorScheduleView";
+import dynamic from "next/dynamic";
+
+const MapPicker = dynamic(() => import("./MapPicker"), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-slate-50 animate-pulse rounded-xl flex items-center justify-center"><MapPin className="w-6 h-6 text-slate-300" /></div>
+});
 
 // ── Schemas de Validación ──────────────────────────────────
 
@@ -74,6 +80,8 @@ const userSchema = z.object({
   city_id: z.string().optional(),
   logo_url: z.string().optional(),
   signature_url: z.string().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
 });
 
 type PatientForm = z.infer<typeof patientSchema>;
@@ -769,6 +777,7 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
     handleSubmit,
     setValue,
     control,
+    watch,
     formState: { errors: formErrors, isDirty },
   } = useForm<UserForm>({
     resolver: zodResolver(userSchema),
@@ -779,8 +788,13 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
       city_id: initial.cityId ?? initial.city_id ?? "",
       logo_url: initial.logoUrl ?? initial.logo_url ?? "",
       signature_url: initial.signatureUrl ?? initial.signature_url ?? "",
+      latitude: initial.latitude ?? initial.provider_profile?.latitude ?? undefined,
+      longitude: initial.longitude ?? initial.provider_profile?.longitude ?? undefined,
     },
   });
+
+  const lat = watch("latitude");
+  const lng = watch("longitude");
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -843,6 +857,11 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
         logoUrl: payload.logo_url ?? initial.logoUrl ?? initial.logo_url,
         signature_url: payload.signature_url ?? initial.signatureUrl ?? initial.signature_url,
         signatureUrl: payload.signature_url ?? initial.signatureUrl ?? initial.signature_url,
+        provider_profile: initial.provider_profile ? {
+          ...initial.provider_profile,
+          latitude: payload.latitude ?? initial.provider_profile.latitude,
+          longitude: payload.longitude ?? initial.provider_profile.longitude,
+        } : undefined,
       };
 
       if (userType) {
@@ -986,6 +1005,57 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
             </Field>
           </div>
         </Card>
+
+        {["PROVIDER", "DOCTOR"].includes(initial.role) && (
+          <Card title="Ubicación Geográfica" icon={MapPin}>
+            <div className="space-y-4">
+              <p className="text-sm text-slate-600">
+                La ubicación exacta de tu sucursal o consultorio privado permite que los pacientes cercanos puedan enviarte solicitudes de cotización automáticamente o ubicarte fácilmente en el mapa.
+                <br />
+                <strong>Haz clic en el mapa</strong> para ajustar el marcador si la ubicación no es exacta.
+              </p>
+              
+              <div className="w-full h-64 rounded-xl overflow-hidden border border-slate-200 shadow-sm relative">
+                <MapPicker 
+                  lat={lat} 
+                  lng={lng} 
+                  onChange={(newLat, newLng) => {
+                    setValue("latitude", newLat, { shouldDirty: true });
+                    setValue("longitude", newLng, { shouldDirty: true });
+                  }} 
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                onClick={() => {
+                  if (!navigator.geolocation) {
+                    toast.error("Tu navegador no soporta geolocalización.");
+                    return;
+                  }
+                  toast.loading("Obteniendo ubicación...", { id: "geo" });
+                  navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                      setValue("latitude", position.coords.latitude, { shouldDirty: true });
+                      setValue("longitude", position.coords.longitude, { shouldDirty: true });
+                      toast.success("Ubicación capturada. ¡Recordá Guardar Cambios al final!", { id: "geo" });
+                    },
+                    (error) => {
+                      toast.error("Error al obtener la ubicación. Revisá los permisos.", { id: "geo" });
+                    },
+                    { enableHighAccuracy: true }
+                  );
+                }}
+              >
+                <MapPin className="w-4 h-4 mr-2" />
+                Obtener mi ubicación actual
+              </Button>
+            </div>
+            </div>
+          </Card>
+        )}
 
         {/* Card 2: Firma Digital e Info */}
         <Card title="Firma y Licencias" icon={FileText}>

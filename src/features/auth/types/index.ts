@@ -89,6 +89,9 @@ export interface UserProfile {
   cityId?: string | null;
   nationalId?: string | null;
   national_id?: string | null;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   provider_profile?: {
     id: string;
     user_id?: string;
@@ -103,6 +106,8 @@ export interface UserProfile {
     phone?: string | null;
     googleMapsUrl?: string | null;
     observations?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
   };
   verificationDocuments?: VerificationDocPayload[];
 }

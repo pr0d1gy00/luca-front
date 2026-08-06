@@ -6,19 +6,21 @@ export function usePharmacyOrders() {
   return [
     {
       id: "ORD-001",
-      customerName: "María García",
-      medication: "Amoxicilina 500mg",
-      status: "pending",
+      patientName: "María García",
+      prescription: "Amoxicilina 500mg",
+      status: "pendiente",
+      fulfillmentType: "delivery",
       time: "Hace 10 min",
     },
     {
       id: "ORD-002",
-      customerName: "Carlos Rodríguez",
-      medication: "Ibuprofeno 600mg",
-      status: "ready",
+      patientName: "Carlos Rodríguez",
+      prescription: "Ibuprofeno 600mg",
+      status: "listo",
+      fulfillmentType: "presencial",
       time: "Hace 25 min",
     },
-  ];
+  ] as any; // Cast to any to avoid TS conflict with the api PharmacyOrder if it's imported
 }
 
 export function useConfirmPharmacyOrder() {

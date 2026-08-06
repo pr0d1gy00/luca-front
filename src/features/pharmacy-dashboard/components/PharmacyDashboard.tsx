@@ -2,19 +2,22 @@
 
 import { motion } from "motion/react";
 import { staggerChildrenVariant } from "@/app/lib/animations";
-import { usePharmacyKPIs } from "../hooks/usePharmacyKPIs";
-import { usePharmacyOrders } from "../hooks/usePharmacyOrders";
-import { usePharmacyNotifications } from "../hooks/usePharmacyNotifications";
+import { usePharmacyDashboard } from "../hooks/usePharmacyDashboard";
 import { KpiCards } from "./KpiCards";
 import { OrderAgenda } from "./OrderAgenda";
+import { QuoteAgenda } from "./QuoteAgenda";
 import { QuickActions } from "./QuickActions";
 import { CriticalNotifications } from "./CriticalNotifications";
 import { PharmacyGreeting } from "./PharmacyGreeting";
 
 export function PharmacyDashboard() {
-  const kpis = usePharmacyKPIs();
-  const orders = usePharmacyOrders();
-  const notifications = usePharmacyNotifications();
+  const { data, isLoading } = usePharmacyDashboard();
+
+  if (isLoading || !data) {
+    return <div className="p-8 text-center text-slate-500">Cargando dashboard...</div>;
+  }
+
+  const { kpis, orders, notifications } = data;
 
   return (
     <motion.div
@@ -36,6 +39,7 @@ export function PharmacyDashboard() {
         className="grid grid-cols-1 lg:grid-cols-3 gap-8"
       >
         <div className="lg:col-span-2">
+          <QuoteAgenda limit={5} />
           <OrderAgenda orders={orders} />
         </div>
         <div className="flex flex-col gap-6">
