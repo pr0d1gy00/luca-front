@@ -42,14 +42,7 @@ export function PharmacySettingsView() {
       toast.success("Configuración de operatividad guardada exitosamente");
     } catch (error: any) {
       const errorData = error?.response?.data;
-      
-      let errorMsg = errorData?.detail || errorData?.error || errorData?.message || "Ocurrió un error al guardar la configuración";
-      
-      // Si es un error de validación (422) con el array RFC 7807, mostrar la causa real
-      if (errorData?.invalidParams && Array.isArray(errorData.invalidParams) && errorData.invalidParams.length > 0) {
-        errorMsg = errorData.invalidParams.map((p: any) => p.reason).join(" | ");
-      }
-      
+      const errorMsg = errorData?.message || errorData?.detail || errorData?.error || "Ocurrió un error al guardar la configuración";
       toast.error(errorMsg);
     }
   };

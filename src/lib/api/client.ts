@@ -199,6 +199,17 @@ apiClient.interceptors.response.use(
       }
     }
 
+    // Global Error Formatting for Validation (RFC 7807)
+    if (error.response?.status === 422 && error.response?.data) {
+      const data = error.response.data;
+      if (data.invalidParams && Array.isArray(data.invalidParams) && data.invalidParams.length > 0) {
+        // Inyectamos el mensaje detallado directamente en 'message' para que todos los toasts existentes lo detecten
+        data.message = data.invalidParams.map((p: any) => p.reason).join(" | ");
+      } else if (data.detail && !data.message) {
+        data.message = data.detail;
+      }
+    }
+
     return Promise.reject(error);
   },
 );
