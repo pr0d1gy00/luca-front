@@ -1017,45 +1017,45 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
                 <br />
                 <strong>Haz clic en el mapa</strong> para ajustar el marcador si la ubicación no es exacta.
               </p>
-              
+
               <div className="w-full h-64 rounded-xl overflow-hidden border border-slate-200 shadow-sm relative">
-                <MapPicker 
-                  lat={lat} 
-                  lng={lng} 
+                <MapPicker
+                  lat={lat}
+                  lng={lng}
                   onChange={(newLat, newLng) => {
                     setValue("latitude", newLat, { shouldDirty: true });
                     setValue("longitude", newLng, { shouldDirty: true });
-                  }} 
+                  }}
                 />
               </div>
 
               <div className="flex flex-col gap-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                onClick={() => {
-                  if (!navigator.geolocation) {
-                    toast.error("Tu navegador no soporta geolocalización.");
-                    return;
-                  }
-                  toast.loading("Obteniendo ubicación...", { id: "geo" });
-                  navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                      setValue("latitude", position.coords.latitude, { shouldDirty: true });
-                      setValue("longitude", position.coords.longitude, { shouldDirty: true });
-                      toast.success("Ubicación capturada. ¡Recordá Guardar Cambios al final!", { id: "geo" });
-                    },
-                    (error) => {
-                      toast.error("Error al obtener la ubicación. Revisá los permisos.", { id: "geo" });
-                    },
-                    { enableHighAccuracy: true }
-                  );
-                }}
-              >
-                <MapPin className="w-4 h-4 mr-2" />
-                Obtener mi ubicación actual
-              </Button>
-            </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    if (!navigator.geolocation) {
+                      toast.error("Tu navegador no soporta geolocalización.");
+                      return;
+                    }
+                    toast.loading("Obteniendo ubicación...", { id: "geo" });
+                    navigator.geolocation.getCurrentPosition(
+                      (position) => {
+                        setValue("latitude", position.coords.latitude, { shouldDirty: true });
+                        setValue("longitude", position.coords.longitude, { shouldDirty: true });
+                        toast.success("Ubicación capturada. ¡Recordá Guardar Cambios al final!", { id: "geo" });
+                      },
+                      (error) => {
+                        toast.error("Error al obtener la ubicación. Revisá los permisos.", { id: "geo" });
+                      },
+                      { enableHighAccuracy: true }
+                    );
+                  }}
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  Obtener mi ubicación actual
+                </Button>
+              </div>
             </div>
           </Card>
         )}
@@ -1293,11 +1293,10 @@ function SyncStatusPanel() {
 
         <div className="flex items-center gap-3">
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
-              isOnline
-                ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                : "bg-slate-50 text-slate-600 border-slate-200"
-            }`}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${isOnline
+              ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+              : "bg-slate-50 text-slate-600 border-slate-200"
+              }`}
           >
             {isOnline ? (
               <>
@@ -1687,8 +1686,8 @@ function VerificationTab() {
                     {doc.type === "MEDICAL_LICENSE"
                       ? "Licencia Médica"
                       : doc.type === "BUSINESS_RIF"
-                      ? "RIF Comercial"
-                      : "Cédula de Identidad"}
+                        ? "RIF Comercial"
+                        : "Cédula de Identidad"}
                   </p>
                   <p className="text-[10px] text-slate-400 mt-0.5">
                     Subido el {new Date(doc.created_at).toLocaleDateString()} a las {new Date(doc.created_at).toLocaleTimeString()}
@@ -1704,19 +1703,18 @@ function VerificationTab() {
                     Ver archivo
                   </a>
                   <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                      doc.status === "APPROVED"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                        : doc.status === "PENDING"
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${doc.status === "APPROVED"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                      : doc.status === "PENDING"
                         ? "bg-amber-50 text-amber-700 border-amber-100"
                         : "bg-rose-50 text-rose-700 border-rose-100"
-                    }`}
+                      }`}
                   >
                     {doc.status === "APPROVED"
                       ? "Aprobado"
                       : doc.status === "PENDING"
-                      ? "Pendiente"
-                      : "Rechazado"}
+                        ? "Pendiente"
+                        : "Rechazado"}
                   </span>
                 </div>
               </div>
@@ -1886,27 +1884,25 @@ export function ProfileView() {
       </div>
 
       {!isPatient && (
-        <div className="flex items-center gap-1 p-1 rounded-xl w-fit bg-slate-50 border border-slate-200/60">
+        <div className="flex items-center gap-1 w-fit ">
           <button
             onClick={() => setActiveSubTab("profile")}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 rounded-lg cursor-pointer ${
-              activeSubTab === "profile"
-                ? "bg-white text-pharmako-care shadow-xs"
-                : "text-pharmako-text-secondary hover:text-pharmako-text-primary"
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer ${activeSubTab === "profile"
+              ? "text-pharmako-care border-b border-pharmako-care"
+              : "text-pharmako-text-secondary hover:text-pharmako-text-primary"
+              }`}
           >
             <User className="w-4 h-4" />
             Perfil Profesional
           </button>
-          
+
           {role === "doctor" && (
             <button
               onClick={() => setActiveSubTab("schedule")}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 rounded-lg cursor-pointer ${
-                activeSubTab === "schedule"
-                  ? "bg-white text-pharmako-care shadow-xs"
-                  : "text-pharmako-text-secondary hover:text-pharmako-text-primary"
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer ${activeSubTab === "schedule"
+                ? "text-pharmako-care border-b border-pharmako-care"
+                : "text-pharmako-text-secondary hover:text-pharmako-text-primary"
+                }`}
             >
               <Calendar className="w-4 h-4" />
               Horarios de Atención
@@ -1916,11 +1912,10 @@ export function ProfileView() {
           {role === "pharmacy" && (
             <button
               onClick={() => setActiveSubTab("pharmacy_settings")}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 rounded-lg cursor-pointer ${
-                activeSubTab === "pharmacy_settings"
-                  ? "bg-white text-pharmako-care shadow-xs"
-                  : "text-pharmako-text-secondary hover:text-pharmako-text-primary"
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer ${activeSubTab === "pharmacy_settings"
+                ? "text-pharmako-care border-b border-pharmako-care"
+                : "text-pharmako-text-secondary hover:text-pharmako-text-primary"
+                }`}
             >
               <Settings className="w-4 h-4" />
               Operatividad
@@ -1929,11 +1924,10 @@ export function ProfileView() {
 
           <button
             onClick={() => setActiveSubTab("verification")}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 rounded-lg cursor-pointer ${
-              activeSubTab === "verification"
-                ? "bg-white text-pharmako-care shadow-xs"
-                : "text-pharmako-text-secondary hover:text-pharmako-text-primary"
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer ${activeSubTab === "verification"
+              ? "text-pharmako-care border-b border-pharmako-care"
+              : "text-pharmako-text-secondary hover:text-pharmako-text-primary"
+              }`}
           >
             <ShieldCheck className="w-4 h-4" />
             Verificación

@@ -41,9 +41,9 @@ export function PharmacySettingsView() {
       });
       toast.success("Configuración de operatividad guardada exitosamente");
     } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message || "Ocurrió un error al guardar la configuración"
-      );
+      const errorData = error?.response?.data;
+      const errorMsg = errorData?.detail || errorData?.error || errorData?.message || "Ocurrió un error al guardar la configuración";
+      toast.error(errorMsg);
     }
   };
 
@@ -57,7 +57,7 @@ export function PharmacySettingsView() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl border border-slate-200/80 p-6 shadow-xs">
+      <div className="bg-white p-6">
         <h3 className="text-base font-bold text-slate-800 mb-2 flex items-center gap-2">
           <Settings className="h-5 w-5 text-pharmako-care" /> Configuración de Farmacia
         </h3>
@@ -65,11 +65,11 @@ export function PharmacySettingsView() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        
+
         {/* Operatividad */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+        <div className="bg-white border-t border-slate-200 p-6 space-y-6">
           <h2 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-3">Operatividad y Respuestas</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* 24 Horas */}
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
@@ -78,14 +78,12 @@ export function PharmacySettingsView() {
                 <button
                   type="button"
                   onClick={() => setIs24Hours(!is24Hours)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    is24Hours ? "bg-pharmako-care" : "bg-slate-300"
-                  }`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${is24Hours ? "bg-pharmako-care" : "bg-slate-300"
+                    }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      is24Hours ? "translate-x-6" : "translate-x-1"
-                    }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${is24Hours ? "translate-x-6" : "translate-x-1"
+                      }`}
                   />
                 </button>
               </div>
@@ -101,14 +99,12 @@ export function PharmacySettingsView() {
                 <button
                   type="button"
                   onClick={() => setAutoQuoting(!autoQuoting)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    autoQuoting ? "bg-pharmako-care" : "bg-slate-300"
-                  }`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${autoQuoting ? "bg-pharmako-care" : "bg-slate-300"
+                    }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      autoQuoting ? "translate-x-6" : "translate-x-1"
-                    }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${autoQuoting ? "translate-x-6" : "translate-x-1"
+                      }`}
                   />
                 </button>
               </div>
@@ -126,12 +122,12 @@ export function PharmacySettingsView() {
         </div>
 
         {/* Zona de Cobertura */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+        <div className="bg-white border-t border-slate-200 p-6 space-y-6">
           <h2 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
             <MapPin className="h-5 w-5 text-pharmako-care" />
             Zona de Cobertura (Delivery)
           </h2>
-          
+
           <div className="flex flex-col md:flex-row gap-6">
             <div className="w-full md:w-1/3 space-y-4">
               <div>
@@ -178,7 +174,7 @@ export function PharmacySettingsView() {
             className="bg-pharmako-care text-white hover:bg-pharmako-care-hover font-bold shadow-none rounded-xl px-8 h-12"
           >
             {isUpdating ? "Guardando..." : (
-              <span className="flex items-center gap-2"><Save className="w-5 h-5"/> Guardar Cambios</span>
+              <span className="flex items-center gap-2"><Save className="w-5 h-5" /> Guardar Cambios</span>
             )}
           </Button>
         </div>
