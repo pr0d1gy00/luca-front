@@ -399,8 +399,8 @@ export default function PatientPrescriptionsPage() {
 
               <Tabs defaultValue="detalles" className="w-full mt-4">
                 <TabsList className="w-full justify-start border-b border-pharmako-border-soft rounded-none p-0 h-auto bg-transparent mb-4">
-                  <TabsTrigger value="detalles" className="data-[state=active]:border-b-2 data-[state=active]:border-pharmako-primary data-[state=active]:text-pharmako-primary rounded-none shadow-none bg-transparent py-3">Detalles de la Receta</TabsTrigger>
-                  <TabsTrigger value="cotizaciones" className="data-[state=active]:border-b-2 data-[state=active]:border-pharmako-primary data-[state=active]:text-pharmako-primary rounded-none shadow-none bg-transparent py-3">
+                  <TabsTrigger value="detalles" className="data-[state=active]:border-b-2 data-[state=active]:border-pharmako-care data-[state=active]:text-pharmako-care rounded-none shadow-none bg-transparent py-3">Detalles de la Receta</TabsTrigger>
+                  <TabsTrigger value="cotizaciones" className="data-[state=active]:border-b-2 data-[state=active]:border-pharmako-care data-[state=active]:text-pharmako-care rounded-none shadow-none bg-transparent py-3">
                     Presupuestos ({getAssociatedQuoteOffers(detailedPresc.uuid).length})
                   </TabsTrigger>
                 </TabsList>
@@ -412,14 +412,22 @@ export default function PatientPrescriptionsPage() {
                 {/* 1. Encabezado: Datos del Médico */}
                 <div className="flex flex-col md:flex-row items-start justify-between gap-4 border-b border-pharmako-border-soft/60 pb-5">
                   <div className="flex items-center gap-4">
-                    <div className="h-14 w-14 bg-pharmako-primary-light rounded-2xl flex items-center justify-center border border-pharmako-primary-muted/20 shrink-0 shadow-sm">
-                      <User className="h-6 w-6 text-pharmako-care" />
+                    <div className="h-14 w-14 bg-pharmako-care-light/20 rounded-2xl flex items-center justify-center border border-pharmako-care/20 shrink-0 shadow-sm overflow-hidden">
+                      {detailedPresc.user?.profile_picture_url || detailedPresc.user?.profilePictureUrl || detailedPresc.user?.avatar ? (
+                        <img 
+                          src={detailedPresc.user?.profile_picture_url || detailedPresc.user?.profilePictureUrl || detailedPresc.user?.avatar} 
+                          alt="Doctor" 
+                          className="w-full h-full object-cover" 
+                        />
+                      ) : (
+                        <User className="h-6 w-6 text-pharmako-care" />
+                      )}
                     </div>
                     <div>
                       <p className="text-lg font-black text-pharmako-text-primary tracking-tight">
                         Dr. {detailedPresc.user?.full_name || detailedPresc.user?.fullName || "Médico Especialista"}
                       </p>
-                      <p className="text-sm text-pharmako-primary font-semibold mb-1">
+                      <p className="text-sm text-pharmako-care font-semibold mb-1">
                         {detailedPresc.user?.specialties?.[0]?.name || "Medicina General"}
                       </p>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 font-medium">
