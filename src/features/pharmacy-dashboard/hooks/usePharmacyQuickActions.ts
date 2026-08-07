@@ -1,4 +1,4 @@
-import { Plus, Package, MessageSquare } from "lucide-react";
+import { Plus, Package, MessageSquare, Settings } from "lucide-react";
 import type { PharmacyQuickAction } from "../types";
 
 export function usePharmacyQuickActions(): PharmacyQuickAction[] {
@@ -22,6 +22,13 @@ export function usePharmacyQuickActions(): PharmacyQuickAction[] {
       label: "Mensajes",
       icon: MessageSquare,
       href: "/pharmacy/messages",
+      variant: "outline",
+    },
+    {
+      id: "pa-4",
+      label: "Operatividad",
+      icon: Settings,
+      href: "/dashboard/profile?tab=pharmacy_settings",
       variant: "outline",
     },
   ];
