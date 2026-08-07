@@ -29,6 +29,7 @@ import {
   Clock,
   UploadCloud,
   AlertCircle,
+  Settings,
 } from "lucide-react";
 import Select from "react-select";
 import { toast } from "sonner";
@@ -40,7 +41,9 @@ import { useGetCities } from "@/features/auth/hooks/useGetCities";
 import { db } from "@/features/offline/database/schema";
 import { syncService } from "@/features/offline/services/syncService";
 import { DoctorScheduleView } from "@/features/doctor-dashboard/components/DoctorScheduleView";
+import { PharmacySettingsView } from "@/features/pharmacy-dashboard/components/PharmacySettingsView";
 import dynamic from "next/dynamic";
+import { useSearchParams } from "next/navigation";
 
 const MapPicker = dynamic(() => import("./MapPicker"), {
   ssr: false,
@@ -1739,7 +1742,13 @@ export function ProfileView() {
     return true;
   });
   const hasFetched = useRef(false);
-  const [activeSubTab, setActiveSubTab] = useState<"profile" | "schedule" | "verification">(() => {
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab") as "profile" | "schedule" | "verification" | "pharmacy_settings" | null;
+
+  const [activeSubTab, setActiveSubTab] = useState<
+    "profile" | "schedule" | "verification" | "pharmacy_settings"
+  >(() => {
+    if (initialTab) return initialTab;
     if (!isVerified && userType === "user") return "verification";
     return "profile";
   });
@@ -1904,6 +1913,20 @@ export function ProfileView() {
             </button>
           )}
 
+          {(user && "role" in user && user.role === "PROVIDER" && user.provider_profile?.type === "PHARMACY") && (
+            <button
+              onClick={() => setActiveSubTab("pharmacy_settings")}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 rounded-lg cursor-pointer ${
+                activeSubTab === "pharmacy_settings"
+                  ? "bg-white text-pharmako-care shadow-xs"
+                  : "text-pharmako-text-secondary hover:text-pharmako-text-primary"
+              }`}
+            >
+              <Settings className="w-4 h-4" />
+              Operatividad
+            </button>
+          )}
+
           <button
             onClick={() => setActiveSubTab("verification")}
             className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 rounded-lg cursor-pointer ${
@@ -1948,6 +1971,18 @@ export function ProfileView() {
             transition={{ duration: 0.22, ease: "easeInOut" }}
           >
             <DoctorScheduleView />
+          </motion.div>
+        )}
+
+        {activeSubTab === "pharmacy_settings" && (
+          <motion.div
+            key="pharmacy-settings-tab"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.22, ease: "easeInOut" }}
+          >
+            <PharmacySettingsView />
           </motion.div>
         )}
 

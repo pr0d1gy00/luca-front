@@ -13,7 +13,7 @@ const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLa
 const Circle = dynamic(() => import("react-leaflet").then((mod) => mod.Circle), { ssr: false });
 const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), { ssr: false });
 
-export default function PharmacySettingsPage() {
+export function PharmacySettingsView() {
   const { settings, location, isLoading, updateSettings, isUpdating } = usePharmacySettings();
 
   const [autoQuoting, setAutoQuoting] = useState<boolean>(false);
@@ -48,12 +48,12 @@ export default function PharmacySettingsPage() {
   const lng = location?.longitude ? Number(location.longitude) : -66.9036;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
-          <Settings className="h-6 w-6 text-pharmako-care" /> Configuración de Farmacia
-        </h1>
-        <p className="text-slate-500 mt-1">Gestiona las preferencias de cotización, horario y cobertura.</p>
+    <div className="space-y-6">
+      <div className="bg-white rounded-xl border border-slate-200/80 p-6 shadow-xs">
+        <h3 className="text-base font-bold text-slate-800 mb-2 flex items-center gap-2">
+          <Settings className="h-5 w-5 text-pharmako-care" /> Configuración de Farmacia
+        </h3>
+        <p className="text-xs text-slate-500">Gestiona las preferencias de cotización, horario y cobertura.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">

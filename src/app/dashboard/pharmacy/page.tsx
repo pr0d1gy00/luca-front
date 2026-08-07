@@ -33,7 +33,7 @@ export default function PharmacyMainDashboardPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Link href="/dashboard/pharmacy/settings">
+          <Link href="/dashboard/profile?tab=pharmacy_settings">
             <Button
               variant="outline"
               className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-none rounded-xl h-11 px-4 text-xs font-semibold"
