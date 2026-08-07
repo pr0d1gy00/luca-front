@@ -1731,7 +1731,7 @@ function VerificationTab() {
 // ── ProfileView Principal ───────────────────────────────────
 
 export function ProfileView() {
-  const { userType, isVerified } = useAuthStore();
+  const { userType, isVerified, role } = useAuthStore();
   const isPatient = userType === "patient";
 
   const [profileData, setProfileData] = useState<
@@ -1899,7 +1899,7 @@ export function ProfileView() {
             Perfil Profesional
           </button>
           
-          {(user && "role" in user && user.role === "DOCTOR") && (
+          {role === "doctor" && (
             <button
               onClick={() => setActiveSubTab("schedule")}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 rounded-lg cursor-pointer ${
@@ -1913,7 +1913,7 @@ export function ProfileView() {
             </button>
           )}
 
-          {(user && "role" in user && user.role === "PROVIDER" && user.provider_profile?.type === "PHARMACY") && (
+          {role === "pharmacy" && (
             <button
               onClick={() => setActiveSubTab("pharmacy_settings")}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-200 rounded-lg cursor-pointer ${
