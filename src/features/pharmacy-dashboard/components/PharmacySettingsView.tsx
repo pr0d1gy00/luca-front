@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ShieldAlert, Settings, MapPin, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePharmacySettings } from "@/features/pharmacy-dashboard/hooks/usePharmacySettings";
+import { toast } from "sonner";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 
@@ -31,12 +32,19 @@ export function PharmacySettingsView() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await updateSettings({
-      auto_quoting_enabled: autoQuoting,
-      is_24_hours: is24Hours,
-      delivery_radius_km: radiusKm,
-      default_currency: currency,
-    });
+    try {
+      await updateSettings({
+        auto_quoting_enabled: autoQuoting,
+        is_24_hours: is24Hours,
+        delivery_radius_km: radiusKm,
+        default_currency: currency,
+      });
+      toast.success("Configuración de operatividad guardada exitosamente");
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || "Ocurrió un error al guardar la configuración"
+      );
+    }
   };
 
   if (isLoading) {
