@@ -54,7 +54,6 @@ export function QuoteOffersTab({ offers, onCheckout }: QuoteOffersTabProps) {
     });
     
     // Si la suma es 0 (porque no hay desgloses), fallamos graciosamente al precio de la oferta
-    const itemArray = offer.quote_offer_items || offer.quoteOfferItems || [];
     if (total === 0 && itemIds.size === itemArray.length) {
        return Number(offer.price);
     }
