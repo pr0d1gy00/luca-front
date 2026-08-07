@@ -419,67 +419,53 @@ export default function PatientPrescriptionsPage() {
                         detailedPresc.items.map((item, index) => (
                           <div
                             key={item.uuid ?? index}
-                            className="p-4 rounded-xl border border-pharmako-border-soft bg-pharmako-surface shadow-xs space-y-2"
+                            className="py-3 px-4 rounded-xl border border-pharmako-border-soft bg-pharmako-surface shadow-none flex flex-col gap-3 transition-colors hover:bg-slate-50/50"
                           >
-                            <div className="flex items-start gap-2">
-                              <Pill className="h-4 w-4 text-pharmako-care shrink-0 mt-0.5" />
-                              <div>
-                                <p className="text-sm font-bold text-pharmako-text-primary">
-                                  {item.medication?.active_principle +
-                                    " " +
-                                    `(${item.medication?.commercial_name})` ||
-                                    "Medicamento"}
-                                </p>
-                                {item.medication?.concentration && (
-                                  <p className="text-[10px] text-pharmako-text-secondary font-medium">
-                                    Concentración:{" "}
-                                    {item.medication.concentration}
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-start gap-3">
+                                <div className="h-8 w-8 rounded-full bg-pharmako-care/10 flex items-center justify-center shrink-0">
+                                  <Pill className="h-4 w-4 text-pharmako-care" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-bold text-pharmako-text-primary leading-tight">
+                                    {item.medication?.active_principle || "Medicamento"}{" "}
+                                    <span className="text-pharmako-text-muted font-medium text-xs">
+                                      {item.medication?.commercial_name ? `(${item.medication.commercial_name})` : ""}
+                                    </span>
                                   </p>
-                                )}
+                                  {item.medication?.concentration && (
+                                    <p className="text-[11px] text-pharmako-text-secondary mt-0.5 font-medium">
+                                      {item.medication.concentration}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="text-right shrink-0 mt-0.5">
+                                <span className="inline-flex items-center justify-center px-2 py-1 rounded bg-slate-100 text-[10px] font-bold text-slate-600">
+                                  x{item.quantity || 1}
+                                </span>
                               </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2 text-xs text-pharmako-text-secondary border-t border-pharmako-border-soft/60 pt-2">
-                              <div>
-                                <span className="text-[10px] text-pharmako-text-muted block">
-                                  Dosis
-                                </span>
-                                <span className="font-semibold">
-                                  {item.dose || "1 toma"}
-                                </span>
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-pharmako-text-secondary bg-white rounded-md">
+                              <div className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-slate-200"></span>
+                                <span><span className="font-semibold text-slate-700">Dosis:</span> {item.dose || "1 toma"}</span>
                               </div>
-                              <div>
-                                <span className="text-[10px] text-pharmako-text-muted block">
-                                  Frecuencia
-                                </span>
-                                <span className="font-semibold">
-                                  {item.frequency || "N/A"}
-                                </span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-slate-200"></span>
+                                <span><span className="font-semibold text-slate-700">Frecuencia:</span> {item.frequency || "N/A"}</span>
                               </div>
-                              <div>
-                                <span className="text-[10px] text-pharmako-text-muted block">
-                                  Duración
-                                </span>
-                                <span className="font-semibold">
-                                  {item.duration || "N/A"}
-                                </span>
-                              </div>
-                              <div>
-                                <span className="text-[10px] text-pharmako-text-muted block">
-                                  Cantidad
-                                </span>
-                                <span className="font-semibold">
-                                  {item.quantity || 1} unidades
-                                </span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-slate-200"></span>
+                                <span><span className="font-semibold text-slate-700">Duración:</span> {item.duration || "N/A"}</span>
                               </div>
                             </div>
 
                             {item.notes && (
-                              <div className="bg-pharmako-background p-2.5 rounded-lg border border-pharmako-border-soft text-[11px] text-pharmako-text-secondary leading-relaxed">
-                                <span className="font-bold text-pharmako-text-primary block mb-0.5">
-                                  Indicaciones:
-                                </span>
-                                {item.notes}
+                              <div className="text-[11px] text-slate-600 bg-slate-50 border border-slate-100/60 px-3 py-2.5 rounded-lg flex gap-2">
+                                <span className="font-semibold text-slate-700 shrink-0">Indicaciones:</span>
+                                <span className="italic leading-relaxed">{item.notes}</span>
                               </div>
                             )}
                           </div>
