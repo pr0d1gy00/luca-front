@@ -88,8 +88,8 @@ export function QuoteOffersTab({ offers, onCheckout }: QuoteOffersTabProps) {
             {/* Header de Farmacia */}
             <div className="flex items-start justify-between gap-4 mb-4 pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-pharmako-primary/10 flex items-center justify-center shrink-0">
-                  <Building className="h-5 w-5 text-pharmako-primary" />
+                <div className="h-10 w-10 rounded-full bg-pharmako-care-light/20 flex items-center justify-center shrink-0">
+                  <Building className="h-5 w-5 text-pharmako-care" />
                 </div>
                 <div>
                   <h4 className="font-bold text-slate-800">
@@ -137,12 +137,12 @@ export function QuoteOffersTab({ offers, onCheckout }: QuoteOffersTabProps) {
                     onClick={() => toggleItem(offer.id, item.id)}
                     className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
                       isSelected
-                        ? "bg-pharmako-primary/5 border-pharmako-primary/30"
-                        : "bg-slate-50 border-slate-100 opacity-70 hover:opacity-100"
+                        ? "bg-pharmako-care/5 border-pharmako-care/40"
+                        : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50"
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <button type="button" className="text-pharmako-primary">
+                      <button type="button" className="text-pharmako-care">
                         {isSelected ? (
                           <CheckSquare className="h-5 w-5" />
                         ) : (
@@ -180,7 +180,7 @@ export function QuoteOffersTab({ offers, onCheckout }: QuoteOffersTabProps) {
               <Button
                 disabled={currentSelected.size === 0}
                 onClick={() => onCheckout(offer, Array.from(currentSelected))}
-                className="bg-pharmako-primary hover:bg-pharmako-primary-hover text-white shadow-sm"
+                className="bg-pharmako-care hover:bg-pharmako-care-hover text-white shadow-none font-bold"
               >
                 {isFullSelection ? "Reservar Presupuesto Completo" : "Reservar Selección"}
               </Button>
