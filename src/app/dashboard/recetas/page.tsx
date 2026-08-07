@@ -406,161 +406,131 @@ export default function PatientPrescriptionsPage() {
                 </TabsList>
                 
                 <TabsContent value="detalles" className="m-0 focus-visible:ring-0">
-              {/* Modificado Grid Layout de 2 Columnas */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4 max-h-[60vh] overflow-y-auto pr-1">
-                {/* Columna Izquierda: Medicamentos e Indicaciones */}
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
-                      Tratamiento y Posología
-                    </h4>
-                    <div className="space-y-3">
-                      {detailedPresc.items && detailedPresc.items.length > 0 ? (
-                        detailedPresc.items.map((item, index) => (
-                          <div
-                            key={item.uuid ?? index}
-                            className="py-3 px-4 rounded-xl border border-pharmako-border-soft bg-pharmako-surface shadow-none flex flex-col gap-3 transition-colors hover:bg-slate-50/50"
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex items-start gap-3">
-                                <div className="h-8 w-8 rounded-full bg-pharmako-care/10 flex items-center justify-center shrink-0">
-                                  <Pill className="h-4 w-4 text-pharmako-care" />
-                                </div>
-                                <div>
-                                  <p className="text-sm font-bold text-pharmako-text-primary leading-tight">
-                                    {item.medication?.active_principle || "Medicamento"}{" "}
-                                    <span className="text-pharmako-text-muted font-medium text-xs">
-                                      {item.medication?.commercial_name ? `(${item.medication.commercial_name})` : ""}
-                                    </span>
-                                  </p>
-                                  {item.medication?.concentration && (
-                                    <p className="text-[11px] text-pharmako-text-secondary mt-0.5 font-medium">
-                                      {item.medication.concentration}
-                                    </p>
-                                  )}
-                                </div>
+              {/* Diseño de Receta Médica Real */}
+              <div className="flex flex-col gap-6 py-4 max-h-[60vh] overflow-y-auto pr-1 pb-10 relative">
+                
+                {/* 1. Encabezado: Datos del Médico */}
+                <div className="flex flex-col md:flex-row items-start justify-between gap-4 border-b border-pharmako-border-soft/60 pb-5">
+                  <div className="flex items-center gap-4">
+                    <div className="h-14 w-14 bg-pharmako-primary-light rounded-2xl flex items-center justify-center border border-pharmako-primary-muted/20 shrink-0 shadow-sm">
+                      <User className="h-6 w-6 text-pharmako-care" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-black text-pharmako-text-primary tracking-tight">
+                        Dr. {detailedPresc.user?.full_name || detailedPresc.user?.fullName || "Médico Especialista"}
+                      </p>
+                      <p className="text-sm text-pharmako-primary font-semibold mb-1">
+                        {detailedPresc.user?.specialties?.[0]?.name || "Medicina General"}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 font-medium">
+                        <span className="flex items-center gap-1.5"><Mail className="h-3 w-3"/> {detailedPresc.user?.email || "contacto@lucahealth.com"}</span>
+                        <span className="flex items-center gap-1.5"><Phone className="h-3 w-3"/> {detailedPresc.user?.phone || "+54 9 11 5555-5555"}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Cuerpo: Tratamiento y Posología */}
+                <div className="space-y-4 relative">
+                  <h4 className="text-sm font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                    <Pill className="h-4 w-4" /> Rx (Tratamiento)
+                  </h4>
+                  <div className="space-y-3">
+                    {detailedPresc.items && detailedPresc.items.length > 0 ? (
+                      detailedPresc.items.map((item, index) => (
+                        <div
+                          key={item.uuid ?? index}
+                          className="py-3 px-0 border-b border-dashed border-slate-200 last:border-0 flex flex-col gap-3 group"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-3">
+                              <div className="mt-0.5 text-pharmako-primary">
+                                <Check className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                               </div>
-                              <div className="text-right shrink-0 mt-0.5">
-                                <span className="inline-flex items-center justify-center px-2 py-1 rounded bg-slate-100 text-[10px] font-bold text-slate-600">
-                                  x{item.quantity || 1}
-                                </span>
+                              <div>
+                                <p className="text-base font-bold text-slate-800 leading-tight">
+                                  {item.medication?.active_principle || "Medicamento"}{" "}
+                                  <span className="text-slate-400 font-medium text-sm">
+                                    {item.medication?.commercial_name ? `(${item.medication.commercial_name})` : ""}
+                                  </span>
+                                </p>
+                                {item.medication?.concentration && (
+                                  <p className="text-xs text-slate-500 mt-0.5 font-medium">
+                                    {item.medication.concentration}
+                                  </p>
+                                )}
                               </div>
                             </div>
+                            <div className="text-right shrink-0 mt-0.5">
+                              <span className="inline-flex items-center justify-center px-2 py-1 rounded bg-pharmako-care/10 text-[11px] font-bold text-pharmako-care border border-pharmako-care/20">
+                                x{item.quantity || 1} unid.
+                              </span>
+                            </div>
+                          </div>
 
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-pharmako-text-secondary bg-white rounded-md">
-                              <div className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-slate-200"></span>
-                                <span><span className="font-semibold text-slate-700">Dosis:</span> {item.dose || "1 toma"}</span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-slate-200"></span>
-                                <span><span className="font-semibold text-slate-700">Frecuencia:</span> {item.frequency || "N/A"}</span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-slate-200"></span>
-                                <span><span className="font-semibold text-slate-700">Duración:</span> {item.duration || "N/A"}</span>
-                              </div>
+                          <div className="pl-7">
+                            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-600 bg-slate-50/50 px-3 py-2 rounded-lg border border-slate-100/50 w-fit">
+                              <span className="flex items-center gap-1.5"><span className="font-bold text-slate-800">Dosis:</span> {item.dose || "1 toma"}</span>
+                              <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                              <span className="flex items-center gap-1.5"><span className="font-bold text-slate-800">Frec:</span> {item.frequency || "N/A"}</span>
+                              <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                              <span className="flex items-center gap-1.5"><span className="font-bold text-slate-800">Dur:</span> {item.duration || "N/A"}</span>
                             </div>
 
                             {item.notes && (
-                              <div className="text-[11px] text-slate-600 bg-slate-50 border border-slate-100/60 px-3 py-2.5 rounded-lg flex gap-2">
-                                <span className="font-semibold text-slate-700 shrink-0">Indicaciones:</span>
-                                <span className="italic leading-relaxed">{item.notes}</span>
+                              <div className="mt-2 text-xs text-slate-500 italic flex gap-1.5">
+                                <span className="font-semibold text-slate-700 shrink-0 not-italic">Indicaciones:</span>
+                                <span>{item.notes}</span>
                               </div>
                             )}
                           </div>
-                        ))
-                      ) : (
-                        <p className="text-xs text-pharmako-text-muted">
-                          No se detallan ítems de prescripción.
-                        </p>
-                      )}
-                    </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-slate-400 italic">No se detallan medicamentos.</p>
+                    )}
                   </div>
-
-                  {detailedPresc.notes && (
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
-                        Observaciones Médicas Generales
-                      </h4>
-                      <div className="p-3 bg-pharmako-surface rounded-xl border border-pharmako-border-soft text-xs text-pharmako-text-secondary leading-relaxed">
-                        {detailedPresc.notes}
-                      </div>
-                    </div>
-                  )}
                 </div>
 
-                {/* Columna Derecha: Médico, Token de Surtido y Respuestas de Farmacias */}
-                <div className="space-y-4">
-                  {/* Sección Médico */}
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
-                      Médico Prescriptor
+                {/* 3. Pie: Observaciones y Verificación */}
+                <div className="mt-6 pt-6 border-t border-pharmako-border-soft/60 flex flex-col md:flex-row items-start justify-between gap-6">
+                  {/* Observaciones */}
+                  <div className="flex-1">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+                      Observaciones Médicas
                     </h4>
-                    <div className="p-4 bg-pharmako-surface rounded-xl border border-pharmako-border-soft flex items-start gap-3 shadow-xs">
-                      <div className="p-2 bg-pharmako-primary-light rounded-xl border border-pharmako-primary-muted/10 shrink-0">
-                        <User className="h-5 w-5 text-pharmako-care" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-bold text-pharmako-text-primary">
-                          Dr.{" "}
-                          {detailedPresc.user?.full_name ||
-                            detailedPresc.user?.fullName ||
-                            "Médico Especialista"}
-                        </p>
-                        <p className="text-xs text-pharmako-text-secondary font-medium mt-0.5">
-                          {detailedPresc.user?.specialties?.[0]?.name ||
-                            "Medicina General"}
-                        </p>
-
-                        <div className="mt-3 space-y-1.5 border-t border-pharmako-border-soft/60 pt-2.5 text-xs text-pharmako-text-secondary">
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-3.5 w-3.5 text-pharmako-text-muted" />
-                            <span className="truncate">
-                              {detailedPresc.user?.email ||
-                                "contacto@lucahealth.com"}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-3.5 w-3.5 text-pharmako-text-muted" />
-                            <span>
-                              {detailedPresc.user?.phone ||
-                                "+54 9 11 5555-5555"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                    <p className="text-xs text-slate-600 leading-relaxed max-w-sm">
+                      {detailedPresc.notes || "Ninguna observación adicional por parte del médico."}
+                    </p>
+                    
+                    {/* Fake Signature */}
+                    <div className="mt-8 pt-4 border-t border-slate-300 border-dashed max-w-[200px] text-center">
+                      <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Firma del Médico</p>
+                      <p className="font-mono text-xs text-slate-300 mt-1">Validez digital confirmada</p>
                     </div>
                   </div>
 
-                  {/* Sección Token Público de Surtido */}
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
-                      Verificación en Farmacia
-                    </h4>
-                    <div className="p-4 bg-pharmako-surface rounded-xl border border-pharmako-care/20 bg-pharmako-care-light/5 shadow-xs space-y-3">
-                      <div>
-                        <p className="text-xs font-bold text-pharmako-text-primary">
-                          Token Público de Receta
-                        </p>
-                        <p className="text-[10px] text-pharmako-text-secondary mt-0.5 leading-relaxed">
-                          Presenta este token en la farmacia para que el
-                          farmacéutico pueda consultar y dispensar tus
-                          medicamentos.
-                        </p>
+                  {/* Token */}
+                  <div className="w-full md:w-64 bg-slate-50 rounded-xl border border-slate-200 p-4 shrink-0 shadow-sm">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 text-center">
+                      Token de Dispensación
+                    </p>
+                    <div className="flex flex-col items-center gap-2 mt-3">
+                      {/* Generando un patron de barcode visual falso */}
+                      <div className="flex h-8 gap-0.5 w-full justify-center opacity-40 mix-blend-multiply">
+                         {[...Array(24)].map((_, i) => (
+                           <div key={i} className={`bg-slate-800 h-full ${i % 2 === 0 ? 'w-1' : (i % 3 === 0 ? 'w-2' : 'w-0.5')}`}></div>
+                         ))}
                       </div>
-
-                      <div className="flex items-center gap-2 bg-pharmako-background border border-pharmako-border-soft rounded-lg p-2.5">
-                        <span className="font-mono text-sm font-bold text-pharmako-text-primary tracking-wider flex-1 select-all">
+                      <div className="flex items-center gap-2 w-full mt-2">
+                        <span className="font-mono text-base font-black text-slate-800 tracking-[0.2em] flex-1 text-center select-all">
                           {detailedPresc.public_token}
                         </span>
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() =>
-                            handleCopyToken(detailedPresc.public_token)
-                          }
-                          className="h-8 w-8 text-pharmako-text-secondary hover:text-pharmako-primary shrink-0"
+                          onClick={() => handleCopyToken(detailedPresc.public_token)}
+                          className="h-8 w-8 text-slate-400 hover:text-pharmako-primary hover:bg-pharmako-primary/10 shrink-0"
                           title="Copiar token"
                         >
                           {copied ? (
@@ -573,8 +543,8 @@ export default function PatientPrescriptionsPage() {
                     </div>
                   </div>
                 </div>
-              </div>
 
+              </div>
                 </TabsContent>
                 
                 <TabsContent value="cotizaciones" className="m-0 focus-visible:ring-0 max-h-[60vh] overflow-y-auto pr-1">
