@@ -16,7 +16,8 @@ export function QuoteOffersTab({ offers, onCheckout }: QuoteOffersTabProps) {
     () => {
       const initial: Record<string, Set<number>> = {};
       offers.forEach((offer) => {
-        const itemIds = (offer.quoteOfferItems || []).map((item: any) => item.id);
+        const itemArray = offer.quote_offer_items || offer.quoteOfferItems || [];
+        const itemIds = itemArray.map((item: any) => item.id);
         initial[offer.id] = new Set(itemIds);
       });
       return initial;
@@ -38,7 +39,8 @@ export function QuoteOffersTab({ offers, onCheckout }: QuoteOffersTabProps) {
   const calculateTotal = (offer: any) => {
     const itemIds = selectedItems[offer.id] || new Set();
     let total = 0;
-    (offer.quoteOfferItems || []).forEach((item: any) => {
+    const itemArray = offer.quote_offer_items || offer.quoteOfferItems || [];
+    itemArray.forEach((item: any) => {
       if (itemIds.has(item.id)) {
         // En QuoteOfferItem el precio unitario podría estar en prices_manual.
         // Si no está desglosado, usaremos un precio promediado falso o simplemente 0 si no hay.
@@ -52,7 +54,8 @@ export function QuoteOffersTab({ offers, onCheckout }: QuoteOffersTabProps) {
     });
     
     // Si la suma es 0 (porque no hay desgloses), fallamos graciosamente al precio de la oferta
-    if (total === 0 && itemIds.size === (offer.quoteOfferItems || []).length) {
+    const itemArray = offer.quote_offer_items || offer.quoteOfferItems || [];
+    if (total === 0 && itemIds.size === itemArray.length) {
        return Number(offer.price);
     }
     return total;
@@ -73,7 +76,7 @@ export function QuoteOffersTab({ offers, onCheckout }: QuoteOffersTabProps) {
     <div className="space-y-4">
       {offers.map((offer) => {
         const pharmacy = offer.pharmacy || {};
-        const items = offer.quoteOfferItems || [];
+        const items = offer.quote_offer_items || offer.quoteOfferItems || [];
         const currentSelected = selectedItems[offer.id] || new Set();
         const totalCalculated = calculateTotal(offer);
         const isFullSelection = currentSelected.size === items.length;
@@ -149,7 +152,7 @@ export function QuoteOffersTab({ offers, onCheckout }: QuoteOffersTabProps) {
                       </button>
                       <div>
                         <p className={`text-sm font-semibold ${isSelected ? "text-slate-800" : "text-slate-500"}`}>
-                          {item.custom_product_name || "Medicamento"}
+                          {item.custom_product_name || item.prescription_item?.medication?.active_principle || item.prescription_item?.medication?.commercial_name || "Medicamento"}
                         </p>
                         <p className="text-xs text-slate-500">
                           Cant: {item.quantity || 1} x {unitPrice.toFixed(2)} {offer.currency}
