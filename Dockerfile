@@ -4,7 +4,7 @@ RUN corepack enable && corepack prepare pnpm@10.17.1 --activate
 WORKDIR /app
 
 FROM base AS deps
-COPY package.json package-lock.json* pnpm-lock.yaml* ./
+COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile || pnpm install
 
 FROM base AS builder

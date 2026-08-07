@@ -1,8 +1,8 @@
 strict_tdd: false
 context: |
   luca-front is a Node.js/TypeScript, React, Next.js project.
-  Detected markers: package.json, tsconfig.json, npm package manager.
-  Package managers: npm.
+  Detected markers: package.json, tsconfig.json, pnpm package manager.
+  Package managers: pnpm.
   No reliable test runner was detected; verify testing manually before enabling strict TDD.
   Unit tests: none.
   Integration tests: none.
@@ -41,10 +41,10 @@ testing:
     commands:
       []
 quality:
-  lint: "npm run lint"
+  lint: "pnpm run lint"
   lint_commands:
     - scope: "."
-      command: "npm run lint"
+      command: "pnpm run lint"
       framework: "linter"
   typecheck: ""
   typecheck_commands:
