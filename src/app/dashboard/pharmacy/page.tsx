@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import {
   Package,
@@ -11,11 +10,9 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PharmacySettingsModal } from "@/features/pharmacy-dashboard/components/PharmacySettingsModal";
 import { usePharmacySettings } from "@/features/pharmacy-dashboard/hooks/usePharmacySettings";
 
 export default function PharmacyMainDashboardPage() {
-  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const { settings } = usePharmacySettings();
 
   return (
@@ -36,15 +33,16 @@ export default function PharmacyMainDashboardPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={() => setIsSettingsOpen(true)}
-            className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-none rounded-xl h-11 px-4 text-xs font-semibold"
-          >
-            <Settings className="w-4 h-4 mr-2 text-slate-600" />
-            Configuración (
-            {settings?.auto_quoting_enabled ? "Automática" : "Manual"})
-          </Button>
+          <Link href="/dashboard/pharmacy/settings">
+            <Button
+              variant="outline"
+              className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-none rounded-xl h-11 px-4 text-xs font-semibold"
+            >
+              <Settings className="w-4 h-4 mr-2 text-slate-600" />
+              Configuración (
+              {settings?.auto_quoting_enabled ? "Automática" : "Manual"})
+            </Button>
+          </Link>
 
           <Link href="/dashboard/pharmacy/quotes">
             <Button className="bg-pharmako-care text-slate-900 font-semibold hover:bg-pharmako-care-hover shadow-none rounded-xl h-11 px-5">
@@ -179,11 +177,6 @@ export default function PharmacyMainDashboardPage() {
         </Link>
       </div>
 
-      {/* Settings Modal */}
-      <PharmacySettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
     </div>
   );
 }

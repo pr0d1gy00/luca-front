@@ -5,11 +5,14 @@ import type { PharmacySetting } from "../types/pharmacy.types";
 export function usePharmacySettings() {
   const queryClient = useQueryClient();
 
-  const settingsQuery = useQuery<PharmacySetting>({
+  const settingsQuery = useQuery<{ settings: PharmacySetting; location: { latitude: number; longitude: number } }>({
     queryKey: ["pharmacy", "settings"],
     queryFn: async () => {
       const response = await apiClient.get("/pharmacy/settings");
-      return response.data.data;
+      return {
+        settings: response.data.data,
+        location: response.data.location,
+      };
     },
   });
 
@@ -24,7 +27,8 @@ export function usePharmacySettings() {
   });
 
   return {
-    settings: settingsQuery.data,
+    settings: settingsQuery.data?.settings,
+    location: settingsQuery.data?.location,
     isLoading: settingsQuery.isLoading,
     isError: settingsQuery.isError,
     updateSettings: updateSettingsMutation.mutateAsync,
