@@ -14,6 +14,7 @@ import apiClient from "@/lib/api/client";
 
 interface CheckoutModalProps {
   offer: Record<string, unknown> | null;
+  selectedItems: number[] | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
@@ -21,6 +22,7 @@ interface CheckoutModalProps {
 
 export function CheckoutModal({
   offer,
+  selectedItems,
   open,
   onOpenChange,
   onSuccess,
@@ -31,15 +33,35 @@ export function CheckoutModal({
 
   if (!offer) return null;
 
+  // Calculamos el total con base en lo seleccionado, o usamos el total de la oferta
+  let displayTotal = Number(offer.price);
+  if (selectedItems && selectedItems.length > 0 && offer.quoteOfferItems) {
+    let partialTotal = 0;
+    (offer.quoteOfferItems as any[]).forEach((item: any) => {
+      if (selectedItems.includes(item.id)) {
+        let unitPrice = 0;
+        if (item.prices_manual && item.prices_manual[offer.currency as string || "USD"]) {
+          unitPrice = Number(item.prices_manual[offer.currency as string || "USD"]);
+        }
+        partialTotal += unitPrice * (item.quantity || 1);
+      }
+    });
+    if (partialTotal > 0) {
+      displayTotal = partialTotal;
+    }
+  }
+
   const handleConfirm = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Call the backend endpoint we just created
-      await apiClient.post(`/quote-offers/${offer.id}/checkout`, {
-        currency,
-      });
+      const payload: any = { currency };
+      if (selectedItems && selectedItems.length > 0) {
+        payload.selected_items = selectedItems;
+      }
+
+      await apiClient.post(`/quote-offers/${offer.id}/checkout`, payload);
 
       onSuccess();
       onOpenChange(false);
@@ -75,7 +97,7 @@ export function CheckoutModal({
               Total a pagar en farmacia:
             </span>
             <span className="text-lg font-bold text-pharmako-primary">
-              {String(offer.price)} {String(offer.currency || "USD")}
+              {displayTotal.toFixed(2)} {String(offer.currency || "USD")}
             </span>
           </div>
 

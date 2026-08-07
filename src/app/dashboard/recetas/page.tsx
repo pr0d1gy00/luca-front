@@ -24,6 +24,8 @@ import { Pagination } from "@/components/ui/pagination";
 import { CheckoutModal } from "@/features/prescriptions/components/CheckoutModal";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { QuoteOffersTab } from "@/features/prescriptions/components/QuoteOffersTab";
 import {
   Dialog,
   DialogContent,
@@ -134,6 +136,7 @@ export default function PatientPrescriptionsPage() {
     useState<DetailedPrescription | null>(null);
   const [copied, setCopied] = useState(false);
   const [checkoutOffer, setCheckoutOffer] = useState<Record<string, unknown> | null>(null);
+  const [checkoutSelectedItems, setCheckoutSelectedItems] = useState<number[] | null>(null);
 
   // Sincronizar el estado del detalle en el macro-task
   useEffect(() => {
@@ -394,7 +397,16 @@ export default function PatientPrescriptionsPage() {
                 </div>
               </DialogHeader>
 
-              {/* Grid Layout de 2 Columnas */}
+              <Tabs defaultValue="detalles" className="w-full mt-4">
+                <TabsList className="w-full justify-start border-b border-pharmako-border-soft rounded-none p-0 h-auto bg-transparent mb-4">
+                  <TabsTrigger value="detalles" className="data-[state=active]:border-b-2 data-[state=active]:border-pharmako-primary data-[state=active]:text-pharmako-primary rounded-none shadow-none bg-transparent py-3">Detalles de la Receta</TabsTrigger>
+                  <TabsTrigger value="cotizaciones" className="data-[state=active]:border-b-2 data-[state=active]:border-pharmako-primary data-[state=active]:text-pharmako-primary rounded-none shadow-none bg-transparent py-3">
+                    Presupuestos ({getAssociatedQuoteOffers(detailedPresc.uuid).length})
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="detalles" className="m-0 focus-visible:ring-0">
+              {/* Modificado Grid Layout de 2 Columnas */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4 max-h-[60vh] overflow-y-auto pr-1">
                 {/* Columna Izquierda: Medicamentos e Indicaciones */}
                 <div className="space-y-4">
@@ -574,114 +586,21 @@ export default function PatientPrescriptionsPage() {
                       </div>
                     </div>
                   </div>
-
-                  {/* Respuestas de Farmacias (Marketplace / Cotizaciones) */}
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-pharmako-text-muted">
-                      Respuestas y Presupuestos de Farmacias
-                    </h4>
-                    <div className="space-y-2">
-                      {getAssociatedQuoteOffers(detailedPresc.uuid).length >
-                      0 ? (
-                        getAssociatedQuoteOffers(detailedPresc.uuid).map(
-                          (offer: QuoteOffer) => (
-                            <div
-                              key={offer.id}
-                              className="p-4 bg-pharmako-surface rounded-xl border border-pharmako-border-soft space-y-3 shadow-xs"
-                            >
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <Building className="h-4 w-4 text-pharmako-care shrink-0" />
-                                  <p className="text-xs font-bold text-pharmako-text-primary truncate">
-                                    {offer.pharmacy?.commercialName ||
-                                      offer.pharmacy?.commercial_name ||
-                                      "Farmacia Proveedora"}
-                                  </p>
-                                </div>
-                                <span className="text-sm font-bold text-pharmako-success shrink-0">
-                                  {offer.price} {offer.currency || "USD"}
-                                </span>
-                              </div>
-
-                              <div className="text-xs text-pharmako-text-secondary space-y-1.5 border-t border-pharmako-border-soft/60 pt-2">
-                                {offer.availability && (
-                                  <p className="text-[11px] leading-relaxed">
-                                    <span className="font-semibold text-pharmako-text-primary">
-                                      Disponibilidad:
-                                    </span>{" "}
-                                    {offer.availability}
-                                  </p>
-                                )}
-                                {offer.comments && (
-                                  <p className="text-[11px] text-pharmako-text-muted bg-pharmako-background p-1.5 rounded leading-relaxed border border-pharmako-border-soft">
-                                    &quot;{offer.comments}&quot;
-                                  </p>
-                                )}
-                                {(offer.pharmacy?.address ||
-                                  offer.pharmacy?.phone) && (
-                                  <div className="space-y-1.5 pt-2 border-t border-pharmako-border-soft/60 mt-2">
-                                    {offer.pharmacy.phone && (
-                                      <div className="flex items-center gap-1.5 text-[11px]">
-                                        <Phone className="h-3 w-3 text-pharmako-text-muted shrink-0" />
-                                        <span>{offer.pharmacy.phone}</span>
-                                      </div>
-                                    )}
-                                    {offer.pharmacy.address && (
-                                      <div className="flex items-start gap-1.5 text-[11px]">
-                                        <MapPin className="h-3 w-3 text-pharmako-text-muted shrink-0 mt-0.5" />
-                                        <span className="leading-relaxed">
-                                          {offer.pharmacy.address}
-                                        </span>
-                                      </div>
-                                    )}
-
-                                    {/* Botón de Checkout/Reserva y Botón de Maps */}
-                                    <div className="pt-2 flex items-center justify-between gap-2 border-t border-pharmako-border-soft/60 mt-2">
-                                      {offer.pharmacy?.address ? (
-                                        <a
-                                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                                            (offer.pharmacy.commercialName ||
-                                              "Farmacia") +
-                                              " " +
-                                              offer.pharmacy.address,
-                                          )}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="inline-flex items-center gap-1.5 text-pharmako-primary hover:text-pharmako-primary-hover font-semibold transition-colors text-[10px]"
-                                        >
-                                          <MapPin className="h-3 w-3 text-pharmako-care shrink-0" />
-                                          Cómo llegar (Google Maps)
-                                        </a>
-                                      ) : (
-                                        <div />
-                                      )}
-                                      
-                                      <Button
-                                        size="sm"
-                                        onClick={() => setCheckoutOffer(offer)}
-                                        className="h-7 text-[10px] px-3 bg-pharmako-primary text-white hover:bg-pharmako-primary-hover rounded-lg shadow-sm"
-                                      >
-                                        Reservar en esta Farmacia
-                                      </Button>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          ),
-                        )
-                      ) : (
-                        <div className="p-4 bg-pharmako-surface rounded-xl border border-pharmako-border-soft text-center text-xs text-pharmako-text-muted">
-                          Aún sin cotizaciones de farmacia. Envía esta receta a
-                          cotizar en el Marketplace para recibir presupuestos
-                          locales.
-                        </div>
-                      )}
-                    </div>
-                  </div>
                 </div>
               </div>
 
+                </TabsContent>
+                
+                <TabsContent value="cotizaciones" className="m-0 focus-visible:ring-0 max-h-[60vh] overflow-y-auto pr-1">
+                  <QuoteOffersTab 
+                    offers={getAssociatedQuoteOffers(detailedPresc.uuid)} 
+                    onCheckout={(offer, selected) => {
+                      setCheckoutOffer(offer);
+                      setCheckoutSelectedItems(selected);
+                    }} 
+                  />
+                </TabsContent>
+              </Tabs>
               <DialogFooter className="border-t border-pharmako-border-soft pt-4 flex items-center justify-end">
                 <Button
                   variant="outline"
@@ -699,6 +618,7 @@ export default function PatientPrescriptionsPage() {
       {/* Modal de Checkout / Reserva */}
       <CheckoutModal
         offer={checkoutOffer}
+        selectedItems={checkoutSelectedItems}
         open={!!checkoutOffer}
         onOpenChange={(open) => !open && setCheckoutOffer(null)}
         onSuccess={() => {
