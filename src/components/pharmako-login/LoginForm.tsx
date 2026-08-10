@@ -377,13 +377,17 @@ export function LoginForm() {
       {/* Contenido Dinámico */}
       <AnimatePresence mode="wait">
         {loginMode === "password" ? (
-          <motion.div
+          <motion.form
             key="password"
             className="space-y-4 sm:space-y-6"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmitPassword();
+            }}
           >
             <PharmakoInput
               label="Correo electrónico"
@@ -414,8 +418,8 @@ export function LoginForm() {
               </motion.button>
             </div>
 
-            <LoginButton onClick={handleSubmitPassword} loading={loading} />
-          </motion.div>
+            <LoginButton loading={loading} />
+          </motion.form>
         ) : (
           <motion.div
             key="otp"
@@ -426,7 +430,13 @@ export function LoginForm() {
             transition={{ duration: 0.25 }}
           >
             {otpStep === "request" ? (
-              <div className="space-y-4">
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendOtp();
+                }}
+              >
                 {/* Selector de Canal */}
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-pharmako-text-secondary">
@@ -490,10 +500,16 @@ export function LoginForm() {
                   />
                 )}
 
-                <LoginButton onClick={handleSendOtp} loading={loading} />
-              </div>
+                <LoginButton loading={loading} />
+              </form>
             ) : (
-              <div className="space-y-5">
+              <form
+                className="space-y-5"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleVerifyOtp();
+                }}
+              >
                 {/* Botón de regreso */}
                 <button
                   type="button"
@@ -540,8 +556,8 @@ export function LoginForm() {
                   )}
                 </div>
 
-                <LoginButton onClick={handleVerifyOtp} loading={loading} />
-              </div>
+                <LoginButton loading={loading} />
+              </form>
             )}
           </motion.div>
         )}

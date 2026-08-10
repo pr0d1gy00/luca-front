@@ -19,7 +19,7 @@ export function usePatientNotificationsQuery() {
     queryFn: () => patientNotificationApi.getNotifications(),
     enabled: !!patientUuid && role === "patient",
     staleTime: 10 * 1000, // 10 segundos
-    refetchInterval: 30 * 1000, // Auto-refetch cada 30 segundos
+    refetchInterval: false, // Auto-refetch desactivado temporalmente
   });
 }
 
@@ -32,7 +32,7 @@ export function usePatientUnreadCountQuery() {
     queryFn: () => patientNotificationApi.getUnreadCount(),
     enabled: !!patientUuid && role === "patient",
     staleTime: 10 * 1000,
-    refetchInterval: 30 * 1000,
+    refetchInterval: false,
   });
 }
 
