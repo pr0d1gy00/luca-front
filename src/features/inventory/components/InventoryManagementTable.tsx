@@ -56,6 +56,7 @@ export function InventoryManagementTable() {
           
           let displayName = item.active_ingredient || "Producto Farmacéutico";
           let details = "";
+          let commercialName = "";
           
           if (item.medication) {
             displayName = item.medication.active_principle || item.medication.name || displayName;
@@ -64,6 +65,9 @@ export function InventoryManagementTable() {
             }
             if (item.medication.presentation) {
               details = item.medication.presentation;
+            }
+            if (item.medication.commercial_name || item.medication.commercialName) {
+              commercialName = item.medication.commercial_name || item.medication.commercialName;
             }
           }
 
@@ -83,8 +87,15 @@ export function InventoryManagementTable() {
                 />
               </button>
               <div>
-                <div className="font-bold text-slate-900">{displayName}</div>
-                <div className="text-xs text-slate-500 flex items-center gap-2 mt-1">
+                <div className="font-bold text-slate-900 flex items-center gap-2 flex-wrap">
+                  {displayName}
+                  {commercialName && (
+                    <span className="text-pharmako-primary text-xs font-semibold bg-pharmako-primary/10 px-2 py-0.5 rounded-full">
+                      {commercialName}
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs text-slate-500 flex items-center gap-2 mt-1 flex-wrap">
                   {details && <span className="font-medium text-slate-700">{details}</span>}
                   {item.ean_code && (
                     <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-md uppercase text-[10px] font-medium tracking-wide">
