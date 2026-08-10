@@ -39,8 +39,17 @@ export function ManualSubstituteModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
-      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-xl shadow-none overflow-hidden space-y-0">
+    <div 
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClose();
+      }}
+    >
+      <div 
+        className="bg-white border border-slate-200 rounded-2xl w-full max-w-xl shadow-none overflow-hidden space-y-0"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-2">
