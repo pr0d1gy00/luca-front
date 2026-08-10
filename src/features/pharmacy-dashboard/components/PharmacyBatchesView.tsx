@@ -187,14 +187,19 @@ export function PharmacyBatchesView() {
                         </td>
                         <td className="p-4 text-right">
                           {batch.document_urls && batch.document_urls.length > 0 && (
-                            <a
-                              href={batch.document_urls[0]}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-xs font-bold text-pharmako-care hover:text-pharmako-care-hover transition-colors"
-                            >
-                              Ver Factura
-                            </a>
+                            <div className="flex flex-col gap-1 items-end">
+                              {batch.document_urls.map((url: string, idx: number) => (
+                                <a
+                                  key={idx}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-xs font-bold text-pharmako-care hover:text-pharmako-care-hover transition-colors"
+                                >
+                                  {batch.document_urls.length === 1 ? "Ver Factura" : `Doc ${idx + 1}`}
+                                </a>
+                              ))}
+                            </div>
                           )}
                         </td>
                       </motion.tr>
