@@ -122,12 +122,13 @@ const selectStyles = {
 };
 
 function formatDate(dateStr: string): string {
+  const safeDateStr = dateStr.includes("T") ? dateStr : `${dateStr}T12:00:00`;
   return new Intl.DateTimeFormat("es-AR", {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
-  }).format(new Date(dateStr));
+  }).format(new Date(safeDateStr));
 }
 
 function formatWeekday(weekday: string): string {
