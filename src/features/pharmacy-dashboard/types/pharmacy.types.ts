@@ -42,8 +42,12 @@ export interface PharmacyInventoryItem {
   prices_manual?: MultiCurrencyPriceMap;
   medication?: {
     id: number;
-    name: string;
+    name?: string;
     description?: string;
+    active_principle?: string;
+    concentration?: string;
+    presentation?: string;
+    commercial_name?: string;
   };
 }
 

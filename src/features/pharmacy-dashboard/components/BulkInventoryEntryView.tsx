@@ -14,6 +14,8 @@ import { BulkInventoryUpload } from "@/features/inventory/schemas";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
 import { slideInLeftVariant } from "@/app/lib/animations";
+import { MedicationCombobox } from "./MedicationCombobox";
+import type { Medication } from "@/features/medications/schemas";
 
 interface BulkEntryItem {
   id: string;
@@ -73,6 +75,22 @@ export function BulkInventoryEntryView({ onBack }: { onBack?: () => void }) {
     );
   };
 
+  const handleMedicationSelect = (id: string, medication: Medication | null, customText: string) => {
+    setItems(
+      items.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              customActivePrinciple: customText,
+              medicationId: medication?.uuid || undefined,
+              brandName: (medication as any)?.commercial_name || (medication as any)?.commercialName || "",
+              laboratory: (medication as any)?.laboratory || "",
+            }
+          : item
+      )
+    );
+  };
+
   const handleSaveBatch = async () => {
     if (items.length === 0) {
       toast.error("Debes agregar al menos un medicamento.");
@@ -97,6 +115,7 @@ export function BulkInventoryEntryView({ onBack }: { onBack?: () => void }) {
         },
         items: items.map((i) => ({
           providerId,
+          medicationId: i.medicationId || undefined,
           customActivePrinciple: i.customActivePrinciple || undefined,
           brandName: i.brandName || undefined,
           laboratory: i.laboratory || undefined,
@@ -215,17 +234,12 @@ export function BulkInventoryEntryView({ onBack }: { onBack?: () => void }) {
                         layout
                       >
                         <td className="p-3">
-                          <Input
-                            placeholder="Ej: Ibuprofeno 400mg"
+                          <MedicationCombobox
                             value={item.customActivePrinciple}
-                            onChange={(e) =>
-                              handleItemChange(
-                                item.id,
-                                "customActivePrinciple",
-                                e.target.value
-                              )
+                            onSelect={(medication, customText) =>
+                              handleMedicationSelect(item.id, medication, customText)
                             }
-                            className="h-9 text-xs border-slate-200 focus:border-pharmako-care shadow-none transition-colors"
+                            className="h-9 text-xs"
                           />
                         </td>
                         <td className="p-3">
