@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -30,15 +30,28 @@ function LocationPickerMarker({ lat, lng, onChange }: MapPickerProps) {
 }
 
 export default function MapPicker({ lat, lng, onChange }: MapPickerProps) {
+  const mapRef = useRef<L.Map | null>(null);
+  
   // Default to Caracas, Venezuela if no location is provided
   const centerLat = lat || 10.4806;
   const centerLng = lng || -66.9036;
+
+  // Cleanup map instance on unmount to prevent "Map container is being reused" in React Strict Mode
+  useEffect(() => {
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
 
   // We add a subtle CSS filter to make it look slightly more "pharmako-care" teal 
   // instead of the default blue marker.
   return (
     <div className="w-full h-full relative z-0 [&_.leaflet-marker-icon]:hue-rotate-180">
       <MapContainer
+        ref={mapRef}
         center={[centerLat, centerLng]}
         zoom={lat ? 16 : 12}
         style={{ height: "100%", width: "100%", zIndex: 0 }}

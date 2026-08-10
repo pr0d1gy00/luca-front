@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Search,
   Plus,
@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { usePharmacyInventory } from "@/features/pharmacy-dashboard/hooks/usePharmacyInventory";
 import { AddEditInventoryModal } from "@/features/pharmacy-dashboard/components/AddEditInventoryModal";
 import type { PharmacyInventoryItem } from "@/features/pharmacy-dashboard/types/pharmacy.types";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/components/ui/data-table";
 
 export function InventoryManagementTable() {
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -22,9 +24,7 @@ export function InventoryManagementTable() {
   const [page, setPage] = useState<number>(1);
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [itemToEdit, setItemToEdit] = useState<PharmacyInventoryItem | null>(
-    null,
-  );
+  const [itemToEdit, setItemToEdit] = useState<PharmacyInventoryItem | null>(null);
 
   const { inventory, pagination, isLoading } = usePharmacyInventory({
     search: searchTerm,
@@ -43,6 +43,129 @@ export function InventoryManagementTable() {
     setItemToEdit(item);
     setIsModalOpen(true);
   };
+
+  const columns: ColumnDef<PharmacyInventoryItem, any>[] = useMemo(() => {
+    return [
+      {
+        id: "product",
+        header: "Producto / Monodroga",
+        accessorFn: (row) => row.medication?.name || row.active_ingredient || "Producto Farmacéutico",
+        cell: (info) => {
+          const item = info.row.original;
+          return (
+            <div>
+              <div className="font-bold text-slate-900">{info.getValue() as string}</div>
+              <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
+                {item.ean_code && <span>EAN: {item.ean_code}</span>}
+                {item.batch_number && <span>• Lote: {item.batch_number}</span>}
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: "laboratory",
+        header: "Laboratorio",
+        cell: (info) => <span className="text-slate-700 text-xs font-medium">{(info.getValue() as string) || "N/A"}</span>,
+      },
+      {
+        accessorKey: "sale_condition",
+        header: "Condición",
+        cell: (info) => {
+          const condition = info.getValue() as string;
+          if (condition === "controlled") {
+            return (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-red-50 text-red-700 border border-red-200/60">
+                ● Controlado
+              </span>
+            );
+          }
+          if (condition === "prescription") {
+            return (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700">
+                Bajo Receta
+              </span>
+            );
+          }
+          return (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700">
+              Venta Libre
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: "package_stock",
+        header: "Stock Cajas",
+        cell: (info) => {
+          const item = info.row.original;
+          const isLowStock = item.package_stock <= item.min_stock_alert;
+          return (
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-slate-900">{item.package_stock} Cajas</span>
+              {isLowStock && (
+                <span className="p-1 rounded-md bg-amber-100 text-amber-800" title="Stock Crítico">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                </span>
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        id: "fractioning",
+        header: "Fraccionamiento",
+        cell: (info) => {
+          const item = info.row.original;
+          return item.allows_fractioning ? (
+            <span className="text-emerald-700 font-semibold text-xs">
+              Sí ({item.units_per_package} {item.fraction_unit_name}s/caja) • Stock: {item.fraction_stock} {item.fraction_unit_name}s
+            </span>
+          ) : (
+            <span className="text-slate-400 text-xs">Solo Cajas</span>
+          );
+        },
+      },
+      {
+        id: "prices",
+        header: "Precios ($ / Bs / €)",
+        cell: (info) => {
+          const item = info.row.original;
+          return (
+            <span className="text-xs font-medium text-slate-900">
+              {item.prices_manual ? (
+                <span>
+                  ${item.prices_manual.USD || 0} USD • {item.prices_manual.VES || 0} Bs
+                </span>
+              ) : (
+                <span>${item.unit_price || 0} USD</span>
+              )}
+            </span>
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: () => <div className="text-right w-full">Acciones</div>,
+        cell: (info) => {
+          const item = info.row.original;
+          return (
+            <div className="flex items-center justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleOpenEditModal(item)}
+                className="text-pharmako-primary hover:text-pharmako-primary-hover hover:bg-pharmako-primary/10 transition-colors duration-150"
+              >
+                <Edit2 className="w-4 h-4 mr-1" />
+                Editar
+              </Button>
+            </div>
+          );
+        },
+      },
+    ];
+  }, [handleOpenEditModal]);
 
   return (
     <div className="space-y-4">
@@ -95,155 +218,37 @@ export function InventoryManagementTable() {
 
       {/* Main Table */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-none overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-700 uppercase tracking-wider">
-              <tr>
-                <th className="p-4">Producto / Monodroga</th>
-                <th className="p-4">Laboratorio</th>
-                <th className="p-4">Condición</th>
-                <th className="p-4">Stock Cajas</th>
-                <th className="p-4">Fraccionamiento</th>
-                <th className="p-4">Precios ($ / Bs / €)</th>
-                <th className="p-4 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="p-8 text-center text-slate-500 text-xs"
-                  >
-                    Cargando inventario...
-                  </td>
-                </tr>
-              ) : inventory.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="p-8 text-center text-slate-500 text-xs"
-                  >
-                    No se encontraron productos registrados en inventario.
-                  </td>
-                </tr>
-              ) : (
-                inventory.map((item: PharmacyInventoryItem) => {
-                  const isLowStock = item.package_stock <= item.min_stock_alert;
-                  return (
-                    <tr
-                      key={item.id}
-                      className="hover:bg-slate-50/60 transition-colors"
-                    >
-                      <td className="p-4">
-                        <div className="font-bold text-slate-900">
-                          {item.medication?.name ||
-                            item.active_ingredient ||
-                            "Producto Farmacéutico"}
-                        </div>
-                        <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
-                          {item.ean_code && <span>EAN: {item.ean_code}</span>}
-                          {item.batch_number && (
-                            <span>• Lote: {item.batch_number}</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-4 text-slate-700 text-xs font-medium">
-                        {item.laboratory || "N/A"}
-                      </td>
-                      <td className="p-4">
-                        {item.sale_condition === "controlled" ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-red-50 text-red-700 border border-red-200/60">
-                            ● Controlado
-                          </span>
-                        ) : item.sale_condition === "prescription" ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700">
-                            Bajo Receta
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700">
-                            Venta Libre
-                          </span>
-                        )}
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900">
-                            {item.package_stock} Cajas
-                          </span>
-                          {isLowStock && (
-                            <span
-                              className="p-1 rounded-md bg-amber-100 text-amber-800"
-                              title="Stock Crítico"
-                            >
-                              <AlertTriangle className="w-3.5 h-3.5" />
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-4 text-xs text-slate-600">
-                        {item.allows_fractioning ? (
-                          <span className="text-emerald-700 font-semibold">
-                            Sí ({item.units_per_package}{" "}
-                            {item.fraction_unit_name}s/caja) • Stock:{" "}
-                            {item.fraction_stock} {item.fraction_unit_name}s
-                          </span>
-                        ) : (
-                          <span className="text-slate-400">Solo Cajas</span>
-                        )}
-                      </td>
-                      <td className="p-4 text-xs font-medium text-slate-900">
-                        {item.prices_manual ? (
-                          <span>
-                            ${item.prices_manual.USD || 0} USD •{" "}
-                            {item.prices_manual.VES || 0} Bs
-                          </span>
-                        ) : (
-                          <span>${item.unit_price || 0} USD</span>
-                        )}
-                      </td>
-                      <td className="p-4 text-right">
-                        <button
-                          onClick={() => handleOpenEditModal(item)}
-                          className="p-2 text-slate-500 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable columns={columns} data={inventory} isLoading={isLoading} />
+      </div>
 
-        {/* Pagination Footer */}
-        <div className="flex items-center justify-between px-6 py-3 border-t border-slate-100 bg-slate-50/50 text-xs text-slate-600">
-          <div>
-            Página {pagination.currentPage} de {pagination.lastPage} (
-            {pagination.total} productos)
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="border-slate-200 bg-white text-slate-700 shadow-none rounded-lg"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= pagination.lastPage}
-              onClick={() => setPage((p) => p + 1)}
-              className="border-slate-200 bg-white text-slate-700 shadow-none rounded-lg"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
+      {/* Pagination & Modals */}
+      <div className="flex items-center justify-between px-1">
+        <p className="text-xs font-medium text-slate-500">
+          Mostrando {inventory.length} de {pagination?.total || 0} productos
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1 || isLoading}
+            className="border-slate-200 text-slate-600 hover:bg-slate-50 shadow-none h-8 px-3"
+          >
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Anterior
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => p + 1)}
+            disabled={
+              isLoading || !pagination || page >= (pagination.lastPage || 1)
+            }
+            className="border-slate-200 text-slate-600 hover:bg-slate-50 shadow-none h-8 px-3"
+          >
+            Siguiente
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </Button>
         </div>
       </div>
 

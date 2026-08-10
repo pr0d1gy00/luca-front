@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useQuoteRequests } from "@/features/pharmacy-dashboard/hooks/usePharmacyQuotes";
 import { PrescriptionQuoterModal } from "@/features/pharmacy-dashboard/components/PrescriptionQuoterModal";
 import { PharmacySettingsModal } from "@/features/pharmacy-dashboard/components/PharmacySettingsModal";
+import { motion } from "motion/react";
+import { staggerChildrenVariant, fadeUpVariant } from "@/app/lib/animations";
 
 interface QuoteRequestRecord {
   id: number;
@@ -22,7 +24,7 @@ interface QuoteRequestRecord {
 
 export default function PharmacyQuotesPage() {
   const [page, setPage] = useState<number>(1);
-  const { data, isLoading } = useQuoteRequests(page);
+  const { data, isLoading } = useQuoteRequests({ page });
 
   const [selectedRequest, setSelectedRequest] =
     useState<QuoteRequestRecord | null>(null);
@@ -42,9 +44,14 @@ export default function PharmacyQuotesPage() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    <motion.div 
+      variants={staggerChildrenVariant}
+      initial="hidden"
+      animate="visible"
+      className="p-6 md:p-8 max-w-7xl mx-auto space-y-6"
+    >
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
+      <motion.div variants={fadeUpVariant} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
             Solicitudes de Cotización de Recetas
@@ -58,15 +65,15 @@ export default function PharmacyQuotesPage() {
         <Button
           variant="outline"
           onClick={() => setIsSettingsOpen(true)}
-          className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-none rounded-xl h-11 px-4 text-xs font-semibold"
+          className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-none rounded-xl h-11 px-4 text-xs font-semibold transition-colors duration-150"
         >
           <Settings className="w-4 h-4 mr-2 text-slate-600" />
           Configuración Cotizador
         </Button>
-      </div>
+      </motion.div>
 
       {/* Requests List Table */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-none overflow-hidden">
+      <motion.div variants={fadeUpVariant} className="bg-white border border-slate-200 rounded-xl shadow-none overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-700 uppercase tracking-wider">
@@ -78,7 +85,7 @@ export default function PharmacyQuotesPage() {
                 <th className="p-4 text-right">Acción</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <motion.tbody variants={staggerChildrenVariant} className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
                   <td
@@ -99,9 +106,10 @@ export default function PharmacyQuotesPage() {
                 </tr>
               ) : (
                 quoteRequests.map((req) => (
-                  <tr
+                  <motion.tr
+                    variants={fadeUpVariant}
                     key={req.id}
-                    className="hover:bg-slate-50/60 transition-colors"
+                    className="hover:bg-slate-50/60 transition-colors duration-150"
                   >
                     <td className="p-4">
                       <div className="font-bold text-slate-900">
@@ -129,16 +137,16 @@ export default function PharmacyQuotesPage() {
                       <Button
                         size="sm"
                         onClick={() => handleOpenQuoter(req)}
-                        className="bg-pharmako-care text-slate-900 font-semibold hover:bg-pharmako-care-hover shadow-none rounded-xl text-xs px-4"
+                        className="bg-pharmako-care text-slate-900 font-semibold hover:bg-pharmako-care-hover shadow-none rounded-xl text-xs px-4 transition-colors duration-150"
                       >
                         <DollarSign className="w-3.5 h-3.5 mr-1" />
                         Cotizar Receta
                       </Button>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))
               )}
-            </tbody>
+            </motion.tbody>
           </table>
         </div>
 
@@ -152,42 +160,39 @@ export default function PharmacyQuotesPage() {
             <Button
               variant="outline"
               size="sm"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="border-slate-200 bg-white text-slate-700 shadow-none rounded-lg"
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+              className="h-8 px-3 rounded-lg shadow-none border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors duration-150"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Anterior
             </Button>
             <Button
               variant="outline"
               size="sm"
-              disabled={page >= pagination.lastPage}
-              onClick={() => setPage((p) => p + 1)}
-              className="border-slate-200 bg-white text-slate-700 shadow-none rounded-lg"
+              disabled={page === pagination.lastPage}
+              onClick={() => setPage(page + 1)}
+              className="h-8 px-3 rounded-lg shadow-none border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors duration-150"
             >
-              <ChevronRight className="w-4 h-4" />
+              Siguiente
+              <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Quoter Modal */}
-      {selectedRequest && isQuoterOpen && (
-        <PrescriptionQuoterModal
-          isOpen={isQuoterOpen}
-          onClose={() => {
-            setIsQuoterOpen(false);
-            setSelectedRequest(null);
-          }}
-          quoteRequest={selectedRequest}
-        />
-      )}
+      <PrescriptionQuoterModal
+        isOpen={isQuoterOpen}
+        onClose={() => setIsQuoterOpen(false)}
+        quoteRequest={selectedRequest}
+      />
 
       {/* Settings Modal */}
       <PharmacySettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
       />
-    </div>
+    </motion.div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DollarSign,
   Plus,
@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { motion, AnimatePresence } from "motion/react";
+import { fadeUpVariant } from "@/app/lib/animations";
 import { ManualSubstituteModal } from "./ManualSubstituteModal";
 import {
   useCreateQuoteOffer,
@@ -134,7 +136,15 @@ export function PrescriptionQuoterModal({
   >(null);
   const [comments, setComments] = useState<string>(existingOffer?.comments || "");
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   const handleSetAvailabilityStatus = (
     index: number,
@@ -345,9 +355,24 @@ export function PrescriptionQuoterModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 sm:p-6">
-      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-3xl shadow-none flex flex-col max-h-[90vh] overflow-hidden">
-        {/* Header */}
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 sm:p-6"
+        >
+          <motion.div
+            variants={fadeUpVariant}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white border border-slate-200 rounded-2xl w-full max-w-3xl shadow-none flex flex-col max-h-[90vh] overflow-hidden"
+          >
+            {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50 shrink-0">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-xl bg-pharmako-care-light text-pharmako-care">
@@ -778,7 +803,7 @@ export function PrescriptionQuoterModal({
             </div>
           </div>
         </form>
-      </div>
+      </motion.div>
 
       {/* Manual Substitute Modal */}
       {substitutingItemIndex !== null && (
@@ -793,6 +818,8 @@ export function PrescriptionQuoterModal({
           }
         />
       )}
-    </div>
+      </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

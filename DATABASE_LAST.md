@@ -101,7 +101,9 @@ Perfiles B2B que ofrecen productos o servicios a los pacientes (B2B2C) y clínic
 
 *   `provider_profiles`: Perfil matriz del proveedor, indica si es `PHARMACY` o `LABORATORY`.
 *   `provider_branches`: Sedes físicas del proveedor, esencial para logística local y geolocalización de entregas.
-*   `pharmacy_inventories`: Control de stock, lotes y fechas de caducidad por medicamento en una farmacia específica.
+*   `pharmacy_inventory_batches`: Lotes o facturas de ingreso masivo, agrupando documentos/fotos de respaldo de compras.
+*   `pharmacy_inventories`: Control de stock, lotes, precios (con impuestos) y referencias a `pharmacy_inventory_batches`. Permite carga manual con campos libres.
+*   `pharmacy_sku_mappings`: Tabla de homologación (ACL). Traduce los SKUs sucios de los sistemas de farmacia (ej: A2, Profit) al ID universal de LUCA.
 *   `pharmacy_settings`: Configuraciones de la farmacia (horarios, rangos de entrega).
 *   `lab_settings`: Configuraciones y catálogo de pruebas de los laboratorios.
 

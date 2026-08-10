@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { X, Package, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { motion, AnimatePresence } from "motion/react";
+import { fadeUpVariant } from "@/app/lib/animations";
 import { usePharmacyInventory } from "../hooks/usePharmacyInventory";
 import type {
   PharmacyInventoryItem,
@@ -72,7 +74,15 @@ export function AddEditInventoryModal({
     return () => clearTimeout(timer);
   }, [itemToEdit]);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,8 +120,23 @@ export function AddEditInventoryModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-2xl shadow-none my-8 overflow-hidden space-y-0">
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 overflow-y-auto"
+        >
+          <motion.div 
+            variants={fadeUpVariant}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white border border-slate-200 rounded-2xl w-full max-w-2xl shadow-none my-8 overflow-hidden space-y-0"
+          >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-2">
@@ -381,17 +406,15 @@ export function AddEditInventoryModal({
             <Button
               type="submit"
               disabled={isCreating || isUpdating}
-              className="bg-pharmako-care text-slate-900 font-semibold hover:bg-pharmako-care-hover shadow-none rounded-xl px-6"
+              className="bg-pharmako-care text-slate-900 font-bold hover:bg-pharmako-care-hover shadow-none transition-colors duration-150"
             >
-              {isCreating || isUpdating
-                ? "Guardando..."
-                : itemToEdit
-                  ? "Actualizar Producto"
-                  : "Guardar Producto"}
+              {itemToEdit ? "Guardar Cambios" : "Registrar Producto"}
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+    )}
+  </AnimatePresence>
   );
 }

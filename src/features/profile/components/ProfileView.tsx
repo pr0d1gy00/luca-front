@@ -83,8 +83,8 @@ const userSchema = z.object({
   city_id: z.string().optional(),
   logo_url: z.string().optional(),
   signature_url: z.string().optional(),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
+  latitude: z.coerce.number().optional().or(z.literal("").transform(() => undefined)),
+  longitude: z.coerce.number().optional().or(z.literal("").transform(() => undefined)),
 });
 
 type PatientForm = z.infer<typeof patientSchema>;
@@ -461,9 +461,10 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
           mapped[k] = be[k][0];
         });
         setErrors(mapped);
-        toast.error("Por favor, corrige los campos del formulario.");
+        toast.error("Error en la validación del servidor. Revisa los campos.");
       } else {
-        toast.error("Hubo un error al actualizar los datos.");
+        toast.error("Ocurrió un error inesperado al guardar el perfil.");
+        console.error("Profile save error:", err);
       }
     } finally {
       setLoading(false);
@@ -474,7 +475,14 @@ function PatientFormInner({ initial }: { initial: PatientAccount }) {
     cities?.map((c) => ({ value: c.id, label: c.name })) || [];
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+    <form onSubmit={handleSubmit(onSubmit, (errs) => {
+      console.log("Validation errors:", errs);
+      const errorMessages = Object.values(errs)
+        .map((err) => err?.message)
+        .filter(Boolean)
+        .join(" • ");
+      toast.error(`Errores: ${errorMessages || "Revisa los campos en rojo."}`);
+    })} className="space-y-8">
       {/* Sección Superior: Avatar y Nombre */}
       <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-pharmako-border-soft">
         <div className="relative group w-24 h-24 rounded-full overflow-hidden border-1 border-pharmako-border flex items-center justify-center">
@@ -911,7 +919,14 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
     cities?.map((c) => ({ value: c.id, label: c.name })) || [];
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+    <form onSubmit={handleSubmit(onSubmit, (errs) => {
+      console.log("Validation errors:", errs);
+      const errorMessages = Object.values(errs)
+        .map((err) => err?.message)
+        .filter(Boolean)
+        .join(" • ");
+      toast.error(`Errores: ${errorMessages || "Revisa los campos en rojo."}`);
+    })} className="space-y-8">
       {/* Superior: Logo y Nombre */}
       <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-pharmako-border-soft">
         <div className="relative group w-24 h-24 rounded-full overflow-hidden border-2 border-pharmako-border bg-slate-50 shadow-sm flex items-center justify-center">
@@ -1137,9 +1152,9 @@ function UserProfileFormInner({ initial }: { initial: UserProfile }) {
           type="submit"
           disabled={!isDirty || loading}
           className={[
-            "flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 shadow-sm",
+            "flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 ",
             isDirty && !loading
-              ? "bg-pharmako-primary hover:bg-pharmako-primary-hover text-white hover:shadow-md cursor-pointer"
+              ? "bg-pharmako-care hover:bg-pharmako-care-hover text-white hover:shadow-md cursor-pointer"
               : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed",
           ].join(" ")}
         >

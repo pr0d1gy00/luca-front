@@ -24,25 +24,23 @@ export function PharmacyReportsView() {
     <div className="space-y-6">
       {/* Notion-style Tab Switcher */}
       <div className="flex items-center justify-between">
-        <div className="flex bg-slate-100 p-1 rounded-xl gap-1 border border-slate-200/60">
+        <div className="flex p-1 rounded-xl gap-1 border border-slate-200/60">
           <button
             onClick={() => setActiveTab("expirations")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-none ${
-              activeTab === "expirations"
-                ? "bg-white text-slate-900 border border-slate-200/60"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-none ${activeTab === "expirations"
+              ? "text-amber-600"
+              : "text-slate-600 hover:text-slate-900"
+              }`}
           >
             <Clock className="w-3.5 h-3.5 text-amber-600" />
             <span>Control de Vencimientos</span>
           </button>
           <button
             onClick={() => setActiveTab("controlled")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-none ${
-              activeTab === "controlled"
-                ? "bg-white text-slate-900 border border-slate-200/60"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-none ${activeTab === "controlled"
+              ? "text-red-600"
+              : "text-slate-600 hover:text-slate-900"
+              }`}
           >
             <ShieldAlert className="w-3.5 h-3.5 text-red-600" />
             <span>Libro Digital de Psicotrópicos</span>

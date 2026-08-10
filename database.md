@@ -853,20 +853,48 @@ Uploaded documents for identity/business verification.
 
 **Module purpose:** Real-time inventory management for pharmacies. Tracks stock levels, batches, expiration dates, and pricing. Enables accurate quote generation in the marketplace.
 
+### PharmacyInventoryBatch
+
+**Module purpose:** Groups multiple inventory entries into a single "batch upload" or invoice receipt, keeping a record of the backing documents/photos.
+
+| # | Field | Type | Null | Default | Description |
+|---|-------|------|------|---------|-------------|
+| 1 | `id` | `VARCHAR` | NOT NULL | — | Primary key (UUID v7) |
+| 2 | `providerId` | `VARCHAR` | NOT NULL | — | **FK -> ProviderProfile**. Pharmacy |
+| 3 | `documentUrls` | `JSON` | NULL | — | Array of S3 URLs for invoices/photos backing this batch |
+| 4 | `notes` | `VARCHAR` | NULL | — | Optional notes (e.g. "Invoice #12345") |
+| 5 | `createdAt` | `TIMESTAMP` | NOT NULL | `NOW()` | Record creation |
+| 6 | `updatedAt` | `TIMESTAMP` | NOT NULL | `NOW()` | Last update |
+
+**Indexes:**
+- `PRIMARY KEY (id)`
+- `INDEX (providerId)`
+
+---
+
 ### PharmacyInventory
 
 | # | Field | Type | Null | Default | Description |
 |---|-------|------|------|---------|-------------|
 | 1 | `id` | `VARCHAR` | NOT NULL | — | Primary key (UUID v7) |
 | 2 | `providerId` | `VARCHAR` | NOT NULL | — | **FK -> ProviderProfile**. Pharmacy owning this stock |
-| 3 | `medicationId` | `VARCHAR` | NOT NULL | — | **FK -> Medication**. Which medication |
-| 4 | `stock` | `INT` | NOT NULL | `0` | Current units available |
-| 5 | `minStockAlert` | `INT` | NULL | `10` | Threshold that triggers low-stock alert |
-| 6 | `batchNumber` | `VARCHAR` | NULL | — | Batch/lot number for traceability |
-| 7 | `expirationDate` | `DATE` | NULL | — | Expiration date of this batch |
-| 8 | `unitPrice` | `DECIMAL(10,2)` | NULL | — | Selling price per unit (used for auto-quoting) |
-| 9 | `createdAt` | `TIMESTAMP` | NOT NULL | `NOW()` | Record creation |
-| 10 | `updatedAt` | `TIMESTAMP` | NOT NULL | `NOW()` | Last update |
+| 3 | `medicationId` | `VARCHAR` | NULL | — | **FK -> Medication**. Null if manually entered |
+| 4 | `inventoryBatchId` | `VARCHAR` | NULL | — | **FK -> PharmacyInventoryBatch**. Link to batch upload |
+| 5 | `customActivePrinciple` | `VARCHAR`| NULL | — | Manual entry fallback if not in Vademecum |
+| 6 | `brandName` | `VARCHAR` | NULL | — | Manual brand entry |
+| 7 | `laboratory` | `VARCHAR` | NULL | — | Manual laboratory entry |
+| 8 | `stock` | `INT` | NOT NULL | `0` | Current units available |
+| 9 | `minStockAlert` | `INT` | NULL | `10` | Threshold that triggers low-stock alert |
+| 10 | `batchNumber` | `VARCHAR` | NULL | — | Batch/lot number for traceability |
+| 11 | `expirationDate` | `DATE` | NULL | — | Expiration date of this batch |
+| 12 | `unitPrice` | `DECIMAL(10,2)` | NULL | — | Selling price per unit (used for auto-quoting) |
+| 13 | `isTaxExempt` | `BOOLEAN` | NOT NULL | `false` | If true, price has no tax. |
+| 14 | `taxRate` | `DECIMAL(5,2)` | NULL | `0.00` | Applied tax rate (e.g. 16.00). Defaults to 0% if missing from legacy sync. |
+| 15 | `externalSku` | `VARCHAR` | NULL | — | Original code sent by pharmacy legacy system |
+| 16 | `lastSyncAt` | `TIMESTAMP` | NULL | — | Timestamp of last external sync |
+| 17 | `isActive` | `BOOLEAN` | NOT NULL | `true` | If false, medication is no longer sold. (Soft Delete) |
+| 18 | `createdAt` | `TIMESTAMP` | NOT NULL | `NOW()` | Record creation |
+| 19 | `updatedAt` | `TIMESTAMP` | NOT NULL | `NOW()` | Last update |
 
 **Business rules:**
 - Unique constraint: `(providerId, medicationId, batchNumber)` — same pharmacy can't have two records for the same batch
@@ -874,6 +902,8 @@ Uploaded documents for identity/business verification.
 - `unitPrice` is used to auto-generate quote offers in the marketplace
 - `batchNumber` enables recall tracking in case of medication alerts
 - Pharmacies update `stock` after each sale/dispensation
+- If `taxRate` is not provided during external sync and `isTaxExempt` is false, fallback to `0.00` until provided.
+- If a product disappears from an external sync file (CSV), it shouldn't be automatically marked `isActive=false`. Instead, a notification should be emitted to the pharmacy asking to review and manually update/delete.
 
 **Indexes:**
 - `PRIMARY KEY (id)`
@@ -881,8 +911,33 @@ Uploaded documents for identity/business verification.
 - `INDEX (providerId)`
 - `INDEX (medicationId)`
 - `INDEX (expirationDate)` WHERE expirationDate IS NOT NULL — for expiration alerts
+- `INDEX (isActive)`
 
 **Zod schema:** `src/features/inventory/schemas.ts`
+
+---
+
+### PharmacySKUMapping
+
+**Module purpose:** Anti-Corruption Layer (ACL). Maps legacy internal SKUs from pharmacy systems (CSV, A2, Profit) to LUCA's universal `medicationId`.
+
+| # | Field | Type | Null | Default | Description |
+|---|-------|------|------|---------|-------------|
+| 1 | `id` | `VARCHAR` | NOT NULL | — | Primary key (UUID v7) |
+| 2 | `providerId` | `VARCHAR` | NOT NULL | — | **FK -> ProviderProfile**. Pharmacy |
+| 3 | `pharmacySku` | `VARCHAR` | NOT NULL | — | The legacy code they send (e.g., "COD-455") |
+| 4 | `medicationId` | `VARCHAR` | NOT NULL | — | **FK -> Medication**. LUCA's universal code |
+| 5 | `confidenceScore` | `INT` | NOT NULL | `100` | Match confidence (0-100) if AI-matched |
+| 6 | `createdAt` | `TIMESTAMP` | NOT NULL | `NOW()` | Record creation |
+| 7 | `updatedAt` | `TIMESTAMP` | NOT NULL | `NOW()` | Last update |
+
+**Business rules:**
+- Unique constraint: `(providerId, pharmacySku)` — A pharmacy can't map the same SKU to multiple medications.
+
+**Indexes:**
+- `PRIMARY KEY (id)`
+- `UNIQUE (providerId, pharmacySku)`
+- `INDEX (medicationId)`
 
 ---
 
