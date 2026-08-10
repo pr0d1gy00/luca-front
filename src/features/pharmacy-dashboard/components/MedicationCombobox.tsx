@@ -36,10 +36,17 @@ export function MedicationCombobox({
 }: MedicationComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [page, setPage] = React.useState(1);
   const debouncedSearch = useDebounce(searchTerm, 300);
 
-  const { data, isLoading } = useMedications(debouncedSearch, 1);
+  const { data, isLoading } = useMedications(debouncedSearch, page);
   const medications = data?.data || [];
+  const lastPage = data?.lastPage || 1;
+
+  // Reset page when search term changes
+  React.useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   // When value is completely cleared externally
   React.useEffect(() => {
@@ -133,6 +140,37 @@ export function MedicationCombobox({
                   }}
                 >
                   Usar "{searchTerm}"
+                </Button>
+              </div>
+            )}
+            {!isLoading && lastPage > 1 && (
+              <div className="flex items-center justify-between p-2 border-t border-slate-100">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage(p => Math.max(1, p - 1));
+                  }}
+                  disabled={page === 1}
+                >
+                  Anterior
+                </Button>
+                <span className="text-xs text-slate-500 font-medium">
+                  {page} / {lastPage}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage(p => Math.min(lastPage, p + 1));
+                  }}
+                  disabled={page === lastPage}
+                >
+                  Siguiente
                 </Button>
               </div>
             )}

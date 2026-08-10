@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "motion/react";
 import { fadeUpVariant } from "@/app/lib/animations";
 import { usePharmacyInventory } from "../hooks/usePharmacyInventory";
+import { MedicationCombobox } from "./MedicationCombobox";
 import type {
   PharmacyInventoryItem,
   SaleCondition,
@@ -169,12 +170,21 @@ export function AddEditInventoryModal({
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1">
                 Monodroga / Principio Activo
               </label>
-              <Input
-                type="text"
+              <MedicationCombobox
                 value={activeIngredient}
-                onChange={(e) => setActiveIngredient(e.target.value)}
+                onSelect={(medication, customText) => {
+                  setActiveIngredient(customText);
+                  if (medication) {
+                    setMedicationId(medication.id);
+                    if ((medication as any).laboratory) {
+                      setLaboratory((medication as any).laboratory);
+                    }
+                  } else {
+                    setMedicationId(0); // Assuming 0 or null represents custom
+                  }
+                }}
                 placeholder="Ej: Acetaminofén / Ibuprofeno"
-                className="h-10 border-slate-200 rounded-xl text-xs text-slate-900 shadow-none"
+                className="h-10 border-slate-200 rounded-xl text-xs text-slate-900 shadow-none bg-white"
               />
             </div>
             <div>
