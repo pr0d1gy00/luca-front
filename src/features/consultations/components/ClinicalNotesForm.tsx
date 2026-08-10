@@ -185,7 +185,9 @@ export function ClinicalNotesForm({
   const [selectedServiceUuid, setSelectedServiceUuid] = useState("");
   const [serviceNotes, setServiceNotes] = useState("");
   const [serviceQty, setServiceQty] = useState(1);
-  const [serviceAttachments, setServiceAttachments] = useState<Array<{ url: string; file?: File; isUploading?: boolean; name?: string }>>([]);
+  const [serviceAttachments, setServiceAttachments] = useState<
+    Array<{ url: string; file?: File; isUploading?: boolean; name?: string }>
+  >([]);
 
   const handleServiceFilesAdded = async (acceptedFiles: File[]) => {
     const newAttachments = acceptedFiles.map((file) => ({
@@ -194,27 +196,35 @@ export function ClinicalNotesForm({
       isUploading: true,
       name: file.name,
     }));
-    
+
     setServiceAttachments((prev) => [...prev, ...newAttachments]);
 
     for (const file of acceptedFiles) {
       try {
         const formData = new FormData();
         formData.append("file", file);
-        
-        const response = await apiClient.post("/consultations/service-attachments/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+
+        const response = await apiClient.post(
+          "/consultations/service-attachments/upload",
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          },
+        );
 
         const url = response.data.url;
-        
-        setServiceAttachments((prev) => 
-          prev.map((att) => att.file === file ? { ...att, isUploading: false, url } : att)
+
+        setServiceAttachments((prev) =>
+          prev.map((att) =>
+            att.file === file ? { ...att, isUploading: false, url } : att,
+          ),
         );
       } catch (error) {
         console.error("Upload error", error);
         toast.error(`Error al subir el archivo ${file.name}`);
-        setServiceAttachments((prev) => prev.filter((att) => att.file !== file));
+        setServiceAttachments((prev) =>
+          prev.filter((att) => att.file !== file),
+        );
       }
     }
   };
@@ -269,7 +279,7 @@ export function ClinicalNotesForm({
     return { value, unit };
   };
 
-  const handleApplyCombo = (combo: {
+  const handleApplyCombo = async (combo: {
     title: string;
     items: Array<{
       medicationId: string;
@@ -304,6 +314,51 @@ export function ClinicalNotesForm({
     });
 
     setMedForms(newMedForms);
+
+    const comboMedIds = combo.items.map((item) => item.medicationId);
+    const missingIds = comboMedIds.filter(
+      (id) => !medsOptions.some((m) => m.id === id),
+    );
+
+    if (missingIds.length > 0) {
+      try {
+        const fetchedMissing = await Promise.all(
+          missingIds.map(async (id) => {
+            try {
+              const { data: res } = await apiClient.get(`/medications/${id}`);
+              const m = res?.data;
+              if (m) {
+                return {
+                  id: m.uuid,
+                  activePrinciple: m.active_principle || m.name || "",
+                  commercialName: m.commercial_name || "",
+                  concentration: m.concentration || "—",
+                  presentation: m.presentation || "TABLETA",
+                  administrationRoute: m.administration_route || "ORAL",
+                };
+              }
+            } catch (e) {
+              console.error(`Error loading combo med ${id}:`, e);
+            }
+            return null;
+          }),
+        );
+        const validMissing = fetchedMissing.filter(
+          (m) => m !== null,
+        ) as MedOption[];
+        if (validMissing.length > 0) {
+          setMedsOptions((prev) => {
+            const newItems = validMissing.filter(
+              (v) => !prev.some((p) => p.id === v.id),
+            );
+            return [...prev, ...newItems];
+          });
+        }
+      } catch (err) {
+        console.error("Error loading combo medications:", err);
+      }
+    }
+
     toast.success(`Combo "${combo.title}" aplicado correctamente.`);
   };
 
@@ -766,7 +821,11 @@ export function ClinicalNotesForm({
   const watchedPrescriptions = watch("prescriptions");
 
   // Build dose string from medication selection + structured form
-  const buildDoseString = (index: number, medicationId: string, overrideForm?: MedFormState): string => {
+  const buildDoseString = (
+    index: number,
+    medicationId: string,
+    overrideForm?: MedFormState,
+  ): string => {
     const med = meds.find((m) => m.id === medicationId);
     const form = overrideForm || medForms[index];
     if (!med) return "";
@@ -776,14 +835,20 @@ export function ClinicalNotesForm({
   };
 
   // Build frequency string
-  const buildFreqString = (index: number, overrideForm?: MedFormState): string => {
+  const buildFreqString = (
+    index: number,
+    overrideForm?: MedFormState,
+  ): string => {
     const form = overrideForm || medForms[index];
     if (!form) return "";
     return `Cada ${form.freqValue} ${form.freqPeriod}`;
   };
 
   // Build duration string
-  const buildDurString = (index: number, overrideForm?: MedFormState): string => {
+  const buildDurString = (
+    index: number,
+    overrideForm?: MedFormState,
+  ): string => {
     const form = overrideForm || medForms[index];
     if (!form) return "";
     return `${form.durValue} ${form.durUnit}`;
@@ -810,13 +875,22 @@ export function ClinicalNotesForm({
     const freshForm = updated[index];
     const medId = watchedPrescriptions[index]?.medicationId;
     if (medId && field === "quantity") {
-      setValue(`prescriptions.${index}.dose`, buildDoseString(index, medId, freshForm));
+      setValue(
+        `prescriptions.${index}.dose`,
+        buildDoseString(index, medId, freshForm),
+      );
     }
     if (field === "freqValue" || field === "freqPeriod") {
-      setValue(`prescriptions.${index}.frequency`, buildFreqString(index, freshForm));
+      setValue(
+        `prescriptions.${index}.frequency`,
+        buildFreqString(index, freshForm),
+      );
     }
     if (field === "durValue" || field === "durUnit") {
-      setValue(`prescriptions.${index}.duration`, buildDurString(index, freshForm));
+      setValue(
+        `prescriptions.${index}.duration`,
+        buildDurString(index, freshForm),
+      );
     }
   };
 
@@ -861,15 +935,7 @@ export function ClinicalNotesForm({
 
   // Show prescription preview
   if (showPrescription && submittedData && patient && doctor) {
-    const prescriptionItems = submittedData.prescriptions.map((p) => {
-      const med = meds.find((m) => m.id === p.medicationId);
-      return {
-        ...p,
-        medicationId: med
-          ? `${med.activePrinciple} ${med.concentration}`
-          : p.medicationId,
-      };
-    });
+    const prescriptionItems = submittedData.prescriptions;
 
     const labs = submittedData.laboratorios || [];
 
@@ -1720,7 +1786,11 @@ export function ClinicalNotesForm({
               </div>
             </div>
 
-            {(patient as Patient & { upcomingFollowUp?: { scheduled_date: string } })?.upcomingFollowUp && (
+            {(
+              patient as Patient & {
+                upcomingFollowUp?: { scheduled_date: string };
+              }
+            )?.upcomingFollowUp && (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 items-start">
                 <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <div>
@@ -1728,8 +1798,23 @@ export function ClinicalNotesForm({
                     Seguimiento ya agendado
                   </h4>
                   <p className="text-xs text-amber-700 mt-1">
-                    Este paciente ya tiene un seguimiento pendiente programado para el <strong>{new Date((patient as Patient & { upcomingFollowUp?: { scheduled_date: string } }).upcomingFollowUp!.scheduled_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' })}</strong>.
-                    Por favor verificá si es necesario agregar otro.
+                    Este paciente ya tiene un seguimiento pendiente programado
+                    para el{" "}
+                    <strong>
+                      {new Date(
+                        (
+                          patient as Patient & {
+                            upcomingFollowUp?: { scheduled_date: string };
+                          }
+                        ).upcomingFollowUp!.scheduled_date,
+                      ).toLocaleDateString("es-ES", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                        timeZone: "UTC",
+                      })}
+                    </strong>
+                    . Por favor verificá si es necesario agregar otro.
                   </p>
                 </div>
               </div>
@@ -1925,7 +2010,9 @@ export function ClinicalNotesForm({
                   files={serviceAttachments}
                   onFilesAdded={handleServiceFilesAdded}
                   onFileRemove={(index) => {
-                    setServiceAttachments(prev => prev.filter((_, i) => i !== index));
+                    setServiceAttachments((prev) =>
+                      prev.filter((_, i) => i !== index),
+                    );
                   }}
                   maxFiles={6}
                 />
@@ -1957,8 +2044,10 @@ export function ClinicalNotesForm({
                     );
                     if (!selected) return;
 
-                    if (serviceAttachments.some(a => a.isUploading)) {
-                      toast.error("Espera a que los archivos terminen de subir.");
+                    if (serviceAttachments.some((a) => a.isUploading)) {
+                      toast.error(
+                        "Espera a que los archivos terminen de subir.",
+                      );
                       return;
                     }
 
@@ -1967,7 +2056,9 @@ export function ClinicalNotesForm({
                       price: selected.price,
                       quantity: serviceQty,
                       notes: serviceNotes || undefined,
-                      attachments: serviceAttachments.map(a => a.url).filter(Boolean),
+                      attachments: serviceAttachments
+                        .map((a) => a.url)
+                        .filter(Boolean),
                     });
 
                     // Si la duración es mayor a 0, notificar retraso estimado
@@ -2058,15 +2149,28 @@ export function ClinicalNotesForm({
                             )}
                           </div>
                           {val.notes && (
-                            <div className="text-xs text-slate-600 mt-2 p-3 bg-white rounded-lg border border-slate-100 prose prose-sm max-w-none shadow-none" dangerouslySetInnerHTML={{ __html: val.notes }} />
+                            <div
+                              className="text-xs text-slate-600 mt-2 p-3 bg-white rounded-lg border border-slate-100 prose prose-sm max-w-none shadow-none"
+                              dangerouslySetInnerHTML={{ __html: val.notes }}
+                            />
                           )}
                           {val.attachments && val.attachments.length > 0 && (
                             <div className="flex flex-wrap gap-2 mt-2">
                               {val.attachments.map((url, i) => {
                                 const isImage = url.match(/\.(jpeg|jpg|png)$/i);
                                 return (
-                                  <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs font-medium text-pharmako-care bg-pharmako-care-light px-2 py-1 rounded-md border border-pharmako-care/20 hover:bg-pharmako-care hover:text-white transition-colors shadow-none">
-                                    {isImage ? <ImageIcon className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
+                                  <a
+                                    key={i}
+                                    href={url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1 text-xs font-medium text-pharmako-care bg-pharmako-care-light px-2 py-1 rounded-md border border-pharmako-care/20 hover:bg-pharmako-care hover:text-white transition-colors shadow-none"
+                                  >
+                                    {isImage ? (
+                                      <ImageIcon className="w-3 h-3" />
+                                    ) : (
+                                      <FileText className="w-3 h-3" />
+                                    )}
                                     Adjunto {i + 1}
                                   </a>
                                 );
