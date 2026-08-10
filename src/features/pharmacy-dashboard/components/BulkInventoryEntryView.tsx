@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Upload, Plus, Trash2, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import type { Medication } from "@/features/medications/schemas";
 
 interface BulkEntryItem {
   id: string;
+  uuid?: string;
   medicationId?: string;
   customActivePrinciple: string;
   brandName: string;
@@ -28,12 +29,20 @@ interface BulkEntryItem {
   unitPrice: number;
 }
 
-export function BulkInventoryEntryView({ onBack }: { onBack?: () => void }) {
+export function BulkInventoryEntryView({ 
+  onBack,
+  initialData,
+}: { 
+  onBack?: () => void;
+  initialData?: any;
+}) {
   const { user } = useAuthStore();
-  const providerId = user?.id || "provider-id-fallback"; // Should get actual providerId
+  const providerId = user?.id || "provider-id-fallback";
 
   const createBatchMutation = useCreateBatchMutation();
   const uploadDocumentsMutation = useUploadDocumentsMutation();
+  // Using any to avoid strict typing errors since we just need the PUT request
+  const updateBatchMutation = (require("../hooks/usePharmacyBatches") as any).useUpdateBatchMutation();
 
   const [documents, setDocuments] = useState<Array<{ url: string; file?: File; name?: string }>>([]);
   const [notes, setNotes] = useState("");
@@ -48,6 +57,28 @@ export function BulkInventoryEntryView({ onBack }: { onBack?: () => void }) {
       unitPrice: 0,
     },
   ]);
+
+  useEffect(() => {
+    if (initialData) {
+      setNotes(initialData.notes || "");
+      if (initialData.document_urls) {
+        setDocuments(initialData.document_urls.map((url: string) => ({ url, name: "Documento adjunto" })));
+      }
+      if (initialData.items && initialData.items.length > 0) {
+        setItems(initialData.items.map((item: any, index: number) => ({
+          id: item.id?.toString() || index.toString(),
+          uuid: item.uuid,
+          medicationId: item.medication?.uuid,
+          customActivePrinciple: item.active_ingredient || "",
+          brandName: item.laboratory || item.medication?.commercial_name || "",
+          laboratory: item.laboratory || "",
+          stock: item.stock || 0,
+          batchNumber: item.batch_number || "",
+          unitPrice: Number(item.unit_price || 0),
+        })));
+      }
+    }
+  }, [initialData]);
 
   const handleAddItem = () => {
     setItems([
@@ -107,13 +138,14 @@ export function BulkInventoryEntryView({ onBack }: { onBack?: () => void }) {
       }
 
       // 2. Prepare payload
-      const payload: BulkInventoryUpload = {
+      const payload: any = {
         batch: {
           providerId,
-          documentUrls: uploadedUrls,
+          documentUrls: uploadedUrls.length > 0 ? uploadedUrls : (initialData?.document_urls || undefined),
           notes,
         },
         items: items.map((i) => ({
+          uuid: i.uuid || undefined,
           providerId,
           medicationId: i.medicationId || undefined,
           customActivePrinciple: i.customActivePrinciple || undefined,
@@ -128,8 +160,19 @@ export function BulkInventoryEntryView({ onBack }: { onBack?: () => void }) {
         })),
       };
 
-      // 3. Create batch
-      await createBatchMutation.mutateAsync(payload);
+      if (initialData && initialData.uuid) {
+        // Mode: Edit
+        // Extract documentUrls into top level as update endpoint expects
+        const editPayload = {
+          notes: payload.batch.notes,
+          documentUrls: payload.batch.documentUrls,
+          items: payload.items,
+        };
+        await updateBatchMutation.mutateAsync({ uuid: initialData.uuid, data: editPayload });
+      } else {
+        // Mode: Create
+        await createBatchMutation.mutateAsync(payload);
+      }
       
       // Cleanup on success
       if (onBack) onBack();
@@ -138,7 +181,7 @@ export function BulkInventoryEntryView({ onBack }: { onBack?: () => void }) {
     }
   };
 
-  const isSaving = uploadDocumentsMutation.isPending || createBatchMutation.isPending;
+  const isSaving = uploadDocumentsMutation.isPending || createBatchMutation.isPending || (updateBatchMutation?.isPending ?? false);
 
   return (
     <div className="space-y-6">
@@ -146,11 +189,10 @@ export function BulkInventoryEntryView({ onBack }: { onBack?: () => void }) {
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-bold text-slate-900">
-              Carga Masiva de Lote
+              {initialData ? "Editar Lote / Factura" : "Carga Masiva de Lote"}
             </h2>
             <p className="text-sm text-slate-500">
-              Registra múltiples medicamentos o sube las facturas para
-              procesarlas.
+              {initialData ? "Modifica los productos o documentos ingresados en este lote." : "Registra múltiples medicamentos o sube las facturas para procesarlas."}
             </p>
           </div>
         </div>
