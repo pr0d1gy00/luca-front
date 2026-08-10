@@ -47,15 +47,15 @@ export function QuoteOffersTab({ offers, onCheckout }: QuoteOffersTabProps) {
         // Asumiendo que el backend nos devuelve 'prices_manual' o al menos el total
         let unitPrice = 0;
         if (item.prices_manual && item.prices_manual[offer.currency || "USD"]) {
-           unitPrice = Number(item.prices_manual[offer.currency || "USD"]);
+          unitPrice = Number(item.prices_manual[offer.currency || "USD"]);
         }
         total += unitPrice * (item.quantity || 1);
       }
     });
-    
+
     // Si la suma es 0 (porque no hay desgloses), fallamos graciosamente al precio de la oferta
     if (total === 0 && itemIds.size === itemArray.length) {
-       return Number(offer.price);
+      return Number(offer.price);
     }
     return total;
   };
@@ -83,7 +83,7 @@ export function QuoteOffersTab({ offers, onCheckout }: QuoteOffersTabProps) {
         return (
           <div
             key={offer.id}
-            className="p-5 bg-white rounded-xl border border-slate-200 shadow-sm"
+            className="p-5 bg-white rounded-xl border border-slate-200"
           >
             {/* Header de Farmacia */}
             <div className="flex items-start justify-between gap-4 mb-4 pb-4 border-b border-slate-100">
@@ -135,11 +135,10 @@ export function QuoteOffersTab({ offers, onCheckout }: QuoteOffersTabProps) {
                   <div
                     key={item.id}
                     onClick={() => toggleItem(offer.id, item.id)}
-                    className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
-                      isSelected
-                        ? "bg-pharmako-care/5 border-pharmako-care/40"
-                        : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50"
-                    }`}
+                    className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${isSelected
+                      ? "bg-pharmako-care/5 border-pharmako-care/40"
+                      : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50"
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <button type="button" className="text-pharmako-care">
@@ -180,7 +179,7 @@ export function QuoteOffersTab({ offers, onCheckout }: QuoteOffersTabProps) {
               <Button
                 disabled={currentSelected.size === 0}
                 onClick={() => onCheckout(offer, Array.from(currentSelected))}
-                className="bg-pharmako-care hover:bg-pharmako-care-hover text-white shadow-none font-bold"
+                className="bg-pharmako-care hover:bg-pharmako-care-hover text-white shadow-none font-bold h-11"
               >
                 {isFullSelection ? "Reservar Presupuesto Completo" : "Reservar Selección"}
               </Button>

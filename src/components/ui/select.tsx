@@ -1,8 +1,24 @@
-"use client";
-
 import * as React from "react";
-import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
+
+interface SelectContextValue {
+	value?: string;
+	onValueChange?: (value: string) => void;
+	isOpen: boolean;
+	setIsOpen: (isOpen: boolean) => void;
+	selectedText: React.ReactNode;
+}
+
+const SelectContext = React.createContext<SelectContextValue | null>(null);
+
+function useSelectContext() {
+	const context = React.useContext(SelectContext);
+	if (!context) {
+		throw new Error("Select components must be used within a <Select>");
+	}
+	return context;
+}
 
 export function SelectTrigger({
 	className,
@@ -13,27 +29,38 @@ export function SelectTrigger({
 	children?: React.ReactNode;
 	onClick?: () => void;
 }) {
+	const { isOpen, setIsOpen } = useSelectContext();
 	return (
 		<button
 			type="button"
-			onClick={onClick}
+			onClick={(e) => {
+				setIsOpen(!isOpen);
+				onClick?.();
+			}}
 			className={cn(
-				"flex h-10 w-full items-center justify-between rounded-lg border border-pharmako-border bg-white px-3 py-2 text-sm",
-				"text-pharmako-text-primary",
-				"focus:outline-none focus:ring-2 focus:ring-pharmako-primary/20 focus:border-pharmako-primary",
-				"disabled:cursor-not-allowed disabled:opacity-50",
-				"hover:border-pharmako-primary/50 transition-colors",
+				"flex h-10 w-full items-center justify-between rounded-md border border-pharmako-border bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-pharmako-text-muted focus:outline-none focus:ring-2 focus:ring-pharmako-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
 				className,
 			)}
 		>
 			{children}
-			<ChevronDown className="ml-2 h-4 w-4 shrink-0 text-pharmako-text-muted" />
+			<ChevronDown className="ml-2 h-4 w-4 shrink-0 text-pharmako-text-muted opacity-50" />
 		</button>
 	);
 }
 
-export function SelectValue({ children }: { children?: React.ReactNode }) {
-	return <span className="text-pharmako-text-primary">{children}</span>;
+export function SelectValue({
+	children,
+	placeholder,
+}: {
+	children?: React.ReactNode;
+	placeholder?: string;
+}) {
+	const { selectedText, value } = useSelectContext();
+	return (
+		<span className="text-pharmako-text-primary block truncate">
+			{value ? selectedText : (children || placeholder)}
+		</span>
+	);
 }
 
 export function SelectContent({
@@ -43,37 +70,74 @@ export function SelectContent({
 	children?: React.ReactNode;
 	className?: string;
 }) {
+	const { isOpen } = useSelectContext();
+
+	if (!isOpen) return null;
+
 	return (
 		<div
 			className={cn(
-				"absolute top-full left-0 right-0 z-50 mt-1",
-				"overflow-hidden rounded-lg border border-pharmako-border bg-white shadow-lg",
+				"absolute top-full left-0 z-50 mt-1 min-w-[8rem] w-full",
+				"overflow-hidden rounded-lg border border-pharmako-border bg-white shadow-md",
 				"animate-in fade-in-0 zoom-in-95 duration-150",
 				className,
 			)}
 		>
-			<div className="p-1 max-h-60 overflow-auto">{children}</div>
+			<div className="p-1 max-h-60 overflow-auto w-full">{children}</div>
 		</div>
 	);
 }
 
 export function SelectItem({
+	className,
 	value,
 	children,
 	onClick,
 }: {
+	className?: string;
 	value: string;
 	children?: React.ReactNode;
 	onClick?: () => void;
 }) {
+	const { value: selectedValue, onValueChange, setIsOpen } = useSelectContext();
+	const isSelected = selectedValue === value;
+
 	return (
 		<button
 			type="button"
-			onClick={onClick}
-			value={value}
-			className="relative w-full cursor-pointer select-none rounded-md py-2 pl-8 pr-3 text-left text-sm hover:bg-pharmako-primary-light focus:bg-pharmako-primary-light outline-none"
+			onClick={(e) => {
+				onValueChange?.(value);
+				setIsOpen(false);
+				onClick?.();
+			}}
+			className={cn(
+				"relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors",
+				"hover:bg-pharmako-primary-light hover:text-pharmako-primary-dark focus:bg-pharmako-primary-light focus:text-pharmako-primary-dark",
+				isSelected && "bg-pharmako-primary-light text-pharmako-primary-dark font-medium",
+				className,
+			)}
 		>
-			{children}
+			{/* Checkmark for selected item */}
+			<span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+				{isSelected && (
+					<svg
+						width="15"
+						height="15"
+						viewBox="0 0 15 15"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+						className="h-4 w-4 fill-current"
+					>
+						<path
+							d="M11.4669 3.72684C11.7558 3.91574 11.8369 4.30308 11.648 4.59198L7.39799 11.092C7.29783 11.2452 7.13556 11.3467 6.95402 11.3699C6.77247 11.3931 6.58989 11.3355 6.45446 11.2124L3.70446 8.71241C3.44905 8.48022 3.43023 8.08494 3.66242 7.82953C3.89461 7.57412 4.28989 7.55529 4.5453 7.78749L6.75292 9.79441L10.6018 3.90792C10.7907 3.61902 11.178 3.53795 11.4669 3.72684Z"
+							fill="currentColor"
+							fillRule="evenodd"
+							clipRule="evenodd"
+						></path>
+					</svg>
+				)}
+			</span>
+			<span className="block truncate">{children}</span>
 		</button>
 	);
 }
@@ -100,12 +164,11 @@ export function Select({
 	const [isOpen, setIsOpen] = React.useState(false);
 	const containerRef = React.useRef<HTMLDivElement>(null);
 
-	const currentValue = value ?? internalValue;
+	const currentValue = value !== undefined ? value : internalValue;
 
-	const handleSelect = (newValue: string) => {
+	const handleValueChange = (newValue: string) => {
 		setInternalValue(newValue);
 		onValueChange?.(newValue);
-		setIsOpen(false);
 	};
 
 	// Close on click outside
@@ -125,13 +188,12 @@ export function Select({
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, [isOpen]);
 
-	// Get selected display text
-	let selectedText = "Seleccionar";
+	// Extract selected text from children
+	let selectedText: React.ReactNode = null;
 	React.Children.forEach(children, (child) => {
 		if (
 			React.isValidElement(child) &&
-			(child.type === SelectContent ||
-				String(child.type).includes("SelectContent"))
+			(child.type === SelectContent || String(child.type).includes("SelectContent"))
 		) {
 			const childElement = child as React.ReactElement<{
 				children?: React.ReactNode;
@@ -142,15 +204,14 @@ export function Select({
 					(item: React.ReactNode) => {
 						if (
 							React.isValidElement(item) &&
-							(item.type === SelectItem ||
-								String(item.type).includes("SelectItem"))
+							(item.type === SelectItem || String(item.type).includes("SelectItem"))
 						) {
 							const itemElement = item as React.ReactElement<{
 								value?: string;
 								children?: React.ReactNode;
 							}>;
 							if (itemElement.props?.value === currentValue) {
-								selectedText = String(itemElement.props?.children);
+								selectedText = itemElement.props?.children;
 							}
 						}
 					},
@@ -160,41 +221,18 @@ export function Select({
 	});
 
 	return (
-		<div ref={containerRef} className={cn("relative", className)}>
-			<SelectTrigger
-				onClick={() => !disabled && setIsOpen(!isOpen)}
-				className={cn(disabled && "opacity-50 cursor-not-allowed")}
-			>
-				<SelectValue>{selectedText}</SelectValue>
-			</SelectTrigger>
-
-			{isOpen && (
-				<SelectContent>
-					{/* Pass handleSelect to each SelectItem */}
-					{React.Children.map(children, (child) => {
-						if (
-							React.isValidElement(child) &&
-							(child.type === SelectItem ||
-								String(child.type).includes("SelectItem"))
-						) {
-							const itemElement = child as React.ReactElement<{
-								value?: string;
-								children?: React.ReactNode;
-							}>;
-							return (
-								<SelectItem
-									key={itemElement.props?.value}
-									value={itemElement.props?.value ?? ""}
-									onClick={() => handleSelect(itemElement.props?.value ?? "")}
-								>
-									{itemElement.props?.children}
-								</SelectItem>
-							);
-						}
-						return child;
-					})}
-				</SelectContent>
-			)}
-		</div>
+		<SelectContext.Provider
+			value={{
+				value: currentValue,
+				onValueChange: handleValueChange,
+				isOpen,
+				setIsOpen: disabled ? () => {} : setIsOpen,
+				selectedText,
+			}}
+		>
+			<div ref={containerRef} className={cn("relative w-full", className)}>
+				{children}
+			</div>
+		</SelectContext.Provider>
 	);
 }
