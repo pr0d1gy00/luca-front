@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,12 +53,50 @@ export function InventoryManagementTable() {
         accessorFn: (row) => row.medication?.name || row.active_ingredient || "Producto Farmacéutico",
         cell: (info) => {
           const item = info.row.original;
+          
+          let displayName = item.active_ingredient || "Producto Farmacéutico";
+          let details = "";
+          
+          if (item.medication) {
+            displayName = item.medication.active_principle || item.medication.name || displayName;
+            if (item.medication.concentration) {
+              displayName += ` ${item.medication.concentration}`;
+            }
+            if (item.medication.presentation) {
+              details = item.medication.presentation;
+            }
+          }
+
           return (
-            <div>
-              <div className="font-bold text-slate-900">{info.getValue() as string}</div>
-              <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
-                {item.ean_code && <span>EAN: {item.ean_code}</span>}
-                {item.batch_number && <span>• Lote: {item.batch_number}</span>}
+            <div className="flex items-start gap-3">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  info.row.toggleExpanded();
+                }}
+                className="mt-0.5 p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    info.row.getIsExpanded() ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              <div>
+                <div className="font-bold text-slate-900">{displayName}</div>
+                <div className="text-xs text-slate-500 flex items-center gap-2 mt-1">
+                  {details && <span className="font-medium text-slate-700">{details}</span>}
+                  {item.ean_code && (
+                    <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-md uppercase text-[10px] font-medium tracking-wide">
+                      EAN: {item.ean_code}
+                    </span>
+                  )}
+                  {item.batch_number && (
+                    <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-md uppercase text-[10px] font-medium tracking-wide">
+                      Lote: {item.batch_number}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           );
@@ -96,12 +135,12 @@ export function InventoryManagementTable() {
       },
       {
         accessorKey: "package_stock",
-        header: "Stock Cajas",
+        header: () => <div className="text-right">Stock Cajas</div>,
         cell: (info) => {
           const item = info.row.original;
           const isLowStock = item.package_stock <= item.min_stock_alert;
           return (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-end gap-2">
               <span className="font-bold text-slate-900">{item.package_stock} Cajas</span>
               {isLowStock && (
                 <span className="p-1 rounded-md bg-amber-100 text-amber-800" title="Stock Crítico">
@@ -118,9 +157,14 @@ export function InventoryManagementTable() {
         cell: (info) => {
           const item = info.row.original;
           return item.allows_fractioning ? (
-            <span className="text-emerald-700 font-semibold text-xs">
-              Sí ({item.units_per_package} {item.fraction_unit_name}s/caja) • Stock: {item.fraction_stock} {item.fraction_unit_name}s
-            </span>
+            <div className="flex flex-col">
+              <span className="text-emerald-700 font-bold text-sm">
+                {item.fraction_stock} {item.fraction_unit_name}s
+              </span>
+              <span className="text-slate-400 text-[10px] uppercase tracking-wide font-medium">
+                {item.units_per_package} por caja
+              </span>
+            </div>
           ) : (
             <span className="text-slate-400 text-xs">Solo Cajas</span>
           );
@@ -128,19 +172,20 @@ export function InventoryManagementTable() {
       },
       {
         id: "prices",
-        header: "Precios ($ / Bs / €)",
+        header: () => <div className="text-right">Precios</div>,
         cell: (info) => {
           const item = info.row.original;
           return (
-            <span className="text-xs font-medium text-slate-900">
+            <div className="flex flex-col items-end">
               {item.prices_manual ? (
-                <span>
-                  ${item.prices_manual.USD || 0} USD • {item.prices_manual.VES || 0} Bs
-                </span>
+                <>
+                  <span className="font-bold text-slate-900">${item.prices_manual.USD || 0} USD</span>
+                  <span className="text-[10px] text-slate-500 font-medium tracking-wide">{item.prices_manual.VES || 0} Bs</span>
+                </>
               ) : (
-                <span>${item.unit_price || 0} USD</span>
+                <span className="font-bold text-slate-900">${item.unit_price || 0} USD</span>
               )}
-            </span>
+            </div>
           );
         },
       },
@@ -153,12 +198,12 @@ export function InventoryManagementTable() {
             <div className="flex items-center justify-end">
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => handleOpenEditModal(item)}
-                className="text-pharmako-primary hover:text-pharmako-primary-hover hover:bg-pharmako-primary/10 transition-colors duration-150"
+                className="text-pharmako-primary hover:text-pharmako-primary-hover hover:bg-pharmako-primary/10 transition-colors duration-150 h-8 w-8"
+                title="Editar"
               >
-                <Edit2 className="w-4 h-4 mr-1" />
-                Editar
+                <Edit2 className="w-4 h-4" />
               </Button>
             </div>
           );
@@ -218,7 +263,59 @@ export function InventoryManagementTable() {
 
       {/* Main Table */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-none overflow-hidden">
-        <DataTable columns={columns} data={inventory} isLoading={isLoading} />
+        <DataTable 
+          columns={columns} 
+          data={inventory} 
+          isLoading={isLoading} 
+          renderSubComponent={({ row }) => {
+            const item = row.original;
+            return (
+              <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex flex-col sm:flex-row gap-6">
+                {/* Detalles del Producto */}
+                <div className="flex-1 space-y-3">
+                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">Detalles del Producto</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[11px] font-medium text-slate-500 uppercase">Ubicación / Estantería</p>
+                      <p className="text-sm font-semibold text-slate-900">{item.location_rack || "No especificada"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-medium text-slate-500 uppercase">Vencimiento</p>
+                      <p className={`text-sm font-semibold ${item.expiration_date ? "text-slate-900" : "text-slate-400"}`}>
+                        {item.expiration_date ? new Date(item.expiration_date).toLocaleDateString('es-VE') : "No registrado"}
+                      </p>
+                    </div>
+                    {item.medication?.commercial_name && (
+                      <div className="col-span-2">
+                        <p className="text-[11px] font-medium text-slate-500 uppercase">Nombre Comercial Sugerido</p>
+                        <p className="text-sm font-semibold text-slate-900">{item.medication.commercial_name}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Resumen de Precios Multi-Moneda */}
+                <div className="flex-1 space-y-3">
+                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">Precios (Unidad Completa)</h4>
+                  <div className="grid grid-cols-3 gap-3 bg-white p-3 rounded-lg border border-slate-200/60 shadow-sm">
+                    <div>
+                      <p className="text-[10px] font-medium text-slate-500 uppercase">USD</p>
+                      <p className="text-sm font-bold text-emerald-700">${item.prices_manual?.USD || item.unit_price || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-medium text-slate-500 uppercase">VES</p>
+                      <p className="text-sm font-bold text-slate-900">Bs {item.prices_manual?.VES || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-medium text-slate-500 uppercase">EUR</p>
+                      <p className="text-sm font-bold text-slate-900">€ {item.prices_manual?.EUR || 0}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          }}
+        />
       </div>
 
       {/* Pagination & Modals */}
