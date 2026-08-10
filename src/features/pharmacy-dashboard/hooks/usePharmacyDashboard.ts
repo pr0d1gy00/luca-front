@@ -16,6 +16,6 @@ export function usePharmacyDashboard() {
       return response.data;
     },
     // Optional: refresh every minute for live dashboard feel
-    refetchInterval: 60000,
+    refetchInterval: false,
   });
 }

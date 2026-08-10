@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { inventoryApi } from "../../inventory/api/inventoryApi";
+import apiClient from "@/lib/api/client";
 
 export interface BatchItem {
   id: number;
@@ -10,6 +11,33 @@ export interface BatchItem {
   status: string;
   created_at: string;
   items_count: number;
+  items?: Array<{
+    id: number;
+    medication_id?: number | null;
+    active_ingredient?: string | null;
+    laboratory?: string | null;
+    batch_number?: string | null;
+    stock: number;
+    unit_price?: number | null;
+    expiration_date?: string | null;
+    medication?: {
+      id: number;
+      name: string;
+      active_ingredient: string;
+    };
+  }>;
+}
+
+export function usePharmacyBatchQuery(uuid: string | null) {
+  return useQuery({
+    queryKey: ["pharmacy", "batches", uuid],
+    queryFn: async () => {
+      const client = await import("@/lib/api/client").then(m => m.default);
+      const res = await client.get(`/pharmacy/inventory/batches/${uuid}`);
+      return res.data;
+    },
+    enabled: !!uuid,
+  });
 }
 
 export interface PaginatedBatches {
@@ -27,6 +55,20 @@ export function usePharmacyBatchesQuery(providerId: string, page: number = 1) {
   });
 }
 
+export function useUpdateBatchMutation() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ uuid, data }: { uuid: string; data: Partial<BatchItem> }) => {
+      const res = await apiClient.put(`/pharmacy/inventory/batches/${uuid}`, data);
+      return res.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["pharmacy", "batches"] });
+    },
+  });
+}
+
 export interface BatchesMetrics {
   batches_this_month: { value: number; trend: string };
   total_products: { value: string; trend: string };
@@ -36,12 +78,8 @@ export interface BatchesMetrics {
 export function usePharmacyBatchesMetricsQuery(providerId: string) {
   return useQuery<BatchesMetrics>({
     queryKey: ["pharmacy", "batches", "metrics", providerId],
-    // Reusing getMetrics from inventoryApi which points to the old endpoint or wait, getMetrics in inventoryApi points to /api/v1/pharmacy/inventory/metrics
-    // We should use apiClient directly here for the specific batches metrics endpoint
     queryFn: async () => {
-      const { data } = await import("@/lib/api/client").then(m => m.default).then(client => 
-        client.get(`/pharmacy/inventory/batches/metrics`)
-      );
+      const { data } = await apiClient.get(`/pharmacy/inventory/batches/metrics`);
       return data;
     },
     staleTime: 1000 * 60 * 5,
