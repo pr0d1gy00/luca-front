@@ -1,17 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { X, Package, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "motion/react";
 import { fadeUpVariant } from "@/app/lib/animations";
-import { usePharmacyInventory } from "../hooks/usePharmacyInventory";
 import { MedicationCombobox } from "./MedicationCombobox";
-import type {
-  PharmacyInventoryItem,
-  SaleCondition,
-} from "../types/pharmacy.types";
+import { useInventoryForm } from "../hooks/useInventoryForm";
+import type { PharmacyInventoryItem, SaleCondition } from "../types/pharmacy.types";
 
 interface AddEditInventoryModalProps {
   isOpen: boolean;
@@ -24,56 +21,11 @@ export function AddEditInventoryModal({
   onClose,
   itemToEdit,
 }: AddEditInventoryModalProps) {
-  const { createItem, updateItem, isCreating, isUpdating } =
-    usePharmacyInventory();
+  const { form, onSubmit, isSubmitting } = useInventoryForm(itemToEdit, onClose);
+  const { register, watch, setValue } = form;
 
-  const [medicationId, setMedicationId] = useState<number>(1);
-  const [eanCode, setEanCode] = useState<string>("");
-  const [activeIngredient, setActiveIngredient] = useState<string>("");
-  const [laboratory, setLaboratory] = useState<string>("");
-  const [saleCondition, setSaleCondition] =
-    useState<SaleCondition>("prescription");
-  const [packageStock, setPackageStock] = useState<number>(10);
-  const [fractionStock, setFractionStock] = useState<number>(0);
-  const [minStockAlert, setMinStockAlert] = useState<number>(5);
-  const [batchNumber, setBatchNumber] = useState<string>("");
-  const [expirationDate, setExpirationDate] = useState<string>("");
-  const [locationRack, setLocationRack] = useState<string>("");
-
-  const [allowsFractioning, setAllowsFractioning] = useState<boolean>(false);
-  const [unitsPerPackage, setUnitsPerPackage] = useState<number>(10);
-  const [fractionUnitName, setFractionUnitName] = useState<string>("Blíster");
-
-  const [priceUSD, setPriceUSD] = useState<number>(0);
-  const [priceVES, setPriceVES] = useState<number>(0);
-  const [priceEUR, setPriceEUR] = useState<number>(0);
-
-  useEffect(() => {
-    if (!itemToEdit) return;
-    const timer = setTimeout(() => {
-      setMedicationId(itemToEdit.medication_id || 1);
-      setEanCode(itemToEdit.ean_code || "");
-      setActiveIngredient(itemToEdit.active_ingredient || "");
-      setLaboratory(itemToEdit.laboratory || "");
-      setSaleCondition(itemToEdit.sale_condition || "prescription");
-      setPackageStock(itemToEdit.package_stock || 0);
-      setFractionStock(itemToEdit.fraction_stock || 0);
-      setMinStockAlert(itemToEdit.min_stock_alert || 5);
-      setBatchNumber(itemToEdit.batch_number || "");
-      setExpirationDate(itemToEdit.expiration_date || "");
-      setLocationRack(itemToEdit.location_rack || "");
-      setAllowsFractioning(itemToEdit.allows_fractioning || false);
-      setUnitsPerPackage(itemToEdit.units_per_package || 10);
-      setFractionUnitName(itemToEdit.fraction_unit_name || "Blíster");
-
-      if (itemToEdit.prices_manual) {
-        setPriceUSD(itemToEdit.prices_manual.USD || 0);
-        setPriceVES(itemToEdit.prices_manual.VES || 0);
-        setPriceEUR(itemToEdit.prices_manual.EUR || 0);
-      }
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [itemToEdit]);
+  const allowsFractioning = watch("allowsFractioning");
+  const activeIngredient = watch("activeIngredient");
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -84,41 +36,6 @@ export function AddEditInventoryModal({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const payload: Partial<PharmacyInventoryItem> = {
-      medication_id: medicationId,
-      ean_code: eanCode,
-      active_ingredient: activeIngredient,
-      laboratory,
-      sale_condition: saleCondition,
-      package_stock: packageStock,
-      fraction_stock: fractionStock,
-      stock: packageStock,
-      min_stock_alert: minStockAlert,
-      batch_number: batchNumber,
-      expiration_date: expirationDate,
-      location_rack: locationRack,
-      allows_fractioning: allowsFractioning,
-      units_per_package: unitsPerPackage,
-      fraction_unit_name: fractionUnitName,
-      prices_manual: {
-        USD: priceUSD,
-        VES: priceVES,
-        EUR: priceEUR,
-      },
-    };
-
-    if (itemToEdit) {
-      await updateItem({ id: itemToEdit.id, payload });
-    } else {
-      await createItem(payload);
-    }
-
-    onClose();
-  };
 
   return (
     <AnimatePresence>
@@ -156,6 +73,7 @@ export function AddEditInventoryModal({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
           >
@@ -164,7 +82,7 @@ export function AddEditInventoryModal({
         </div>
 
         {/* Content Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={onSubmit} className="p-6 space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1">
@@ -173,14 +91,14 @@ export function AddEditInventoryModal({
               <MedicationCombobox
                 value={activeIngredient}
                 onSelect={(medication, customText) => {
-                  setActiveIngredient(customText);
+                  setValue("activeIngredient", customText);
                   if (medication) {
-                    setMedicationId(medication.id);
+                    setValue("medicationId", (medication as any).id);
                     if ((medication as any).laboratory) {
-                      setLaboratory((medication as any).laboratory);
+                      setValue("laboratory", (medication as any).laboratory);
                     }
                   } else {
-                    setMedicationId(0); // Assuming 0 or null represents custom
+                    setValue("medicationId", 0);
                   }
                 }}
                 placeholder="Ej: Acetaminofén / Ibuprofeno"
@@ -193,8 +111,7 @@ export function AddEditInventoryModal({
               </label>
               <Input
                 type="text"
-                value={laboratory}
-                onChange={(e) => setLaboratory(e.target.value)}
+                {...register("laboratory")}
                 placeholder="Ej: Bayer, Pfizer, Genfar"
                 className="h-10 border-slate-200 rounded-xl text-xs text-slate-900 shadow-none"
               />
@@ -208,8 +125,7 @@ export function AddEditInventoryModal({
               </label>
               <Input
                 type="text"
-                value={eanCode}
-                onChange={(e) => setEanCode(e.target.value)}
+                {...register("eanCode")}
                 placeholder="7591001234567"
                 className="h-10 border-slate-200 rounded-xl text-xs text-slate-900 shadow-none"
               />
@@ -219,17 +135,12 @@ export function AddEditInventoryModal({
                 Condición de Venta
               </label>
               <select
-                value={saleCondition}
-                onChange={(e) =>
-                  setSaleCondition(e.target.value as SaleCondition)
-                }
+                {...register("saleCondition")}
                 className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-900 focus:border-pharmako-care"
               >
                 <option value="prescription">Bajo Receta Médica</option>
                 <option value="free">Venta Libre (OTC)</option>
-                <option value="controlled">
-                  Receta Archivada (Psicotrópicos)
-                </option>
+                <option value="controlled">Receta Archivada (Psicotrópicos)</option>
               </select>
             </div>
             <div>
@@ -238,8 +149,7 @@ export function AddEditInventoryModal({
               </label>
               <Input
                 type="text"
-                value={locationRack}
-                onChange={(e) => setLocationRack(e.target.value)}
+                {...register("locationRack")}
                 placeholder="Ej: Pasillo A3 - Estante 2"
                 className="h-10 border-slate-200 rounded-xl text-xs text-slate-900 shadow-none"
               />
@@ -259,7 +169,7 @@ export function AddEditInventoryModal({
               </div>
               <button
                 type="button"
-                onClick={() => setAllowsFractioning(!allowsFractioning)}
+                onClick={() => setValue("allowsFractioning", !allowsFractioning)}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   allowsFractioning ? "bg-pharmako-care" : "bg-slate-300"
                 }`}
@@ -281,10 +191,7 @@ export function AddEditInventoryModal({
                   <Input
                     type="number"
                     min="1"
-                    value={unitsPerPackage}
-                    onChange={(e) =>
-                      setUnitsPerPackage(parseInt(e.target.value) || 1)
-                    }
+                    {...register("unitsPerPackage", { valueAsNumber: true })}
                     className="h-9 border-slate-200 rounded-lg text-xs shadow-none text-slate-900"
                   />
                 </div>
@@ -294,8 +201,7 @@ export function AddEditInventoryModal({
                   </label>
                   <Input
                     type="text"
-                    value={fractionUnitName}
-                    onChange={(e) => setFractionUnitName(e.target.value)}
+                    {...register("fractionUnitName")}
                     placeholder="Ej: Blíster, Comprimido, Ampolla"
                     className="h-9 border-slate-200 rounded-lg text-xs shadow-none text-slate-900"
                   />
@@ -313,8 +219,7 @@ export function AddEditInventoryModal({
               <Input
                 type="number"
                 min="0"
-                value={packageStock}
-                onChange={(e) => setPackageStock(parseInt(e.target.value) || 0)}
+                {...register("packageStock", { valueAsNumber: true })}
                 className="h-10 border-slate-200 rounded-xl text-xs text-slate-900 shadow-none"
               />
             </div>
@@ -325,10 +230,7 @@ export function AddEditInventoryModal({
               <Input
                 type="number"
                 min="0"
-                value={fractionStock}
-                onChange={(e) =>
-                  setFractionStock(parseInt(e.target.value) || 0)
-                }
+                {...register("fractionStock", { valueAsNumber: true })}
                 className="h-10 border-slate-200 rounded-xl text-xs text-slate-900 shadow-none"
               />
             </div>
@@ -338,8 +240,7 @@ export function AddEditInventoryModal({
               </label>
               <Input
                 type="text"
-                value={batchNumber}
-                onChange={(e) => setBatchNumber(e.target.value)}
+                {...register("batchNumber")}
                 placeholder="LOT-2026-X"
                 className="h-10 border-slate-200 rounded-xl text-xs text-slate-900 shadow-none"
               />
@@ -350,8 +251,7 @@ export function AddEditInventoryModal({
               </label>
               <Input
                 type="date"
-                value={expirationDate}
-                onChange={(e) => setExpirationDate(e.target.value)}
+                {...register("expirationDate")}
                 className="h-10 border-slate-200 rounded-xl text-xs text-slate-900 shadow-none"
               />
             </div>
@@ -371,8 +271,7 @@ export function AddEditInventoryModal({
                 <Input
                   type="number"
                   step="0.01"
-                  value={priceUSD}
-                  onChange={(e) => setPriceUSD(parseFloat(e.target.value) || 0)}
+                  {...register("prices.USD", { valueAsNumber: true })}
                   className="h-9 border-slate-200 rounded-lg text-xs shadow-none text-slate-900"
                 />
               </div>
@@ -383,8 +282,7 @@ export function AddEditInventoryModal({
                 <Input
                   type="number"
                   step="0.01"
-                  value={priceVES}
-                  onChange={(e) => setPriceVES(parseFloat(e.target.value) || 0)}
+                  {...register("prices.VES", { valueAsNumber: true })}
                   className="h-9 border-slate-200 rounded-lg text-xs shadow-none text-slate-900"
                 />
               </div>
@@ -395,8 +293,7 @@ export function AddEditInventoryModal({
                 <Input
                   type="number"
                   step="0.01"
-                  value={priceEUR}
-                  onChange={(e) => setPriceEUR(parseFloat(e.target.value) || 0)}
+                  {...register("prices.EUR", { valueAsNumber: true })}
                   className="h-9 border-slate-200 rounded-lg text-xs shadow-none text-slate-900"
                 />
               </div>
@@ -415,7 +312,7 @@ export function AddEditInventoryModal({
             </Button>
             <Button
               type="submit"
-              disabled={isCreating || isUpdating}
+              disabled={isSubmitting}
               className="bg-pharmako-care text-slate-900 font-bold hover:bg-pharmako-care-hover shadow-none transition-colors duration-150"
             >
               {itemToEdit ? "Guardar Cambios" : "Registrar Producto"}

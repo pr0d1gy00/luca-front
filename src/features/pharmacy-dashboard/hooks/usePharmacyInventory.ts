@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/api/client";
 import type { PharmacyInventoryItem } from "../types/pharmacy.types";
+import { useOnlineStatus } from "../../offline/hooks/useOnlineStatus";
+import { pharmacyOfflineService } from "../services/pharmacyOfflineService";
+import { useAuthStore } from "@/store/auth";
 
 interface InventoryFilters {
   search?: string;
@@ -18,8 +21,11 @@ interface PaginatedResponse<T> {
   total: number;
 }
 
-export function usePharmacyInventory(filters: InventoryFilters = {}) {
+export function usePharmacyInventory(filters: InventoryFilters = { page: 1 }) {
   const queryClient = useQueryClient();
+  const isOnline = useOnlineStatus();
+  const user = useAuthStore((state) => state.user);
+  const providerUuid = (user as any)?.providerProfile?.uuid || (user as any)?.provider_profile?.uuid || "fallback-uuid";
 
   const inventoryQuery = useQuery<PaginatedResponse<PharmacyInventoryItem>>({
     queryKey: ["pharmacy", "inventory", filters],
@@ -35,16 +41,44 @@ export function usePharmacyInventory(filters: InventoryFilters = {}) {
       if (filters.per_page)
         params.append("per_page", filters.per_page.toString());
 
-      const response = await apiClient.get(
-        `/pharmacy/inventory?${params.toString()}`,
-      );
-      return response.data;
+      try {
+        const response = await apiClient.get(
+          `/pharmacy/inventory?${params.toString()}`,
+        );
+        // Sync to offline storage for future fallback
+        if (response.data.data) {
+           await pharmacyOfflineService.saveLocalSynced("pharmacyInventories", response.data.data);
+        }
+        return response.data;
+      } catch (error) {
+        if (!isOnline) {
+          const localData = await pharmacyOfflineService.getInventory(providerUuid);
+          // Simplified filtering for local fallback
+          let filtered = localData;
+          if (filters.search) {
+             filtered = filtered.filter(item => 
+               item.activeIngredient?.toLowerCase().includes(filters.search!.toLowerCase())
+             );
+          }
+          return {
+            data: filtered as any[],
+            current_page: 1,
+            last_page: 1,
+            total: filtered.length
+          };
+        }
+        throw error;
+      }
     },
   });
 
   const createItemMutation = useMutation({
     mutationFn: async (payload: Partial<PharmacyInventoryItem>) => {
+      if (!isOnline) {
+        return await pharmacyOfflineService.saveInventoryLocally(providerUuid, payload as any);
+      }
       const response = await apiClient.post("/pharmacy/inventory", payload);
+      await pharmacyOfflineService.saveLocalSynced("pharmacyInventories", response.data.data);
       return response.data.data;
     },
     onSuccess: () => {
@@ -58,12 +92,16 @@ export function usePharmacyInventory(filters: InventoryFilters = {}) {
       payload,
     }: {
       id: number;
-      payload: Partial<PharmacyInventoryItem>;
+      payload: Partial<PharmacyInventoryItem> & { uuid?: string };
     }) => {
+      if (!isOnline) {
+        return await pharmacyOfflineService.saveInventoryLocally(providerUuid, payload as any);
+      }
       const response = await apiClient.put(
         `/pharmacy/inventory/${id}`,
         payload,
       );
+      await pharmacyOfflineService.saveLocalSynced("pharmacyInventories", response.data.data);
       return response.data.data;
     },
     onSuccess: () => {

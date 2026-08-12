@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Settings, X, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { usePharmacySettings } from "../hooks/usePharmacySettings";
+import { usePharmacySettingsForm } from "../hooks/usePharmacySettingsForm";
 
 interface PharmacySettingsModalProps {
   isOpen: boolean;
@@ -14,36 +14,12 @@ export function PharmacySettingsModal({
   isOpen,
   onClose,
 }: PharmacySettingsModalProps) {
-  const { settings, isLoading, updateSettings, isUpdating } =
-    usePharmacySettings();
-  const [autoQuoting, setAutoQuoting] = useState<boolean>(false);
-  const [allowPartial, setAllowPartial] = useState<boolean>(true);
-  const [currency, setCurrency] = useState<string>("USD");
-  const [customTerms, setCustomTerms] = useState<string>("");
-
-  useEffect(() => {
-    if (!settings) return;
-    const timer = setTimeout(() => {
-      setAutoQuoting(settings.auto_quoting_enabled);
-      setAllowPartial(settings.allow_partial_quotes);
-      setCurrency(settings.default_currency || "USD");
-      setCustomTerms(settings.custom_terms || "");
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [settings]);
+  const { form, onSubmit, isSubmitting } = usePharmacySettingsForm(onClose);
+  const { register, watch, setValue } = form;
+  
+  const autoQuoting = watch("auto_quoting_enabled");
 
   if (!isOpen) return null;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await updateSettings({
-      auto_quoting_enabled: autoQuoting,
-      allow_partial_quotes: allowPartial,
-      default_currency: currency,
-      custom_terms: customTerms,
-    });
-    onClose();
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
@@ -64,6 +40,7 @@ export function PharmacySettingsModal({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
           >
@@ -72,7 +49,7 @@ export function PharmacySettingsModal({
         </div>
 
         {/* Content */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={onSubmit} className="p-6 space-y-6">
           {/* Option: Cotización Automática vs Manual */}
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
             <div className="flex items-center justify-between">
@@ -86,7 +63,7 @@ export function PharmacySettingsModal({
               </div>
               <button
                 type="button"
-                onClick={() => setAutoQuoting(!autoQuoting)}
+                onClick={() => setValue("auto_quoting_enabled", !autoQuoting)}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   autoQuoting ? "bg-pharmako-care" : "bg-slate-300"
                 }`}
@@ -116,8 +93,7 @@ export function PharmacySettingsModal({
               Moneda Principal de Preferencia
             </label>
             <select
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
+              {...register("default_currency")}
               className="w-full h-11 px-3 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-900 focus:outline-none focus:border-pharmako-care transition-colors"
             >
               <option value="USD">Dólares ($ USD)</option>
@@ -133,8 +109,7 @@ export function PharmacySettingsModal({
               Términos o Nota de Despacho
             </label>
             <textarea
-              value={customTerms}
-              onChange={(e) => setCustomTerms(e.target.value)}
+              {...register("custom_terms")}
               rows={3}
               placeholder="Ej: Entregas a domicilio disponibles en un radio de 5km."
               className="w-full p-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-pharmako-care transition-colors"
@@ -153,10 +128,10 @@ export function PharmacySettingsModal({
             </Button>
             <Button
               type="submit"
-              disabled={isUpdating || isLoading}
+              disabled={isSubmitting}
               className="bg-pharmako-care text-slate-900 font-semibold hover:bg-pharmako-care-hover shadow-none rounded-xl px-5"
             >
-              {isUpdating ? "Guardando..." : "Guardar Preferencias"}
+              {isSubmitting ? "Guardando..." : "Guardar Preferencias"}
             </Button>
           </div>
         </form>

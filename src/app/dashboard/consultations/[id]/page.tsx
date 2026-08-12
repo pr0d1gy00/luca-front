@@ -167,15 +167,17 @@ export default function ConsultationDetailPage({
                 ...lab,
                 uuid: res.data.uuid,
                 _syncStatus: "synced",
-              };
+              } as any;
             } catch {
               await labRequestOfflineService.update(lab.uuid, {
+                uuid: lab.uuid,
                 examsList: lab.examsList,
                 instructions: lab.instructions || "",
               });
             }
           } else {
             await labRequestOfflineService.update(lab.uuid, {
+              uuid: lab.uuid,
               examsList: lab.examsList,
               instructions: lab.instructions || "",
             });
@@ -185,7 +187,6 @@ export default function ConsultationDetailPage({
           if (isOnline) {
             try {
               const res = await labRequestApi.create({
-                uuid: lab.uuid,
                 patientUuid: patient.uuid,
                 consultationUuid: activeUuid,
                 examsList: lab.examsList,
@@ -197,13 +198,13 @@ export default function ConsultationDetailPage({
                 ...lab,
                 uuid: res.data.uuid,
                 _syncStatus: "synced",
-              };
+              } as any;
             } catch {
               const now = new Date().toISOString();
               const labRecord = {
                 uuid: lab.uuid,
                 patientUuid: patient.uuid,
-                doctorUuid: doctor.uuid || "",
+                doctorUuid: (doctor as any).uuid || "",
                 consultationUuid: activeUuid,
                 examsList: lab.examsList,
                 instructions: lab.instructions || "",
@@ -212,15 +213,15 @@ export default function ConsultationDetailPage({
                 updatedAt: now,
                 _syncStatus: "pending" as const,
               };
-              await db.labRequests.put(labRecord);
-              await queueService.enqueue("lab_requests", "create", labRecord);
+              await db.labRequests.put(labRecord as any);
+              await queueService.enqueue("lab_requests", "create", labRecord as any);
             }
           } else {
             const now = new Date().toISOString();
             const labRecord = {
               uuid: lab.uuid,
               patientUuid: patient.uuid,
-              doctorUuid: doctor.uuid || "",
+              doctorUuid: (doctor as any).uuid || "",
               consultationUuid: activeUuid,
               examsList: lab.examsList,
               instructions: lab.instructions || "",
@@ -229,8 +230,8 @@ export default function ConsultationDetailPage({
               updatedAt: now,
               _syncStatus: "pending" as const,
             };
-            await db.labRequests.put(labRecord);
-            await queueService.enqueue("lab_requests", "create", labRecord);
+            await db.labRequests.put(labRecord as any);
+            await queueService.enqueue("lab_requests", "create", labRecord as any);
           }
         }
       }
@@ -248,20 +249,20 @@ export default function ConsultationDetailPage({
       await updateConsultation.mutateAsync({
         uuid: activeUuid,
         reason: data.motivoConsulta,
-        physical_exam: data.examenFisico,
-        diagnosis: data.diagnostico,
-        treatment_plan: data.treatment_plan || "",
+        physical_exam: (data as any).examenFisico,
+        diagnosis: (data as any).diagnostico,
+        treatment_plan: (data as any).treatment_plan || "",
         status: "in-progress",
-        prescriptions: data.prescriptions,
-        follow_up: data.followUp
+        prescriptions: (data as any).prescriptions,
+        follow_up: (data as any).followUp
           ? {
-              uuid: data.followUp.uuid,
-              scheduled_date: data.followUp.scheduledDate,
-              channel: data.followUp.channel,
-              message_template: data.followUp.messageTemplate || null,
+              uuid: (data as any).followUp.uuid,
+              scheduled_date: (data as any).followUp.scheduledDate,
+              channel: (data as any).followUp.channel,
+              message_template: (data as any).followUp.messageTemplate || null,
             }
           : null,
-        services_performed: data.servicesPerformed?.map((s) => ({
+        services_performed: (data as any).servicesPerformed?.map((s: any) => ({
           providerServiceUuid: s.providerServiceUuid,
           price: s.price,
           quantity: s.quantity,
@@ -285,22 +286,22 @@ export default function ConsultationDetailPage({
     try {
       await updateConsultation.mutateAsync({
         uuid: activeUuid,
-        reason: data.motivoConsulta,
-        physical_exam: data.examenFisico,
-        diagnosis: data.diagnostico,
-        treatment_plan: data.treatment_plan || "",
+        reason: (data as any).motivoConsulta,
+        physical_exam: (data as any).examenFisico,
+        diagnosis: (data as any).diagnostico,
+        treatment_plan: (data as any).treatment_plan || "",
         status: "completed",
-        prescriptions: data.prescriptions,
-        vitals: data.vitals,
-        follow_up: data.followUp
+        prescriptions: (data as any).prescriptions,
+        vitals: (data as any).vitals,
+        follow_up: (data as any).followUp
           ? {
-              uuid: data.followUp.uuid,
-              scheduled_date: data.followUp.scheduledDate,
-              channel: data.followUp.channel,
-              message_template: data.followUp.messageTemplate || null,
+              uuid: (data as any).followUp.uuid,
+              scheduled_date: (data as any).followUp.scheduledDate,
+              channel: (data as any).followUp.channel,
+              message_template: (data as any).followUp.messageTemplate || null,
             }
           : null,
-        services_performed: data.servicesPerformed?.map((s) => ({
+        services_performed: (data as any).servicesPerformed?.map((s: any) => ({
           providerServiceUuid: s.providerServiceUuid,
           price: s.price,
           quantity: s.quantity,
@@ -352,7 +353,7 @@ export default function ConsultationDetailPage({
             notes: "",
           },
         ],
-    vitals: detail.consultation?.vitals || {
+    vitals: (detail.consultation as any)?.vitals || {
       weight: "",
       height: "",
       systolic_bp: "",

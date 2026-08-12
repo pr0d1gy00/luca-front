@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { ShieldAlert, Settings, MapPin, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { usePharmacySettings } from "@/features/pharmacy-dashboard/hooks/usePharmacySettings";
-import { toast } from "sonner";
+import { usePharmacySettingsForm } from "@/features/pharmacy-dashboard/hooks/usePharmacySettingsForm";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 
@@ -15,45 +13,16 @@ const Circle = dynamic(() => import("react-leaflet").then((mod) => mod.Circle), 
 const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), { ssr: false });
 
 export function PharmacySettingsView() {
-  const { settings, location, isLoading, updateSettings, isUpdating } = usePharmacySettings();
+  const { form, settingsLocation, onSubmit, isSubmitting } = usePharmacySettingsForm();
+  const { register, watch, setValue } = form;
 
-  const [autoQuoting, setAutoQuoting] = useState<boolean>(false);
-  const [is24Hours, setIs24Hours] = useState<boolean>(false);
-  const [radiusKm, setRadiusKm] = useState<number>(5);
-  const [currency, setCurrency] = useState<string>("USD");
-
-  useEffect(() => {
-    if (!settings) return;
-    setAutoQuoting(settings.auto_quoting_enabled);
-    setIs24Hours(settings.is_24_hours || false);
-    setRadiusKm(Number(settings.delivery_radius_km) || 5);
-    setCurrency(settings.default_currency || "USD");
-  }, [settings]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await updateSettings({
-        auto_quoting_enabled: autoQuoting,
-        is_24_hours: is24Hours,
-        delivery_radius_km: radiusKm,
-        default_currency: currency,
-      });
-      toast.success("Configuración de operatividad guardada exitosamente");
-    } catch (error: any) {
-      const errorData = error?.response?.data;
-      const errorMsg = errorData?.message || errorData?.detail || errorData?.error || "Ocurrió un error al guardar la configuración";
-      toast.error(errorMsg);
-    }
-  };
-
-  if (isLoading) {
-    return <div className="p-8 text-center text-slate-500">Cargando configuraciones...</div>;
-  }
+  const autoQuoting = watch("auto_quoting_enabled");
+  const is24Hours = watch("is_24_hours");
+  const radiusKm = watch("delivery_radius_km");
 
   // Safe fallback if location not set
-  const lat = location?.latitude ? Number(location.latitude) : 10.4806; // Default to Caracas
-  const lng = location?.longitude ? Number(location.longitude) : -66.9036;
+  const lat = settingsLocation?.latitude ? Number(settingsLocation.latitude) : 10.4806; // Default to Caracas
+  const lng = settingsLocation?.longitude ? Number(settingsLocation.longitude) : -66.9036;
 
   return (
     <div className="space-y-6">
@@ -64,7 +33,7 @@ export function PharmacySettingsView() {
         <p className="text-xs text-slate-500">Gestiona las preferencias de cotización, horario y cobertura.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={onSubmit} className="space-y-6">
 
         {/* Operatividad */}
         <div className="bg-white border-t border-slate-200 p-6 space-y-6">
@@ -77,7 +46,7 @@ export function PharmacySettingsView() {
                 <label className="text-sm font-bold text-slate-900 block">Abierto 24 Horas</label>
                 <button
                   type="button"
-                  onClick={() => setIs24Hours(!is24Hours)}
+                  onClick={() => setValue("is_24_hours", !is24Hours)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${is24Hours ? "bg-pharmako-care" : "bg-slate-300"
                     }`}
                 >
@@ -98,7 +67,7 @@ export function PharmacySettingsView() {
                 <label className="text-sm font-bold text-slate-900 block">Cotización Automática</label>
                 <button
                   type="button"
-                  onClick={() => setAutoQuoting(!autoQuoting)}
+                  onClick={() => setValue("auto_quoting_enabled", !autoQuoting)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${autoQuoting ? "bg-pharmako-care" : "bg-slate-300"
                     }`}
                 >
@@ -140,7 +109,7 @@ export function PharmacySettingsView() {
                   max="50"
                   step="0.5"
                   value={radiusKm}
-                  onChange={(e) => setRadiusKm(Number(e.target.value))}
+                  onChange={(e) => setValue("delivery_radius_km", Number(e.target.value))}
                   className="w-full accent-pharmako-care"
                 />
                 <p className="text-xs text-slate-500 mt-2">
@@ -170,10 +139,10 @@ export function PharmacySettingsView() {
         <div className="flex justify-end pt-4">
           <Button
             type="submit"
-            disabled={isUpdating}
+            disabled={isSubmitting}
             className="bg-pharmako-care text-white hover:bg-pharmako-care-hover font-bold shadow-none rounded-xl px-8 h-12"
           >
-            {isUpdating ? "Guardando..." : (
+            {isSubmitting ? "Guardando..." : (
               <span className="flex items-center gap-2"><Save className="w-5 h-5" /> Guardar Cambios</span>
             )}
           </Button>

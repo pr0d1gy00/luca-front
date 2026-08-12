@@ -110,15 +110,16 @@ export default function PatientConsultationsPage() {
     isFetching,
   } = usePatientConsultationsQuery(page, debouncedSearch, specialtyVal);
 
-  const consultations = Array.isArray(paginatedData?.data?.data)
-    ? paginatedData.data.data
-    : Array.isArray(paginatedData?.data)
-    ? paginatedData.data
-    : Array.isArray(paginatedData)
-    ? paginatedData
+  const paginatedAny = paginatedData as any;
+  const consultations = Array.isArray(paginatedAny?.data?.data)
+    ? paginatedAny.data.data
+    : Array.isArray(paginatedAny?.data)
+    ? paginatedAny.data
+    : Array.isArray(paginatedAny)
+    ? paginatedAny
     : [];
   const totalPages: number =
-    paginatedData?.data?.last_page || paginatedData?.last_page || 1;
+    paginatedAny?.data?.last_page || paginatedAny?.last_page || 1;
 
   const [selectedConsult, setSelectedConsult] =
     useState<DetailedConsultation | null>(null);
@@ -323,10 +324,10 @@ export default function PatientConsultationsPage() {
               <Pagination
                 currentPage={page}
                 lastPage={totalPages}
-                total={paginatedData?.data?.total || paginatedData?.total || 0}
-                perPage={paginatedData?.data?.per_page || paginatedData?.per_page || 10}
-                from={paginatedData?.data?.from || paginatedData?.from || null}
-                to={paginatedData?.data?.to || paginatedData?.to || null}
+                total={paginatedAny?.data?.total || paginatedAny?.total || 0}
+                perPage={paginatedAny?.data?.per_page || paginatedAny?.per_page || 10}
+                from={paginatedAny?.data?.from || paginatedAny?.from || null}
+                to={paginatedAny?.data?.to || paginatedAny?.to || null}
                 onPageChange={handlePageChange}
                 variant="care"
               />

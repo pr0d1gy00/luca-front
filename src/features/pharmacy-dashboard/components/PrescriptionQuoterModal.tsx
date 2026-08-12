@@ -16,17 +16,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "motion/react";
 import { fadeUpVariant } from "@/app/lib/animations";
-import { ManualSubstituteModal } from "./ManualSubstituteModal";
-import {
-  useCreateQuoteOffer,
-  useUpdateQuoteOffer,
-  useUpsellSuggestions,
-} from "../hooks/usePharmacyQuotes";
-import type {
-  QuoteOfferItemPayload,
-  PharmacyInventoryItem,
-  UpsellRuleSuggestion,
-} from "../types/pharmacy.types";
+import { useQuoterForm } from "../hooks/useQuoterForm";
+import { useUpsellSuggestions } from "../hooks/usePharmacyQuotes";
+import type { PharmacyInventoryItem } from "../types/pharmacy.types";
 
 interface PrescriptionQuoterModalProps {
   isOpen: boolean;
@@ -41,100 +33,17 @@ export function PrescriptionQuoterModal({
   quoteRequest,
   existingOffer,
 }: PrescriptionQuoterModalProps) {
-  const createOfferMutation = useCreateQuoteOffer();
-  const updateOfferMutation = useUpdateQuoteOffer();
+  const { form, items, watchedItems, totals, handlers, onSubmit, isSubmitting } = useQuoterForm(quoteRequest, existingOffer, onClose);
+  const { register, watch } = form;
+  const comments = watch("comments");
 
   const activeIngredients =
     quoteRequest?.prescription?.items
       ?.map((i: any) => i.medication?.name || "")
       .filter(Boolean) || [];
-  const { data: upsellSuggestions = [] } =
-    useUpsellSuggestions(activeIngredients);
+  const { data: upsellSuggestions = [] } = useUpsellSuggestions(activeIngredients);
 
-  const [items, setItems] = useState<
-    Array<
-      QuoteOfferItemPayload & {
-        tempId: string;
-        availabilityStatus: "available" | "substitute";
-        originalName: string;
-      }
-    >
-  >(() => {
-    if (existingOffer && existingOffer.quote_offer_items) {
-      return existingOffer.quote_offer_items.map((offerItem: any, idx: number) => {
-        const originalItem = quoteRequest?.prescription?.items?.find(
-          (i: any) => i.id === offerItem.prescription_item_id
-        );
-        
-        let medName = `Medicamento #${idx + 1}`;
-        if (originalItem?.medication) {
-          const commName = originalItem.medication.commercial_name;
-          const actPrinc = originalItem.medication.active_principle;
-          medName = commName && actPrinc
-            ? `${commName} (${actPrinc})`
-            : (commName || actPrinc || `Medicamento #${idx + 1}`);
-        }
-
-        return {
-          tempId: `existing-${idx}`,
-          prescription_item_id: offerItem.prescription_item_id,
-          originalName: medName,
-          custom_product_name: offerItem.custom_product_name || "",
-          availabilityStatus: offerItem.is_substituted ? "substitute" : "available",
-          is_substituted: offerItem.is_substituted,
-          substituted_inventory_id: offerItem.substituted_inventory_id,
-          substitution_reason: offerItem.substitution_reason,
-          sell_format: offerItem.sell_format,
-          quantity: offerItem.quantity,
-          prices_manual: offerItem.prices_manual || { USD: 0, VES: 0, EUR: 0 },
-          notes: offerItem.notes || "",
-        };
-      });
-    }
-
-    const initialItems =
-      quoteRequest?.prescription?.items?.map((item: any, idx: number) => {
-        const commName = item.medication?.commercial_name;
-        const actPrinc = item.medication?.active_principle;
-        const medName = commName && actPrinc
-          ? `${commName} (${actPrinc})`
-          : (commName || actPrinc || `Medicamento #${idx + 1}`);
-
-        return {
-          tempId: `presc-${idx}`,
-          prescription_item_id: item.id,
-          originalName: medName,
-          custom_product_name: item.medication?.commercial_name || item.medication?.active_principle || "",
-          availabilityStatus: "available" as const,
-          is_substituted: false,
-          sell_format: "package" as const,
-          quantity: 1,
-          prices_manual: { USD: 0, VES: 0, EUR: 0 },
-          notes: "",
-        };
-      }) || [];
-
-    return initialItems.length > 0
-      ? initialItems
-      : [
-        {
-          tempId: "adhoc-0",
-          originalName: "Ítem Ad-Hoc",
-          custom_product_name: "",
-          availabilityStatus: "available" as const,
-          is_substituted: false,
-          sell_format: "package" as const,
-          quantity: 1,
-          prices_manual: { USD: 0, VES: 0, EUR: 0 },
-          notes: "",
-        },
-      ];
-  });
-
-  const [substitutingItemIndex, setSubstitutingItemIndex] = useState<
-    number | null
-  >(null);
-  const [comments, setComments] = useState<string>(existingOffer?.comments || "");
+  const [substitutingItemIndex, setSubstitutingItemIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -145,214 +54,6 @@ export function PrescriptionQuoterModal({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
-
-  const handleSetAvailabilityStatus = (
-    index: number,
-    status: "available" | "substitute",
-  ) => {
-    setItems((prev) =>
-      prev.map((it, i) => {
-        if (i !== index) return it;
-        if (status === "available") {
-          return {
-            ...it,
-            availabilityStatus: "available",
-            is_substituted: false,
-            substituted_inventory_id: undefined,
-            substitution_reason: undefined,
-            custom_product_name: it.originalName,
-          };
-        } else {
-          return {
-            ...it,
-            availabilityStatus: "substitute",
-            is_substituted: true,
-            substitution_reason:
-              it.substitution_reason ||
-              "Sin stock de marca original, se ofrece alternativa libre/equivalente",
-          };
-        }
-      }),
-    );
-  };
-
-  const handleUpdatePrice = (
-    index: number,
-    currency: string,
-    value: number,
-  ) => {
-    setItems((prev) =>
-      prev.map((item, i) => {
-        if (i !== index) return item;
-        return {
-          ...item,
-          prices_manual: {
-            ...item.prices_manual,
-            [currency]: value,
-          },
-        };
-      }),
-    );
-  };
-
-  const handleUpdateNotes = (index: number, notes: string) => {
-    setItems((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, notes } : item)),
-    );
-  };
-
-  const handleUpdateQuantity = (index: number, qty: number) => {
-    setItems((prev) =>
-      prev.map((item, i) =>
-        i === index ? { ...item, quantity: Math.max(1, qty) } : item,
-      ),
-    );
-  };
-
-  const handleToggleFormat = (index: number) => {
-    setItems((prev) =>
-      prev.map((item, i) =>
-        i === index
-          ? {
-            ...item,
-            sell_format:
-              item.sell_format === "package" ? "fraction" : "package",
-          }
-          : item,
-      ),
-    );
-  };
-
-  const handleAddAdHocItem = () => {
-    setItems((prev) => [
-      ...prev,
-      {
-        tempId: `adhoc-${Date.now()}`,
-        originalName: "Producto Libre / Ad-Hoc",
-        custom_product_name: "",
-        availabilityStatus: "available",
-        is_substituted: false,
-        sell_format: "package",
-        quantity: 1,
-        prices_manual: { USD: 0, VES: 0, EUR: 0 },
-        notes: "",
-      },
-    ]);
-  };
-
-  const handleRemoveItem = (index: number) => {
-    setItems((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleAddUpsellToOffer = (suggestion: UpsellRuleSuggestion) => {
-    setItems((prev) => [
-      ...prev,
-      {
-        tempId: `upsell-${Date.now()}`,
-        pharmacy_inventory_id: suggestion.recommended_inventory_id,
-        originalName:
-          suggestion.recommended_inventory?.medication?.name || "Producto OTC",
-        custom_product_name:
-          suggestion.recommended_inventory?.medication?.name ||
-          "Producto OTC Sugerido",
-        availabilityStatus: "available",
-        is_substituted: false,
-        sell_format: "package",
-        quantity: 1,
-        prices_manual: suggestion.recommended_inventory?.prices_manual || {
-          USD: 5,
-          VES: 25,
-          EUR: 4,
-        },
-        notes: `Sugerencia OTC: ${suggestion.recommendation_reason}`,
-      },
-    ]);
-  };
-
-  const handleSelectSubstitute = (
-    index: number,
-    subItem: PharmacyInventoryItem,
-    reason: string,
-  ) => {
-    setItems((prev) =>
-      prev.map((item, i) =>
-        i === index
-          ? {
-            ...item,
-            availabilityStatus: "substitute",
-            is_substituted: true,
-            substituted_inventory_id: subItem.id,
-            substitution_reason: reason,
-            custom_product_name:
-              subItem.medication?.name ||
-              subItem.active_ingredient ||
-              item.custom_product_name,
-            prices_manual: subItem.prices_manual || item.prices_manual,
-            notes: item.notes || `Sustituto de inventario: ${reason}`,
-          }
-          : item,
-      ),
-    );
-  };
-
-  const calculateTotalUSD = () => {
-    return items.reduce(
-      (sum, it) => sum + (it.prices_manual?.USD || 0) * it.quantity,
-      0,
-    );
-  };
-
-  const calculateTotalVES = () => {
-    return items.reduce(
-      (sum, it) => sum + (it.prices_manual?.VES || 0) * it.quantity,
-      0,
-    );
-  };
-
-  const calculateTotalEUR = () => {
-    return items.reduce(
-      (sum, it) => sum + (it.prices_manual?.EUR || 0) * it.quantity,
-      0,
-    );
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const totalUSD = calculateTotalUSD();
-
-    const payload = {
-      total_price_base: totalUSD,
-      currency: "USD",
-      comments,
-      items: items.map((item) => ({
-        prescription_item_id: item.prescription_item_id,
-        pharmacy_inventory_id: item.pharmacy_inventory_id,
-        custom_product_name: item.custom_product_name,
-        is_substituted: item.is_substituted,
-        substituted_inventory_id: item.substituted_inventory_id,
-        substitution_reason: item.substitution_reason,
-        sell_format: item.sell_format,
-        quantity: item.quantity,
-        prices_manual: item.prices_manual,
-        notes: item.notes,
-      })),
-    };
-
-    if (existingOffer) {
-      await updateOfferMutation.mutateAsync({
-        requestId: quoteRequest.id,
-        offerId: existingOffer.id,
-        payload,
-      });
-    } else {
-      await createOfferMutation.mutateAsync({
-        requestId: quoteRequest.id,
-        payload,
-      });
-    }
-
-    onClose();
-  };
 
   return (
     <AnimatePresence>
@@ -389,6 +90,7 @@ export function PrescriptionQuoterModal({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
           >
@@ -396,7 +98,7 @@ export function PrescriptionQuoterModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+        <form onSubmit={onSubmit} className="flex flex-col flex-1 overflow-hidden">
           <div className="p-6 space-y-6 overflow-y-auto flex-1">
             {/* Patient & Doctor Context */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -453,7 +155,7 @@ export function PrescriptionQuoterModal({
                     <button
                       key={sug.id}
                       type="button"
-                      onClick={() => handleAddUpsellToOffer(sug)}
+                      onClick={() => handlers.handleAddUpsellToOffer(sug)}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-800 hover:border-pharmako-care hover:bg-slate-50 transition-colors shadow-none"
                     >
                       <Plus className="w-3.5 h-3.5 text-pharmako-care" />
@@ -478,7 +180,7 @@ export function PrescriptionQuoterModal({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleAddAdHocItem}
+                  onClick={handlers.handleAddAdHocItem}
                   className="border-slate-200 text-xs font-semibold rounded-xl bg-white hover:bg-slate-50 shadow-none text-slate-700"
                 >
                   <Plus className="w-3.5 h-3.5 mr-1" />
@@ -487,14 +189,15 @@ export function PrescriptionQuoterModal({
               </div>
 
               <div className="space-y-4">
-                {items.map((item, index) => {
+                {items.map((field, index) => {
+                  const watchedItem = watchedItems?.[index] || field;
                   const isAvailable =
-                    item.availabilityStatus === "available" &&
-                    !item.is_substituted;
+                    watchedItem.availabilityStatus === "available" &&
+                    !watchedItem.is_substituted;
 
                   return (
                     <div
-                      key={item.tempId}
+                      key={field.id}
                       className={`p-4 rounded-xl border transition-colors shadow-none space-y-3 ${isAvailable
                         ? "bg-white border-slate-200"
                         : "bg-amber-50/40 border-amber-200"
@@ -507,7 +210,7 @@ export function PrescriptionQuoterModal({
                             Prescrito originalmente:
                           </div>
                           <div className="text-sm font-bold text-slate-900">
-                            {item.originalName}
+                            {watchedItem.originalName}
                           </div>
                         </div>
 
@@ -516,7 +219,7 @@ export function PrescriptionQuoterModal({
                           <button
                             type="button"
                             onClick={() =>
-                              handleSetAvailabilityStatus(index, "available")
+                              handlers.handleSetAvailabilityStatus(index, "available")
                             }
                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border shadow-none ${isAvailable
                               ? "bg-emerald-500 text-white border-emerald-600"
@@ -530,9 +233,9 @@ export function PrescriptionQuoterModal({
                           <button
                             type="button"
                             onClick={() =>
-                              handleSetAvailabilityStatus(index, "substitute")
+                              handlers.handleSetAvailabilityStatus(index, "substitute")
                             }
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border shadow-none ${item.is_substituted
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border shadow-none ${watchedItem.is_substituted
                               ? "bg-amber-500 text-white border-amber-600"
                               : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                               }`}
@@ -543,7 +246,7 @@ export function PrescriptionQuoterModal({
 
                           <button
                             type="button"
-                            onClick={() => handleRemoveItem(index)}
+                            onClick={() => form.setValue("items", form.getValues("items").filter((_, i) => i !== index))}
                             className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -556,11 +259,11 @@ export function PrescriptionQuoterModal({
                         <div className="sm:col-span-2 space-y-1">
                           <div className="flex items-center justify-between">
                             <label className="text-[11px] font-semibold text-slate-600 block">
-                              {item.is_substituted
+                              {watchedItem.is_substituted
                                 ? "Nombre del Producto Sustituto (Escribir o Buscar en Inventario)"
                                 : "Producto a Entregar"}
                             </label>
-                            {item.is_substituted && (
+                            {watchedItem.is_substituted && (
                               <button
                                 type="button"
                                 onClick={() => setSubstitutingItemIndex(index)}
@@ -574,21 +277,9 @@ export function PrescriptionQuoterModal({
 
                           <Input
                             type="text"
-                            value={item.custom_product_name}
-                            onChange={(e) =>
-                              setItems((prev) =>
-                                prev.map((it, idx) =>
-                                  idx === index
-                                    ? {
-                                      ...it,
-                                      custom_product_name: e.target.value,
-                                    }
-                                    : it,
-                                ),
-                              )
-                            }
+                            {...register(`items.${index}.custom_product_name` as const)}
                             placeholder={
-                              item.is_substituted
+                              watchedItem.is_substituted
                                 ? "Escribí el nombre del producto equivalente libremente..."
                                 : "Nombre del producto..."
                             }
@@ -600,23 +291,21 @@ export function PrescriptionQuoterModal({
                           <label className="text-[11px] font-semibold text-slate-600 block mb-1">
                             Formato Venta
                           </label>
-                          <button
-                            type="button"
-                            onClick={() => handleToggleFormat(index)}
-                            className={`w-full h-10 px-3 rounded-xl text-xs font-bold border transition-colors ${item.sell_format === "package"
+                          <select
+                            {...register(`items.${index}.sell_format` as const)}
+                            className={`w-full h-10 px-3 rounded-xl text-xs font-bold border transition-colors ${watchedItem.sell_format === "package"
                               ? "bg-slate-100 border-slate-200 text-slate-700"
                               : "bg-pharmako-care-light border-pharmako-care/40 text-pharmako-care"
                               }`}
                           >
-                            {item.sell_format === "package"
-                              ? "Caja Completa"
-                              : "Blíster / Unidad"}
-                          </button>
+                            <option value="package">Caja Completa</option>
+                            <option value="fraction">Blíster / Unidad</option>
+                          </select>
                         </div>
                       </div>
 
                       {/* Substitution reason text field */}
-                      {item.is_substituted && (
+                      {watchedItem.is_substituted && (
                         <div className="space-y-1 pt-1">
                           <label className="text-[11px] font-semibold text-amber-800 block">
                             Motivo / Razón de la Sustitución (Visible para el
@@ -624,19 +313,7 @@ export function PrescriptionQuoterModal({
                           </label>
                           <Input
                             type="text"
-                            value={item.substitution_reason || ""}
-                            onChange={(e) =>
-                              setItems((prev) =>
-                                prev.map((it, idx) =>
-                                  idx === index
-                                    ? {
-                                      ...it,
-                                      substitution_reason: e.target.value,
-                                    }
-                                    : it,
-                                ),
-                              )
-                            }
+                            {...register(`items.${index}.substitution_reason` as const)}
                             placeholder="Ej: Sin stock de la marca prescripta, se ofrece genérico bioequivalente."
                             className="h-9 border-amber-200 rounded-lg text-xs bg-amber-50/50 text-amber-900 shadow-none"
                           />
@@ -652,13 +329,7 @@ export function PrescriptionQuoterModal({
                           <Input
                             type="number"
                             min="1"
-                            value={item.quantity}
-                            onChange={(e) =>
-                              handleUpdateQuantity(
-                                index,
-                                parseInt(e.target.value) || 1,
-                              )
-                            }
+                            {...register(`items.${index}.quantity` as const, { valueAsNumber: true })}
                             className="h-9 border-slate-200 rounded-lg text-xs shadow-none text-slate-900 bg-white"
                           />
                         </div>
@@ -669,14 +340,7 @@ export function PrescriptionQuoterModal({
                           <Input
                             type="number"
                             step="0.01"
-                            value={item.prices_manual?.USD || 0}
-                            onChange={(e) =>
-                              handleUpdatePrice(
-                                index,
-                                "USD",
-                                parseFloat(e.target.value) || 0,
-                              )
-                            }
+                            {...register(`items.${index}.prices_manual.USD` as const, { valueAsNumber: true })}
                             className="h-9 border-slate-200 rounded-lg text-xs shadow-none text-slate-900 bg-white"
                           />
                         </div>
@@ -687,14 +351,7 @@ export function PrescriptionQuoterModal({
                           <Input
                             type="number"
                             step="0.01"
-                            value={item.prices_manual?.VES || 0}
-                            onChange={(e) =>
-                              handleUpdatePrice(
-                                index,
-                                "VES",
-                                parseFloat(e.target.value) || 0,
-                              )
-                            }
+                            {...register(`items.${index}.prices_manual.VES` as const, { valueAsNumber: true })}
                             className="h-9 border-slate-200 rounded-lg text-xs shadow-none text-slate-900 bg-white"
                           />
                         </div>
@@ -705,14 +362,7 @@ export function PrescriptionQuoterModal({
                           <Input
                             type="number"
                             step="0.01"
-                            value={item.prices_manual?.EUR || 0}
-                            onChange={(e) =>
-                              handleUpdatePrice(
-                                index,
-                                "EUR",
-                                parseFloat(e.target.value) || 0,
-                              )
-                            }
+                            {...register(`items.${index}.prices_manual.EUR` as const, { valueAsNumber: true })}
                             className="h-9 border-slate-200 rounded-lg text-xs shadow-none text-slate-900 bg-white"
                           />
                         </div>
@@ -728,10 +378,7 @@ export function PrescriptionQuoterModal({
                         </div>
                         <Input
                           type="text"
-                          value={item.notes || ""}
-                          onChange={(e) =>
-                            handleUpdateNotes(index, e.target.value)
-                          }
+                          {...register(`items.${index}.notes` as const)}
                           placeholder="Ej: Tomar 1 cápsula cada 8 horas con las comidas."
                           className="h-8 border-slate-200 rounded-lg text-xs text-slate-800 bg-white shadow-none placeholder:text-slate-400"
                         />
@@ -748,8 +395,7 @@ export function PrescriptionQuoterModal({
                 Comentarios Generales de la Oferta
               </label>
               <textarea
-                value={comments}
-                onChange={(e) => setComments(e.target.value)}
+                {...register("comments")}
                 rows={2}
                 placeholder="Ej: Todos los medicamentos están disponibles para retiro inmediato en mostrador."
                 className="w-full p-3 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:border-pharmako-care"
@@ -767,15 +413,15 @@ export function PrescriptionQuoterModal({
               <div className="flex items-end gap-4">
                 <div className="flex flex-col">
                   <span className="text-xs text-slate-400">USD</span>
-                  <span className="text-xl font-bold text-slate-900">${calculateTotalUSD().toFixed(2)}</span>
+                  <span className="text-xl font-bold text-slate-900">${totals.USD.toFixed(2)}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-xs text-slate-400">VES</span>
-                  <span className="text-xl font-bold text-slate-900">Bs. {calculateTotalVES().toFixed(2)}</span>
+                  <span className="text-xl font-bold text-slate-900">Bs. {totals.VES.toFixed(2)}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-xs text-slate-400">EUR</span>
-                  <span className="text-xl font-bold text-slate-900">€ {calculateTotalEUR().toFixed(2)}</span>
+                  <span className="text-xl font-bold text-slate-900">€ {totals.EUR.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -791,35 +437,22 @@ export function PrescriptionQuoterModal({
               </Button>
               <Button
                 type="submit"
-                disabled={createOfferMutation.isPending || updateOfferMutation.isPending || items.length === 0}
+                disabled={isSubmitting || items.length === 0}
                 className="bg-pharmako-care hover:bg-pharmako-care-hover text-white rounded-xl px-6"
               >
-                {createOfferMutation.isPending || updateOfferMutation.isPending
+                {isSubmitting
                   ? "Procesando..."
                   : existingOffer 
                     ? "Actualizar Oferta"
-                    : "Enviar Cotización"}
+                    : "Enviar Cotización"
+                }
               </Button>
             </div>
           </div>
         </form>
       </motion.div>
-
-      {/* Manual Substitute Modal */}
-      {substitutingItemIndex !== null && (
-        <ManualSubstituteModal
-          isOpen={substitutingItemIndex !== null}
-          onClose={() => setSubstitutingItemIndex(null)}
-          originalMedicationName={
-            items[substitutingItemIndex]?.originalName || "Medicamento"
-          }
-          onSelectSubstitute={(subItem, reason) =>
-            handleSelectSubstitute(substitutingItemIndex, subItem, reason)
-          }
-        />
-      )}
-      </motion.div>
-      )}
-    </AnimatePresence>
+    </motion.div>
+    )}
+  </AnimatePresence>
   );
 }

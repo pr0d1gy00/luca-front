@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { Search, RefreshCw, Check, X, Pill } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { usePharmacyInventory } from "../hooks/usePharmacyInventory";
 import type { PharmacyInventoryItem } from "../types/pharmacy.types";
+import { useManualSubstituteForm } from "../hooks/useManualSubstituteForm";
 
 interface ManualSubstituteModalProps {
   isOpen: boolean;
@@ -20,23 +19,16 @@ export function ManualSubstituteModal({
   originalMedicationName,
   onSelectSubstitute,
 }: ManualSubstituteModalProps) {
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [selectedItem, setSelectedItem] =
-    useState<PharmacyInventoryItem | null>(null);
-  const [reason, setReason] = useState<string>(
-    "Sin stock de marca original, se ofrece bioequivalente de misma dosis",
-  );
-
-  const { inventory, isLoading } = usePharmacyInventory({ search: searchTerm });
+  const {
+    form: { register, formState: { errors } },
+    inventory,
+    isLoading,
+    selectedItem,
+    handleSelectItem,
+    onSubmit,
+  } = useManualSubstituteForm({ onSelectSubstitute, onClose });
 
   if (!isOpen) return null;
-
-  const handleConfirm = () => {
-    if (selectedItem) {
-      onSelectSubstitute(selectedItem, reason);
-      onClose();
-    }
-  };
 
   return (
     <div 
@@ -67,6 +59,7 @@ export function ManualSubstituteModal({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
           >
@@ -74,14 +67,13 @@ export function ManualSubstituteModal({
           </button>
         </div>
 
-        <div className="p-6 space-y-5">
+        <form onSubmit={onSubmit} className="p-6 space-y-5">
           {/* Search Box */}
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
             <Input
               type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              {...register("searchTerm")}
               placeholder="Buscar por monodroga, marca o laboratorio..."
               className="pl-10 h-11 border-slate-200 rounded-xl bg-white shadow-none text-sm text-slate-900 focus:border-pharmako-care"
             />
@@ -98,12 +90,12 @@ export function ManualSubstituteModal({
                 No se encontraron productos coincidentes
               </div>
             ) : (
-              inventory.map((item) => {
+              inventory.map((item: any) => {
                 const isSelected = selectedItem?.id === item.id;
                 return (
                   <div
                     key={item.id}
-                    onClick={() => setSelectedItem(item)}
+                    onClick={() => handleSelectItem(item)}
                     className={`p-3.5 flex items-center justify-between cursor-pointer transition-colors ${
                       isSelected
                         ? "bg-pharmako-care-light/60 border-l-4 border-pharmako-care"
@@ -140,6 +132,9 @@ export function ManualSubstituteModal({
               })
             )}
           </div>
+          {errors.selectedItemId && (
+            <p className="text-xs text-red-500 font-medium">{errors.selectedItemId.message}</p>
+          )}
 
           {/* Reason Input */}
           <div className="space-y-1.5">
@@ -148,11 +143,13 @@ export function ManualSubstituteModal({
             </label>
             <Input
               type="text"
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              {...register("reason")}
               placeholder="Ej: Bioequivalente exacto en misma concentración."
               className="h-10 border-slate-200 rounded-xl bg-white shadow-none text-xs text-slate-900"
             />
+            {errors.reason && (
+              <p className="text-xs text-red-500 font-medium">{errors.reason.message}</p>
+            )}
           </div>
 
           {/* Actions */}
@@ -166,15 +163,14 @@ export function ManualSubstituteModal({
               Cancelar
             </Button>
             <Button
-              type="button"
+              type="submit"
               disabled={!selectedItem}
-              onClick={handleConfirm}
               className="bg-pharmako-care text-slate-900 font-semibold hover:bg-pharmako-care-hover shadow-none rounded-xl px-5"
             >
               Confirmar Sustitución
             </Button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

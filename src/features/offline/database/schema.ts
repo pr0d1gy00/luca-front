@@ -371,6 +371,74 @@ export interface SyncError {
 // ============================================
 // DATABASE CLASS
 // ============================================
+export interface PharmacyInventoryRecord extends SyncableEntity {
+  providerUuid: string;
+  medicationUuid: string | null;
+  eanCode: string | null;
+  activeIngredient: string | null;
+  laboratory: string | null;
+  saleCondition: string | null;
+  stock: number;
+  minStockAlert: number;
+  batchNumber: string | null;
+  expirationDate: string | null;
+  locationRack: string | null;
+  allowsFractioning: boolean;
+  unitsPerPackage: number;
+  fractionUnitName: string | null;
+  packageStock: number;
+  fractionStock: number;
+  unitPrice: number | null;
+  pricesManual: Record<string, any> | null;
+}
+
+export interface PharmacyInventoryBatchRecord extends SyncableEntity {
+  providerUuid: string;
+  status: string;
+  documentUrls: string[] | null;
+  notes: string | null;
+  items: Array<any>;
+}
+
+export interface QuoteRequestRecord extends SyncableEntity {
+  patientUuid: string;
+  prescriptionUuid: string | null;
+  cityId: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  searchRadiusKm: number | null;
+  status: string;
+  notes: string | null;
+  items: any[];
+}
+
+export interface QuoteOfferRecord extends SyncableEntity {
+  quoteRequestUuid: string;
+  providerUuid: string;
+  status: string;
+  price: number;
+  currency: string;
+  availability: string | null;
+  comments: string | null;
+  items: any[];
+}
+
+export interface PharmacySettingRecord extends SyncableEntity {
+  providerUuid: string;
+  settings: Record<string, any>;
+  location?: { latitude: number; longitude: number };
+}
+
+export interface PharmacyOrderRecord extends SyncableEntity {
+  providerUuid: string;
+  quoteOfferId: string | null;
+  patientAccountId: string | null;
+  status: string;
+  selectedCurrencyPayment: Record<string, any> | null;
+  stockDeducted: boolean;
+  confirmedAt: string | null;
+}
+
 class LucaDatabase extends Dexie {
   // Patients
   patients!: Table<PatientRecord>;
@@ -426,6 +494,14 @@ class LucaDatabase extends Dexie {
   services!: Table<ServiceRecord>;
   providerServices!: Table<ProviderServiceRecord>;
   activeDelays!: Table<ActiveDelayRecord>;
+
+  // Pharmacy (v6)
+  pharmacyInventories!: Table<PharmacyInventoryRecord>;
+  pharmacyInventoryBatches!: Table<PharmacyInventoryBatchRecord>;
+  quoteRequests!: Table<QuoteRequestRecord>;
+  quoteOffers!: Table<QuoteOfferRecord>;
+  pharmacySettings!: Table<PharmacySettingRecord>;
+  pharmacyOrders!: Table<PharmacyOrderRecord>;
 
   constructor() {
     super("LucaOfflineDB");
@@ -502,6 +578,16 @@ class LucaDatabase extends Dexie {
       services: "uuid, category, updatedAt",
       providerServices: "uuid, providerUuid, serviceUuid, isActive, updatedAt",
       activeDelays: "doctorUuid, delayMinutes, updatedAt",
+    });
+
+    // v6: Add pharmacy module tables
+    this.version(6).stores({
+      pharmacyInventories: "uuid, providerUuid, medicationUuid, activeIngredient, updatedAt, _syncStatus",
+      pharmacyInventoryBatches: "uuid, providerUuid, status, updatedAt, _syncStatus",
+      quoteRequests: "uuid, patientUuid, status, updatedAt, _syncStatus",
+      quoteOffers: "uuid, quoteRequestUuid, providerUuid, status, updatedAt, _syncStatus",
+      pharmacySettings: "uuid, providerUuid, updatedAt, _syncStatus",
+      pharmacyOrders: "uuid, providerUuid, status, updatedAt, _syncStatus",
     });
   }
 }
