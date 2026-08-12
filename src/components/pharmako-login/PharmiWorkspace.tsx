@@ -6,7 +6,9 @@ import Image from "next/image";
 import PharmakoPersonTwoPCAndComputerPNG from "../../../public/PharmakoPersonTwoPcAndPhone-PNG.png";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-export function PharmiWorkspace() {
+import React from "react";
+
+export const PharmiWorkspace = React.memo(function PharmiWorkspace() {
   const router = useRouter();
 
   return (
@@ -74,4 +76,4 @@ export function PharmiWorkspace() {
       <div className="lg:hidden absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#F8FAFC] to-transparent" />
     </div>
   );
-}
+});

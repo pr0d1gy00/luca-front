@@ -21,7 +21,9 @@ function SlidePanel({ children }: { children: ReactNode; key: string }) {
   );
 }
 
-export function AuthContainer() {
+import React from "react";
+
+export const AuthContainer = React.memo(function AuthContainer() {
   const [tab, setTab] = useState<"login" | "register">("login");
 
   return (
@@ -47,4 +49,4 @@ export function AuthContainer() {
       </AnimatePresence>
     </motion.div>
   );
-}
+});
